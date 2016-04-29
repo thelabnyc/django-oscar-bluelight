@@ -1,0 +1,30 @@
+from django import forms
+from oscar.apps.dashboard.offers.forms import ConditionForm as BaseConditionForm
+from oscar.core.loading import get_model
+
+Condition = get_model('offer', 'Condition')
+Range = get_model('offer', 'Range')
+
+
+class ConditionForm(BaseConditionForm):
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+
+        conditions = Condition.objects.all()
+        if len(conditions) > 0:
+            # Initialize custom_condition field
+            choices = [(c.id, str(c)) for c in conditions]
+            choices.insert(0, ('', ' --------- '))
+            self.fields['custom_condition'].choices = choices
+            condition = kwargs.get('instance')
+            if condition:
+                self.fields['custom_condition'].initial = condition.id
+        else:
+            # No custom conditions and so the type/range/value fields
+            # are no longer optional
+            for field in ('type', 'range', 'value'):
+                self.fields[field].required = True
+
+
+class ConditionSearchForm(forms.Form):
+    range = forms.ModelChoiceField(required=False, queryset=Range.objects.order_by('name'))

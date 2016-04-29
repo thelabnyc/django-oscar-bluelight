@@ -1,0 +1,12 @@
+postgres:
+  image: postgres:9.4
+
+test:
+  build: .
+  command: ./server.sh
+  ports:
+    - "8000:8000"
+  links:
+    - postgres
+  volumes:
+    - .:/code
