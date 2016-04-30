@@ -20,10 +20,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
-    'compressor',
     'widget_tweaks',
 ] + get_core_apps([
     'bluelight.dashboard.offers',
+    'bluelight.offer',
 ])
 
 MIDDLEWARE_CLASSES = (
@@ -97,3 +97,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'tmp/static/')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'tmp/media/')
+
+OSCAR_DEFAULT_CURRENCY = 'USD'

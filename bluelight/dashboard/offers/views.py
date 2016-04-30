@@ -3,8 +3,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
 
+CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 
+CompoundConditionForm = get_class('dashboard.offers.forms', 'CompoundConditionForm')
 ConditionForm = get_class('dashboard.offers.forms', 'ConditionForm')
 ConditionSearchForm = get_class('dashboard.offers.forms', 'ConditionSearchForm')
 
@@ -48,6 +50,13 @@ class ConditionDeleteView(DeleteView):
     success_url = reverse_lazy('dashboard:condition-list')
 
 
+class CompoundConditionCreateView(CreateView):
+    model = CompoundCondition
+    template_name = 'dashboard/offers/condition_edit_compound.html'
+    form_class = CompoundConditionForm
+    success_url = reverse_lazy('dashboard:condition-list')
+
+
 class ConditionCreateView(CreateView):
     model = Condition
     template_name = 'dashboard/offers/condition_edit.html'
@@ -57,6 +66,18 @@ class ConditionCreateView(CreateView):
 
 class ConditionUpdateView(UpdateView):
     model = Condition
-    template_name = 'dashboard/offers/condition_edit.html'
-    form_class = ConditionForm
     success_url = reverse_lazy('dashboard:condition-list')
+
+    def get_object(self, queryset=None):
+        obj = super(ConditionUpdateView, self).get_object(queryset)
+        return obj.proxy()
+
+    def get_form_class(self):
+        if self.object.type == Condition.COMPOUND:
+            return CompoundConditionForm
+        return ConditionForm
+
+    def get_template_names(self):
+        if self.object.type == Condition.COMPOUND:
+            return 'dashboard/offers/condition_edit_compound.html'
+        return 'dashboard/offers/condition_edit.html'

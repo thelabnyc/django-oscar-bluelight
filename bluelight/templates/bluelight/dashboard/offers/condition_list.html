@@ -19,7 +19,8 @@
 
 {% block header %}
     <div class="page-header">
-        <a href="{% url 'dashboard:condition-create' %}" class="btn btn-primary btn-lg pull-right"><i class="icon-plus"></i> {% trans "Create new condition" %}</a>
+        <a href="{% url 'dashboard:condition-create' %}" class="btn btn-primary pull-right"><i class="icon-plus"></i> {% trans "Create new condition" %}</a>
+        <a href="{% url 'dashboard:condition-create-compound' %}" class="btn btn-primary pull-right"><i class="icon-plus"></i> {% trans "Create new compound condition" %}</a>
         <h1>{% trans "Conditions" %}</h1>
     </div>
 {% endblock header %}

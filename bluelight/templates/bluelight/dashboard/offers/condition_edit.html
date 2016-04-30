@@ -54,16 +54,18 @@
                     {% csrf_token %}
                     <p>{% trans "Fields marked with * are mandatory." %}</p>
 
-                    {% include "dashboard/partials/form_field.html" with field=form.range %}
-                    <p>
-                        {% url 'dashboard:range-list' as range_list_url %}
-                        {% blocktrans %}
-                        Ranges can be created and edited from within the <a href="{{ range_list_url }}">range dashboard</a>.
-                        {% endblocktrans %}
-                    </p>
+                    {% block form_fields %}
+                        {% include "dashboard/partials/form_field.html" with field=form.range %}
+                        <p>
+                            {% url 'dashboard:range-list' as range_list_url %}
+                            {% blocktrans %}
+                            Ranges can be created and edited from within the <a href="{{ range_list_url }}">range dashboard</a>.
+                            {% endblocktrans %}
+                        </p>
 
-                    {% include "dashboard/partials/form_field.html" with field=form.type %}
-                    {% include "dashboard/partials/form_field.html" with field=form.value %}
+                        {% include "dashboard/partials/form_field.html" with field=form.type %}
+                        {% include "dashboard/partials/form_field.html" with field=form.value %}
+                    {% endblock %}
                 </div>
 
                 <div class="fixed-actions-group">
