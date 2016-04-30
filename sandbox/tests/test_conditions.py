@@ -186,22 +186,22 @@ class CompoundConditionTest(BaseTest):
     def test_name_and(self):
         offer = self._build_offer(CompoundCondition.AND)
         c = offer.condition.proxy()
-        self.assertEqual(c.name, 'Basket includes $10.00 from site and Basket includes 2 item(s) from site')
+        self.assertEqual(c.name, 'Cart includes $10.00 from site and Cart includes 2 item(s) from site')
 
     def test_name_or(self):
         offer = self._build_offer(CompoundCondition.OR)
         c = offer.condition.proxy()
-        self.assertEqual(c.name, 'Basket includes $10.00 from site or Basket includes 2 item(s) from site')
+        self.assertEqual(c.name, 'Cart includes $10.00 from site or Cart includes 2 item(s) from site')
 
     def test_description_and(self):
         offer = self._build_offer(CompoundCondition.AND)
         c = offer.condition.proxy()
-        self.assertEqual(c.description, 'Basket includes $10.00 from site and Basket includes 2 item(s) from site')
+        self.assertEqual(c.description, 'Cart includes $10.00 from site and Cart includes 2 item(s) from site')
 
     def test_description_or(self):
         offer = self._build_offer(CompoundCondition.OR)
         c = offer.condition.proxy()
-        self.assertEqual(c.description, 'Basket includes $10.00 from site or Basket includes 2 item(s) from site')
+        self.assertEqual(c.description, 'Cart includes $10.00 from site or Cart includes 2 item(s) from site')
 
     def test_is_satisfied_and(self):
         offer = self._build_offer(CompoundCondition.AND)
