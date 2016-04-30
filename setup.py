@@ -14,7 +14,7 @@ setup_requires = [
 
 requires = [
     'Django>=1.8.11',
-    'django-oscar>=1.1.1',
+    'django-oscar>=1.2.1',
 ]
 
 def fpath(name):
