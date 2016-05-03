@@ -15,6 +15,7 @@ from oscar.apps.offer.results import (
     PostOrderAction,
     ShippingDiscount
 )
+import copy
 
 
 __all__ = [
@@ -51,21 +52,10 @@ class Condition(AbstractCondition):
         if self.__class__ in klassmap.values():
             return self
 
-        field_dict = dict(self.__dict__)
-        for field in list(field_dict.keys()):
-            if field.startswith('_'):
-                del field_dict[field]
-
         # Custom proxy class
         if self.proxy_class:
-            klass = utils.load_proxy(self.proxy_class)
-            # Short-circuit again.
-            if self.__class__ == klass:
-                return self
-            return klass(**field_dict)
-
-        if self.type not in klassmap:
-            raise RuntimeError("Unrecognised condition type (%s)" % self.type)
+            Klass = utils.load_proxy(self.proxy_class)
+            return self._init_proxy(Klass)
 
         # Check if we're using multi-table inheritance
         model_name = klassmap[self.type]._meta.model_name
@@ -73,7 +63,18 @@ class Condition(AbstractCondition):
             return getattr(self, model_name)
 
         # Must just be a standard proxy-model
-        return klassmap[self.type](**field_dict)
+        if self.type not in klassmap:
+            raise RuntimeError("Unrecognized condition type (%s)" % self.type)
+        Klass = klassmap[self.type]
+        return self._init_proxy(Klass)
+
+    def _init_proxy(self, Klass):
+        if self.__class__ == Klass:
+            return self
+        proxy = copy.deepcopy(self)
+        proxy.__class__ = Klass
+        return proxy
+
 
 __all__.append('Condition')
 

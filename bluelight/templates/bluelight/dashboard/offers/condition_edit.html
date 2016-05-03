@@ -23,9 +23,9 @@
     <li>
         <a href="{% url 'dashboard:condition-list' %}">{% trans "Conditions" %}</a>
     </li>
-    {% if condition.pk %}
+    {% if object.pk %}
         <li>
-            <a href="{% url 'dashboard:condition-update' pk=condition.pk %}">{{ condition.name }}</a>
+            <a href="{% url 'dashboard:condition-update' pk=object.pk %}">{{ object.name }}</a>
         </li>
     {% else %}
         <li>
@@ -36,10 +36,10 @@
 {% endblock %}
 
 {% block headertext %}
-    {% if not condition.pk %}
+    {% if not object.pk %}
         {% trans "Create new condition" %}
     {% else %}
-        {{ condition.name }}
+        {{ object.name }}
     {% endif %}
 {% endblock %}
 
@@ -74,21 +74,21 @@
                             <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button>
                         </div>
                         <a class="btn btn-default" href="{% url 'dashboard:condition-list' %}">{% trans "Cancel" %}</a>
-                        {% if condition.pk %}
-                            <a class="btn btn-danger" href="{% url 'dashboard:condition-delete' pk=condition.pk %}">{% trans "Delete" %}</a></li>
+                        {% if object.pk %}
+                            <a class="btn btn-danger" href="{% url 'dashboard:condition-delete' pk=object.pk %}">{% trans "Delete" %}</a></li>
                         {% endif %}
                     </div>
                 </div>
             </form>
         </div>
-        {% if condition.conditionaloffer_set.count %}
+        {% if object.conditionaloffer_set.count %}
             <div class="col-md-4">
                 <div class="table-header">
                     <h3>{% trans "Used by Offers" %}</h3>
                 </div>
                 <div class="well">
                     <ul>
-                        {% for offer in condition.conditionaloffer_set.all %}
+                        {% for offer in object.conditionaloffer_set.all %}
                             <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
                         {% endfor %}
                     </ul>

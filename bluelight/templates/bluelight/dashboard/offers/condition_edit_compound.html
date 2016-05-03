@@ -4,9 +4,6 @@
 {% load i18n %}
 
 {% block form_fields %}
-    {% include "dashboard/partials/form_field.html" with field=form.custom_name %}
-
-    {% include "dashboard/partials/form_field.html" with field=form.range %}
     <p>
         {% url 'dashboard:range-list' as range_list_url %}
         {% blocktrans %}
