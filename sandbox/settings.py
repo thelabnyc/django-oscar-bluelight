@@ -23,7 +23,9 @@ INSTALLED_APPS = [
     'widget_tweaks',
 ] + get_core_apps([
     'bluelight.dashboard.offers',
+    'bluelight.dashboard.vouchers',
     'bluelight.offer',
+    'bluelight.voucher',
 ])
 
 MIDDLEWARE_CLASSES = (
@@ -48,8 +50,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            OSCAR_MAIN_TEMPLATE_DIR,
             BLUELIGHT_TEMPLATE_DIR,
+            OSCAR_MAIN_TEMPLATE_DIR,
         ],
         'APP_DIRS': True,
         'OPTIONS': {
