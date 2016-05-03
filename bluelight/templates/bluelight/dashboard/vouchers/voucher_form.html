@@ -1,0 +1,64 @@
+{% extends 'oscar/dashboard/vouchers/voucher_form.html' %}
+{% load currency_filters %}
+{% load i18n %}
+
+{% block dashboard_content %}
+    <form action="." method="post" class="form-stacked fixed-actions">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-header">
+                    <h2><i class="icon-money icon-large"></i>
+                        {% if voucher %}
+                            {% trans "Edit voucher" %}
+                        {% else %}
+                            {% trans "Create voucher" %}
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "dashboard/partials/form_field.html" with field=form.name %}
+                    {% include "dashboard/partials/form_field.html" with field=form.code %}
+                    {% include "dashboard/partials/form_field.html" with field=form.start_datetime %}
+                    {% include "dashboard/partials/form_field.html" with field=form.end_datetime %}
+                </div>
+
+                <div class="table-header">
+                    <h2><i class="icon-money icon-large"></i>
+                        {% trans "Reward" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "dashboard/partials/form_field.html" with field=form.benefit_range %}
+                    {% include "dashboard/partials/form_field.html" with field=form.benefit_type %}
+                    {% include "dashboard/partials/form_field.html" with field=form.benefit_value %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="table-header">
+                    <h2><i class="icon-user icon-large"></i>
+                        {% trans "Usage Constraints" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "dashboard/partials/form_field.html" with field=form.usage %}
+                    {% include "dashboard/partials/form_field.html" with field=form.limit_usage_by_group %}
+                    {% include "dashboard/partials/form_field.html" with field=form.groups %}
+                </div>
+            </div>
+        </div>
+
+        {% block form_actions %}
+            <div class="fixed-actions-group">
+                <div class="form-actions">
+                    <div class="pull-right">
+                        <button class="btn btn-primary btn-lg" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button> {% trans "or" %}
+                    </div>
+
+                    <a class="btn btn-default btn-lg" href="{% url 'dashboard:voucher-list' %}">{% trans "Cancel" %}</a>
+                </div>
+            </div>
+        {% endblock form_actions %}
+    </form>
+{% endblock dashboard_content %}
