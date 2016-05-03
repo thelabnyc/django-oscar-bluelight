@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block dashboard_content %}
-    <form action="." method="post" class="form-stacked fixed-actions">
+    <form action="." method="post" class="form-stacked wysiwyg fixed-actions">
         {% csrf_token %}
 
         <div class="row">
@@ -19,7 +19,10 @@
                 </div>
                 <div class="well">
                     {% include "dashboard/partials/form_field.html" with field=form.name %}
+                    {% include "dashboard/partials/form_field.html" with field=form.description %}
+
                     {% include "dashboard/partials/form_field.html" with field=form.code %}
+
                     {% include "dashboard/partials/form_field.html" with field=form.start_datetime %}
                     {% include "dashboard/partials/form_field.html" with field=form.end_datetime %}
                 </div>

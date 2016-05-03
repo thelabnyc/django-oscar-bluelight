@@ -11,6 +11,10 @@ Range = get_model('offer', 'Range')
 
 
 class VoucherForm(DefaultVoucherForm):
+    description = forms.CharField(
+        label=_("Description"),
+        widget=forms.Textarea,
+        required=False)
     limit_usage_by_group = forms.BooleanField(
         label=_('Should usage be limited to specific user groups?'),
         required=False)

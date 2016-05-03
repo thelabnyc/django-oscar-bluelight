@@ -30,6 +30,7 @@ class VoucherCreateView(DefaultVoucherCreateView):
         name = form.cleaned_data['name']
         offer = ConditionalOffer.objects.create(
             name=_("Offer for voucher '%s'") % name,
+            description=form.cleaned_data['description'],
             offer_type=ConditionalOffer.VOUCHER,
             benefit=benefit,
             condition=condition,
@@ -52,6 +53,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
     def get_initial(self):
         initial = super().get_initial()
         voucher = self.get_voucher()
+        initial['description'] = voucher.offers.first().description
         initial['limit_usage_by_group'] = voucher.limit_usage_by_group
         initial['groups'] = voucher.groups.all()
         return initial
@@ -69,6 +71,9 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         voucher.save()
 
         offer = voucher.offers.all()[0]
+        offer.description = form.cleaned_data['description']
+        offer.save()
+
         offer.condition.range = form.cleaned_data['benefit_range']
         offer.condition.save()
 
