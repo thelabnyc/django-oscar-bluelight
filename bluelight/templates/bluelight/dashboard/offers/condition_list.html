@@ -65,6 +65,13 @@
                             </ul>
                         </td>
                         <td>
+                            <ul>
+                                {% for condition in condition.parent_conditions.all %}
+                                    <li><a href="{% url 'dashboard:condition-update' pk=condition.pk %}">{{ condition.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
                             <div class="btn-toolbar">
                                 <div class="btn-group">
                                     <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true">

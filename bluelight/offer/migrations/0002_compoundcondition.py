@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('condition_ptr', models.OneToOneField(parent_link=True, to='offer.Condition', auto_created=True, primary_key=True, serialize=False)),
                 ('conjunction', models.CharField(verbose_name='Subcondition conjunction type', choices=[('AND', 'Logical AND'), ('OR', 'Logical OR')], default='AND', max_length=10)),
-                ('subconditions', models.ManyToManyField(related_name='parent_condition', to='offer.Condition')),
+                ('subconditions', models.ManyToManyField(related_name='parent_conditions', to='offer.Condition')),
             ],
             options={
                 'verbose_name': 'Compound condition',

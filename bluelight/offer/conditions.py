@@ -108,7 +108,7 @@ class CompoundCondition(Condition):
         _("Subcondition conjunction type"), choices=CONJUNCTION_TYPE_CHOICES,
         default=AND, max_length=10)
 
-    subconditions = models.ManyToManyField('offer.Condition', related_name='parent_condition')
+    subconditions = models.ManyToManyField('offer.Condition', related_name='parent_conditions')
 
     class Meta:
         app_label = 'offer'
