@@ -9,6 +9,7 @@
         <th>{% trans "Code" %}</th>
         <th>{% trans "Status" %}</th>
         <th>{% trans "Usage is Limited to User Groups" %}</th>
+        <th>{% trans "Num child codes" %}</th>
         <th>{% anchor 'num_basket_additions' _("Num baskets") %}</th>
         <th>{% anchor 'num_orders' _("Num orders") %}</th>
         <th>{% anchor 'date_created' _("Date created") %}</th>
@@ -38,6 +39,7 @@
                 <span class="label label-danger">{% trans "No" %}</span>
             {% endif %}
         </td>
+        <td>{{ voucher.children.count }}</td>
         <td>{{ voucher.num_basket_additions }}</td>
         <td>{{ voucher.num_orders }}</td>
         <td>{{ voucher.date_created }}</td>
@@ -53,6 +55,11 @@
                             <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.id %}">{% trans "Stats" %}</a></li>
                             <li><a href="{% url 'dashboard:voucher-update' pk=voucher.id %}">{% trans "Edit" %}</a></li>
                             <li><a href="{% url 'dashboard:voucher-delete' pk=voucher.id %}">{% trans "Delete" %}</a></li>
+                            <li><a href="{% url 'dashboard:voucher-add-children' pk=voucher.id %}">{% trans "Add more child codes" %}</a></li>
+                            {% if voucher.children.exists %}
+                                <li><a href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}">{% trans "Export codes as CSV" %}</a></li>
+                                <li><a href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='json' %}">{% trans "Export codes as JSON" %}</a></li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>

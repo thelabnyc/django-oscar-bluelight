@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="table-header">
-                    <h2><i class="icon-money icon-large"></i>
+                    <h2><i class="icon-gift icon-large"></i>
                         {% trans "Reward" %}
                     </h2>
                 </div>
@@ -39,6 +39,24 @@
                 </div>
             </div>
             <div class="col-md-6">
+                <div class="table-header">
+                    <h2><i class="icon-cogs icon-large"></i>
+                        {% trans "Child Codes" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% if voucher %}
+                        {% if voucher.children.count %}
+                            <p>{% blocktrans with voucher.children.count as count %}All changes will apply to this voucher and its {{ count }} child codes.{% endblocktrans %}</p>
+                        {% else %}
+                            <p>{% blocktrans %}This voucher has no children.{% endblocktrans %}</p>
+                        {% endif %}
+                    {% else %}
+                        {% include "dashboard/partials/form_field.html" with field=form.create_children %}
+                        {% include "dashboard/partials/form_field.html" with field=form.child_count %}
+                    {% endif %}
+                </div>
+
                 <div class="table-header">
                     <h2><i class="icon-user icon-large"></i>
                         {% trans "Usage Constraints" %}
@@ -65,3 +83,25 @@
         {% endblock form_actions %}
     </form>
 {% endblock dashboard_content %}
+
+
+{% block extrascripts %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        var groupCheckbox = $('#id_limit_usage_by_group'),
+            groupSelect = $('#id_groups'),
+            childrenCheckbox = $('#id_create_children'),
+            childrenCount = $('#id_child_count');
+
+        groupSelect.prop("disabled", !groupCheckbox.get(0).checked);
+        groupCheckbox.on('change', function() {
+            groupSelect.prop("disabled", !this.checked);
+        });
+
+        childrenCount.prop("disabled", !childrenCheckbox.get(0).checked);
+        childrenCheckbox.on('change', function() {
+            childrenCount.prop("disabled", !this.checked);
+        });
+    </script>
+{% endblock %}

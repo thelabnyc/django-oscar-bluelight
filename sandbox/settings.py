@@ -101,3 +101,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'tmp/media/')
 
 OSCAR_DEFAULT_CURRENCY = 'USD'
+
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

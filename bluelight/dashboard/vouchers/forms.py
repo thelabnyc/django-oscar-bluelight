@@ -9,6 +9,8 @@ Voucher = get_model('voucher', 'Voucher')
 Benefit = get_model('offer', 'Benefit')
 Range = get_model('offer', 'Range')
 
+MAX_CHILDREN_CREATE = 1000
+
 
 class VoucherForm(DefaultVoucherForm):
     description = forms.CharField(
@@ -22,3 +24,20 @@ class VoucherForm(DefaultVoucherForm):
         label=_('User Group Whitelist'),
         queryset=Group.objects.order_by('name'),
         required=False)
+    create_children = forms.BooleanField(
+        label=_('Should child codes be created?'),
+        required=False)
+    child_count = forms.IntegerField(
+        label=_('How many child codes should be created?'),
+        initial=0,
+        min_value=0,
+        max_value=MAX_CHILDREN_CREATE,
+        required=False)
+
+
+class AddChildCodesForm(forms.Form):
+    child_count = forms.IntegerField(
+        label=_('How many child codes should be created?'),
+        initial=0,
+        min_value=0,
+        max_value=MAX_CHILDREN_CREATE)
