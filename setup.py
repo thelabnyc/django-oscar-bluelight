@@ -58,6 +58,7 @@ setup(
     url='https://gitlab.com/thelabnyc/django-oscar-bluelight',
     license='ISC',
     packages=packages,
+    include_package_data=True,
     install_requires=requires,
     setup_requires=setup_requires
 )
