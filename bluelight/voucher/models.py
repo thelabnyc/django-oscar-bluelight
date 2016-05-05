@@ -67,6 +67,8 @@ class Voucher(AbstractVoucher):
     @transaction.atomic()
     def save(self, *args, **kwargs):
         rc = super().save(*args, **kwargs)
+        # TODO: This should probably be asynchronous, via Celery or something, to prevent
+        # hanging for too long if there are a lot of codes.
         for child in self.children.all():
             self._update_child(child)
         return rc
@@ -98,6 +100,7 @@ class Voucher(AbstractVoucher):
         copy_fields = ('name', 'usage', 'start_datetime', 'end_datetime', 'limit_usage_by_group')
         for field in copy_fields:
             setattr(child, field, getattr(self, field))
+        # TODO: Might be useful to use django-dirtyfields here to prevent unnecessary DB writes.
         child.save()
         child.offers = list( self.offers.all() )
         child.groups = list( self.groups.all() )

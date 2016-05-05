@@ -71,6 +71,8 @@ class VoucherCreateView(DefaultVoucherCreateView):
 
         # Create child codes
         if form.cleaned_data['create_children']:
+            # TODO: This should probably be asynchronous, via Celery or something, to prevent
+            # hanging for too long if there are a lot of codes.
             voucher.create_children( form.cleaned_data['child_count'] )
 
         return HttpResponseRedirect(self.get_success_url())
@@ -141,6 +143,8 @@ class AddChildCodesView(generic.FormView):
     @transaction.atomic()
     def form_valid(self, form):
         voucher = self.get_voucher()
+        # TODO: This should probably be asynchronous, via Celery or something, to prevent
+        # hanging for too long if there are a lot of codes.
         voucher.create_children( form.cleaned_data['child_count'] )
         voucher.save()
         messages.success(self.request, _("Created %s child codes") % form.cleaned_data['child_count'])
