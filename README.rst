@@ -87,6 +87,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.2.1
+------------------
+- Fix bug the excluded templates from package.
+
 0.2.0
 ------------------
 - Renamed package to `oscarbluelight` to have consistent naming with other Oscar projects.
