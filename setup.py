@@ -20,7 +20,7 @@ packages = [
 ]
 
 setup_requires = [
-    'versiontag>=1.0.3',
+    'versiontag>=1.1.0',
 ]
 
 requires = [

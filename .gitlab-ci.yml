@@ -10,8 +10,7 @@ services:
   - postgres:latest
 
 before_script:
-  - pip install -r requirements.txt
-  - export PYTHONPATH=`pwd`
+  - pip install -e .
 
 test_python:3.4:
   stage: test
