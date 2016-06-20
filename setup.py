@@ -12,6 +12,9 @@ packages = [
     'oscarbluelight.dashboard.vouchers',
     'oscarbluelight.offer',
     'oscarbluelight.offer.migrations',
+    'oscarbluelight.tests',
+    'oscarbluelight.tests.offer',
+    'oscarbluelight.tests.voucher',
     'oscarbluelight.voucher',
     'oscarbluelight.voucher.migrations',
 ]
