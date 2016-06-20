@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal as D
 from django.test import TestCase
-from bluelight.voucher.models import Voucher
+from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import AnonymousUser, User, Group
 from oscar.test.factories import create_order
 

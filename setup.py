@@ -6,14 +6,14 @@ from versiontag import get_version, cache_git_tag
 
 
 packages = [
-    'bluelight',
-    'bluelight.dashboard',
-    'bluelight.dashboard.offers',
-    'bluelight.dashboard.vouchers',
-    'bluelight.offer',
-    'bluelight.offer.migrations',
-    'bluelight.voucher',
-    'bluelight.voucher.migrations',
+    'oscarbluelight',
+    'oscarbluelight.dashboard',
+    'oscarbluelight.dashboard.offers',
+    'oscarbluelight.dashboard.vouchers',
+    'oscarbluelight.offer',
+    'oscarbluelight.offer.migrations',
+    'oscarbluelight.voucher',
+    'oscarbluelight.voucher.migrations',
 ]
 
 setup_requires = [

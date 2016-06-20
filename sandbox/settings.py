@@ -1,7 +1,7 @@
 from oscar.defaults import *  # noqa
-from bluelight.defaults import OSCAR_DASHBOARD_NAVIGATION
+from oscarbluelight.defaults import OSCAR_DASHBOARD_NAVIGATION
 from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
-from bluelight import BLUELIGHT_TEMPLATE_DIR
+from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,10 +22,10 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
     'widget_tweaks',
 ] + get_core_apps([
-    'bluelight.dashboard.offers',
-    'bluelight.dashboard.vouchers',
-    'bluelight.offer',
-    'bluelight.voucher',
+    'oscarbluelight.dashboard.offers',
+    'oscarbluelight.dashboard.vouchers',
+    'oscarbluelight.offer',
+    'oscarbluelight.voucher',
 ])
 
 MIDDLEWARE_CLASSES = (

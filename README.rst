@@ -47,9 +47,9 @@ Install `django-oscar-bluelight`.::
 Import Bluelight's settings into your projects `settings.py` file.::
 
     from oscar.defaults import *
-    from bluelight.defaults import OSCAR_DASHBOARD_NAVIGATION # Needed so that Bluelight's views show up in the dashboard
+    from oscarbluelight.defaults import OSCAR_DASHBOARD_NAVIGATION # Needed so that Bluelight's views show up in the dashboard
     from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
-    from bluelight import BLUELIGHT_TEMPLATE_DIR
+    from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
 
 Add Bluelight to your install apps.::
 
@@ -57,10 +57,10 @@ Add Bluelight to your install apps.::
         ...
     ] + get_core_apps([
         ...
-        'bluelight.dashboard.offers',
-        'bluelight.dashboard.vouchers',
-        'bluelight.offer',
-        'bluelight.voucher',
+        'oscarbluelight.dashboard.offers',
+        'oscarbluelight.dashboard.vouchers',
+        'oscarbluelight.offer',
+        'oscarbluelight.voucher',
         ...
     ])
 
