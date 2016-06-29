@@ -26,7 +26,7 @@ class Voucher(AbstractVoucher):
         null=True,
         blank=True)
     limit_usage_by_group = models.BooleanField(_("Limit usage to selected user groups"), default=False)
-    groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"))
+    groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
 
     objects = VoucherManager()
 
