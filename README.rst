@@ -87,6 +87,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.2.2
+------------------
+- Fix bug preventing Voucher.groups form field from being blank
+
 0.2.1
 ------------------
 - Fix bug the excluded templates from package.
