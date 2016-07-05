@@ -1,5 +1,6 @@
 Django==1.9.6
 django-oscar==1.2.1
+flake8===2.5.4
 psycopg2==2.6.1
 pycountry==1.20
 versiontag==1.1.0

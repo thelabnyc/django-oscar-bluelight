@@ -20,9 +20,9 @@ class Migration(migrations.Migration):
             name='Benefit',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(verbose_name='Type', max_length=128, blank=True, choices=[('Percentage', "Discount is a percentage off of the product's value"), ('Absolute', "Discount is a fixed amount off of the product's value"), ('Multibuy', 'Discount is to give the cheapest product for free'), ('Fixed price', 'Get the products that meet the condition for a fixed price'), ('Shipping absolute', 'Discount is a fixed amount of the shipping cost'), ('Shipping fixed price', 'Get shipping for a fixed price'), ('Shipping percentage', 'Discount is a percentage off of the shipping cost')])),
+                ('type', models.CharField(verbose_name='Type', max_length=128, blank=True, choices=[('Percentage', "Discount is a percentage off of the product's value"), ('Absolute', "Discount is a fixed amount off of the product's value"), ('Multibuy', 'Discount is to give the cheapest product for free'), ('Fixed price', 'Get the products that meet the condition for a fixed price'), ('Shipping absolute', 'Discount is a fixed amount of the shipping cost'), ('Shipping fixed price', 'Get shipping for a fixed price'), ('Shipping percentage', 'Discount is a percentage off of the shipping cost')])),  # NOQA
                 ('value', oscar.models.fields.PositiveDecimalField(max_digits=12, decimal_places=2, blank=True, verbose_name='Value', null=True)),
-                ('max_affected_items', models.PositiveIntegerField(verbose_name='Max Affected Items', blank=True, help_text='Set this to prevent the discount consuming all items within the range that are in the basket.', null=True)),
+                ('max_affected_items', models.PositiveIntegerField(verbose_name='Max Affected Items', blank=True, help_text='Set this to prevent the discount consuming all items within the range that are in the basket.', null=True)),  # NOQA
                 ('proxy_class', oscar.models.fields.NullCharField(unique=True, verbose_name='Custom class', default=None, max_length=255)),
             ],
             options={
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
             name='Condition',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(verbose_name='Type', max_length=128, blank=True, choices=[('Count', 'Depends on number of items in basket that are in condition range'), ('Value', 'Depends on value of items in basket that are in condition range'), ('Coverage', 'Needs to contain a set number of DISTINCT items from the condition range')])),
+                ('type', models.CharField(verbose_name='Type', max_length=128, blank=True, choices=[('Count', 'Depends on number of items in basket that are in condition range'), ('Value', 'Depends on value of items in basket that are in condition range'), ('Coverage', 'Needs to contain a set number of DISTINCT items from the condition range')])),  # NOQA
                 ('value', oscar.models.fields.PositiveDecimalField(max_digits=12, decimal_places=2, blank=True, verbose_name='Value', null=True)),
                 ('proxy_class', oscar.models.fields.NullCharField(unique=True, verbose_name='Custom class', default=None, max_length=255)),
             ],
@@ -50,17 +50,17 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(verbose_name='Name', unique=True, max_length=128, help_text="This is displayed within the customer's basket")),
-                ('slug', oscar.models.fields.autoslugfield.AutoSlugField(populate_from='name', unique=True, verbose_name='Slug', max_length=128, editable=False, blank=True)),
+                ('slug', oscar.models.fields.autoslugfield.AutoSlugField(populate_from='name', unique=True, verbose_name='Slug', max_length=128, editable=False, blank=True)),  # NOQA
                 ('description', models.TextField(verbose_name='Description', help_text='This is displayed on the offer browsing page', blank=True)),
-                ('offer_type', models.CharField(default='Site', max_length=128, verbose_name='Type', choices=[('Site', 'Site offer - available to all users'), ('Voucher', 'Voucher offer - only available after entering the appropriate voucher code'), ('User', 'User offer - available to certain types of user'), ('Session', 'Session offer - temporary offer, available for a user for the duration of their session')])),
+                ('offer_type', models.CharField(default='Site', max_length=128, verbose_name='Type', choices=[('Site', 'Site offer - available to all users'), ('Voucher', 'Voucher offer - only available after entering the appropriate voucher code'), ('User', 'User offer - available to certain types of user'), ('Session', 'Session offer - temporary offer, available for a user for the duration of their session')])),  # NOQA
                 ('status', models.CharField(default='Open', max_length=64, verbose_name='Status')),
                 ('priority', models.IntegerField(default=0, verbose_name='Priority', help_text='The highest priority offers are applied first')),
                 ('start_datetime', models.DateTimeField(blank=True, verbose_name='Start date', null=True)),
-                ('end_datetime', models.DateTimeField(verbose_name='End date', blank=True, help_text="Offers are active until the end of the 'end date'", null=True)),
-                ('max_global_applications', models.PositiveIntegerField(verbose_name='Max global applications', blank=True, help_text='The number of times this offer can be used before it is unavailable', null=True)),
-                ('max_user_applications', models.PositiveIntegerField(verbose_name='Max user applications', blank=True, help_text='The number of times a single user can use this offer', null=True)),
-                ('max_basket_applications', models.PositiveIntegerField(verbose_name='Max basket applications', blank=True, help_text='The number of times this offer can be applied to a basket (and order)', null=True)),
-                ('max_discount', models.DecimalField(verbose_name='Max discount', max_digits=12, decimal_places=2, null=True, help_text='When an offer has given more discount to orders than this threshold, then the offer becomes unavailable', blank=True)),
+                ('end_datetime', models.DateTimeField(verbose_name='End date', blank=True, help_text="Offers are active until the end of the 'end date'", null=True)),  # NOQA
+                ('max_global_applications', models.PositiveIntegerField(verbose_name='Max global applications', blank=True, help_text='The number of times this offer can be used before it is unavailable', null=True)),  # NOQA
+                ('max_user_applications', models.PositiveIntegerField(verbose_name='Max user applications', blank=True, help_text='The number of times a single user can use this offer', null=True)),  # NOQA
+                ('max_basket_applications', models.PositiveIntegerField(verbose_name='Max basket applications', blank=True, help_text='The number of times this offer can be applied to a basket (and order)', null=True)),  # NOQA
+                ('max_discount', models.DecimalField(verbose_name='Max discount', max_digits=12, decimal_places=2, null=True, help_text='When an offer has given more discount to orders than this threshold, then the offer becomes unavailable', blank=True)),  # NOQA
                 ('total_discount', models.DecimalField(default=Decimal('0.00'), max_digits=12, decimal_places=2, verbose_name='Total Discount')),
                 ('num_applications', models.PositiveIntegerField(default=0, verbose_name='Number of applications')),
                 ('num_orders', models.PositiveIntegerField(default=0, verbose_name='Number of Orders')),
@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(unique=True, max_length=128, verbose_name='Name')),
-                ('slug', oscar.models.fields.autoslugfield.AutoSlugField(populate_from='name', unique=True, verbose_name='Slug', max_length=128, editable=False, blank=True)),
+                ('slug', oscar.models.fields.autoslugfield.AutoSlugField(populate_from='name', unique=True, verbose_name='Slug', max_length=128, editable=False, blank=True)),  # NOQA
                 ('description', models.TextField(blank=True)),
                 ('is_public', models.BooleanField(default=False, verbose_name='Is public?', help_text='Public ranges have a customer-facing page')),
                 ('includes_all_products', models.BooleanField(default=False, verbose_name='Includes all products?')),
@@ -89,7 +89,7 @@ class Migration(migrations.Migration):
                 ('date_created', models.DateTimeField(auto_now_add=True, verbose_name='Date Created')),
                 ('classes', models.ManyToManyField(related_name='classes', verbose_name='Product Types', to='catalogue.ProductClass', blank=True)),
                 ('excluded_products', models.ManyToManyField(related_name='excludes', verbose_name='Excluded Products', to='catalogue.Product', blank=True)),
-                ('included_categories', models.ManyToManyField(related_name='includes', verbose_name='Included Categories', to='catalogue.Category', blank=True)),
+                ('included_categories', models.ManyToManyField(related_name='includes', verbose_name='Included Categories', to='catalogue.Category', blank=True)),  # NOQA
             ],
             options={
                 'verbose_name_plural': 'Ranges',
@@ -116,7 +116,7 @@ class Migration(migrations.Migration):
                 ('filepath', models.CharField(max_length=255, verbose_name='File Path')),
                 ('size', models.PositiveIntegerField(verbose_name='Size')),
                 ('date_uploaded', models.DateTimeField(auto_now_add=True, verbose_name='Date Uploaded')),
-                ('status', models.CharField(default='Pending', max_length=32, verbose_name='Status', choices=[('Pending', 'Pending'), ('Failed', 'Failed'), ('Processed', 'Processed')])),
+                ('status', models.CharField(default='Pending', max_length=32, verbose_name='Status', choices=[('Pending', 'Pending'), ('Failed', 'Failed'), ('Processed', 'Processed')])),  # NOQA
                 ('error_message', models.CharField(max_length=255, verbose_name='Error Message', blank=True)),
                 ('date_processed', models.DateTimeField(verbose_name='Date Processed', null=True)),
                 ('num_new_skus', models.PositiveIntegerField(verbose_name='Number of New SKUs', null=True)),
@@ -139,7 +139,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='range',
             name='included_products',
-            field=models.ManyToManyField(related_name='includes', verbose_name='Included Products', to='catalogue.Product', through='offer.RangeProduct', blank=True),
+            field=models.ManyToManyField(related_name='includes', verbose_name='Included Products', to='catalogue.Product', through='offer.RangeProduct', blank=True),  # NOQA
             preserve_default=True,
         ),
         migrations.AddField(

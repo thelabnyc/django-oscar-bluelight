@@ -82,7 +82,7 @@ class ParentChildVoucherTest(TestCase):
             start_datetime=datetime.now(),
             end_datetime=datetime.now(),
             limit_usage_by_group=False)
-        c1 = Voucher.objects.create(
+        Voucher.objects.create(
             parent=p,
             name='Test Voucher',
             code='test-voucher-1',
@@ -90,7 +90,7 @@ class ParentChildVoucherTest(TestCase):
             start_datetime=datetime.now(),
             end_datetime=datetime.now(),
             limit_usage_by_group=False)
-        c2 = Voucher.objects.create(
+        Voucher.objects.create(
             parent=p,
             name='Test Voucher',
             code='test-voucher-2',
@@ -196,7 +196,7 @@ class ParentChildVoucherTest(TestCase):
             start_datetime=datetime.now(),
             end_datetime=datetime.now(),
             limit_usage_by_group=False)
-        c1 = Voucher.objects.create(
+        Voucher.objects.create(
             parent=p,
             name='Test Voucher',
             code='test-voucher-1',

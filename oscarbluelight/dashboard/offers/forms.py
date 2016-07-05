@@ -27,7 +27,8 @@ class ConditionForm(BaseConditionForm):
                 self.fields[field].required = True
 
         # Remove COMPOUND type from type choice dropdown
-        is_not_compound = lambda choice: choice[0] != Condition.COMPOUND
+        def is_not_compound(choice):
+            return choice[0] != Condition.COMPOUND
         self.fields['type'].choices = filter(is_not_compound, self.fields['type'].choices)
 
 

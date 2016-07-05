@@ -24,7 +24,7 @@ setup_requires = [
 ]
 
 requires = [
-    'Django>=1.8.11',
+    'Django>=1.9.6',
     'django-oscar>=1.2.1',
 ]
 

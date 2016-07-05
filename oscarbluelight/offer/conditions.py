@@ -33,6 +33,7 @@ def _count_condition_consume_items(self, offer, basket, affected_lines):
             break
     return affected_lines
 
+
 def _coverage_condition_consume_items(self, offer, basket, affected_lines):
     """
     Same as CoverageCondition.consume_items, except that it returns a list of consumed items. This
@@ -63,6 +64,7 @@ def _coverage_condition_consume_items(self, offer, basket, affected_lines):
         if to_consume == 0:
             break
     return affected_lines
+
 
 def _value_condition_consume_items(self, offer, basket, affected_lines):
     """

@@ -19,9 +19,9 @@ class Migration(migrations.Migration):
             name='Voucher',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(verbose_name='Name', max_length=128, help_text='This will be shown in the checkout and basket once the voucher is entered')),
+                ('name', models.CharField(verbose_name='Name', max_length=128, help_text='This will be shown in the checkout and basket once the voucher is entered')),  # NOQA
                 ('code', models.CharField(max_length=128, verbose_name='Code', unique=True, db_index=True, help_text='Case insensitive / No spaces allowed')),
-                ('usage', models.CharField(default='Multi-use', max_length=128, verbose_name='Usage', choices=[('Single use', 'Can be used once by one customer'), ('Multi-use', 'Can be used multiple times by multiple customers'), ('Once per customer', 'Can only be used once per customer')])),
+                ('usage', models.CharField(default='Multi-use', max_length=128, verbose_name='Usage', choices=[('Single use', 'Can be used once by one customer'), ('Multi-use', 'Can be used multiple times by multiple customers'), ('Once per customer', 'Can only be used once per customer')])),  # NOQA
                 ('start_datetime', models.DateTimeField(verbose_name='Start datetime')),
                 ('end_datetime', models.DateTimeField(verbose_name='End datetime')),
                 ('num_basket_additions', models.PositiveIntegerField(default=0, verbose_name='Times added to basket')),

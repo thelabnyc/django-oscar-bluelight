@@ -3,7 +3,6 @@ from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.dashboard.vouchers.forms import VoucherForm as DefaultVoucherForm
 from oscar.core.loading import get_model
-from oscar.forms import widgets
 
 Voucher = get_model('voucher', 'Voucher')
 Benefit = get_model('offer', 'Benefit')

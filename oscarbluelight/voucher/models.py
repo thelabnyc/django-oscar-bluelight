@@ -1,7 +1,6 @@
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.voucher.abstract_models import AbstractVoucher
-import copy
 import time
 
 
@@ -113,7 +112,7 @@ class Voucher(AbstractVoucher):
             try_count += 1
             code = "%s-%s" % (self.code, self._get_code_uniquifier(code_index, max_index))
             try:
-                voucher = self.__class__.objects.get(code=code)
+                self.__class__.objects.get(code=code)
             except Voucher.DoesNotExist:
                 return code
         raise RuntimeError("Couldn't find a unique child code after %s iterations." % try_count)

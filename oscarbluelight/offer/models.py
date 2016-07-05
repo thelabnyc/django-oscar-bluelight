@@ -1,5 +1,3 @@
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
     AbstractCondition,
@@ -98,10 +96,11 @@ __all__.append('RangeProductFileUpload')
 
 
 
-from oscar.apps.offer.benefits import *
-from .conditions import *
+from oscar.apps.offer.benefits import *  # NOQA
+from .conditions import *  # NOQA
 
-from oscar.apps.offer.benefits import __all__ as benefit_classes
-from .conditions import __all__ as condition_classes
+from oscar.apps.offer.benefits import __all__ as benefit_classes  # NOQA
+from .conditions import __all__ as condition_classes  # NOQA
+
 __all__.extend(benefit_classes)
 __all__.extend(condition_classes)

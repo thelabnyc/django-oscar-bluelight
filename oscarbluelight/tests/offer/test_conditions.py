@@ -8,7 +8,7 @@ class BaseTest(TestCase):
     def _build_basket(self, item_price=D('10.00'), item_quantity=5):
         basket = create_basket(empty=True)
         product = create_product()
-        create_stockrecord(product, item_price, num_in_stock=item_quantity*2)
+        create_stockrecord(product, item_price, num_in_stock=item_quantity * 2)
         basket.add_product(product, quantity=item_quantity)
         return basket
 

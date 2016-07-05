@@ -13,6 +13,12 @@ before_script:
   - pip install -r requirements.txt
   - pip install -e .
 
+lint:
+  stage: test
+  image: python:3.5
+  script:
+    - flake8 oscarbluelight/ sandbox/
+
 test_python:3.4:
   stage: test
   image: python:3.4
