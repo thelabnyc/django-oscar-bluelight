@@ -1,5 +1,5 @@
 from oscar.defaults import *  # noqa
-from oscarbluelight.defaults import OSCAR_DASHBOARD_NAVIGATION  # NOQA
+from oscarbluelight.defaults import *  # NOQA
 from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
 from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
 import os

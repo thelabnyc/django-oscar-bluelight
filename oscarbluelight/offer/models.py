@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
@@ -15,13 +16,24 @@ from oscar.apps.offer.results import (
     PostOrderAction,
     ShippingDiscount
 )
+from oscar.apps.offer.utils import load_proxy
 import copy
 
 
-__all__ = [
-    'BasketDiscount', 'ShippingDiscount', 'PostOrderAction',
-    'SHIPPING_DISCOUNT', 'ZERO_DISCOUNT'
-]
+def _init_proxy_class(obj, Klass):
+    # Check if we're already the correct class
+    if obj.__class__ == Klass:
+        return obj
+
+    # Check if we're using multi-table inheritance
+    model_name = Klass._meta.model_name
+    if hasattr(obj, model_name):
+        return getattr(obj, model_name)
+
+    # Else, it's just a proxy model
+    proxy = copy.deepcopy(obj)
+    proxy.__class__ = Klass
+    return proxy
 
 
 class ConditionalOffer(AbstractConditionalOffer):
@@ -39,76 +51,56 @@ class ConditionalOffer(AbstractConditionalOffer):
         return restrictions
 
 
-__all__.append('ConditionalOffer')
-
-
-
 class Benefit(AbstractBenefit):
-    pass
-__all__.append('Benefit')
+    def proxy(self):
+        if self.proxy_class:
+            Klass = load_proxy(self.proxy_class)
+            return _init_proxy_class(self, Klass)
+        return super().proxy()
 
+    @property
+    def type_name(self):
+        benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
+        names = dict(benefit_classes)
+        return names.get(self.proxy_class, self.proxy_class)
 
 
 class Condition(AbstractCondition):
-    COMPOUND = "Compound"
-
     def proxy(self):
-        from . import conditions
-        klassmap = {
-            self.COUNT: conditions.CountCondition,
-            self.VALUE: conditions.ValueCondition,
-            self.COVERAGE: conditions.CoverageCondition,
-            self.COMPOUND: conditions.CompoundCondition,
-        }
-
-        # Short-circuit logic if current class is already a proxy class.
-        if self.__class__ in klassmap.values():
-            return self
-
-        # Custom proxy class
         if self.proxy_class:
-            Klass = utils.load_proxy(self.proxy_class)
-            return self._init_proxy(Klass)
+            Klass = load_proxy(self.proxy_class)
+            return _init_proxy_class(self, Klass)
+        return super().proxy()
 
-        # Check if we're using multi-table inheritance
-        model_name = klassmap[self.type]._meta.model_name
-        if hasattr(self, model_name):
-            return getattr(self, model_name)
+    @property
+    def type_name(self):
+        condition_classes = getattr(settings, 'BLUELIGHT_CONDITION_CLASSES', [])
+        names = dict(condition_classes)
+        names['oscarbluelight.offer.conditions.CompoundCondition'] = _("Compound condition")
+        return names.get(self.proxy_class, self.proxy_class)
 
-        # Must just be a standard proxy-model
-        if self.type not in klassmap:
-            raise RuntimeError("Unrecognized condition type (%s)" % self.type)
-        Klass = klassmap[self.type]
-        return self._init_proxy(Klass)
-
-    def _init_proxy(self, Klass):
-        if self.__class__ == Klass:
-            return self
-        proxy = copy.deepcopy(self)
-        proxy.__class__ = Klass
-        return proxy
-
-
-__all__.append('Condition')
-
+# Make proxy_class field not unique.
+Condition._meta.get_field('proxy_class')._unique = False
 
 
 class Range(AbstractRange):
     pass
-__all__.append('Range')
-
 
 
 class RangeProduct(AbstractRangeProduct):
     pass
-__all__.append('RangeProduct')
-
 
 
 class RangeProductFileUpload(AbstractRangeProductFileUpload):
     pass
-__all__.append('RangeProductFileUpload')
 
+
+__all__ = [
+    'BasketDiscount', 'ShippingDiscount', 'PostOrderAction',
+    'SHIPPING_DISCOUNT', 'ZERO_DISCOUNT', 'ConditionalOffer',
+    'Benefit', 'Condition', 'Range', 'RangeProduct',
+    'RangeProductFileUpload',
+]
 
 
 from oscar.apps.offer.benefits import *  # NOQA

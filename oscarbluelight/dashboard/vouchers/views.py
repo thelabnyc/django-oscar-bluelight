@@ -20,12 +20,14 @@ try:
 except ImportError:
     import json as simplejson
 
-AddChildCodesForm = get_class('dashboard.vouchers.forms', 'AddChildCodesForm')
 Benefit = get_model('offer', 'Benefit')
 Condition = get_model('offer', 'Condition')
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Voucher = get_model('voucher', 'Voucher')
 OrderDiscount = get_model('order', 'OrderDiscount')
+
+AddChildCodesForm = get_class('dashboard.vouchers.forms', 'AddChildCodesForm')
+VoucherForm = get_class('dashboard.vouchers.forms', 'VoucherForm')
 
 
 class VoucherListView(DefaultVoucherListView):
@@ -35,38 +37,32 @@ class VoucherListView(DefaultVoucherListView):
 
 
 class VoucherCreateView(DefaultVoucherCreateView):
+    form_class = VoucherForm
+
     @transaction.atomic()
     def form_valid(self, form):
         # Create offer and benefit
+        benefit = form.cleaned_data['benefit']
         condition = Condition.objects.create(
-            range=form.cleaned_data['benefit_range'],
-            type=Condition.COUNT,
-            value=1
-        )
-        benefit = Benefit.objects.create(
-            range=form.cleaned_data['benefit_range'],
-            type=form.cleaned_data['benefit_type'],
-            value=form.cleaned_data['benefit_value']
-        )
+            range=benefit.range,
+            proxy_class='oscar.apps.offer.conditions.CountCondition',
+            value=1)
         name = form.cleaned_data['name']
         offer = ConditionalOffer.objects.create(
             name=_("Offer for voucher '%s'") % name,
             description=form.cleaned_data['description'],
             offer_type=ConditionalOffer.VOUCHER,
             benefit=benefit,
-            condition=condition,
-        )
+            condition=condition)
         voucher = Voucher.objects.create(
             name=name,
             code=form.cleaned_data['code'],
             usage=form.cleaned_data['usage'],
             start_datetime=form.cleaned_data['start_datetime'],
             end_datetime=form.cleaned_data['end_datetime'],
-            limit_usage_by_group=form.cleaned_data['limit_usage_by_group'],
-        )
+            limit_usage_by_group=form.cleaned_data['limit_usage_by_group'])
         voucher.groups = form.cleaned_data['groups']
         voucher.save()
-
         voucher.offers.add(offer)
 
         # Create child codes
@@ -91,12 +87,23 @@ class VoucherStatsView(DefaultVoucherStatsView):
 
 
 class VoucherUpdateView(DefaultVoucherUpdateView):
+    form_class = VoucherForm
+
     def get_initial(self):
-        initial = super().get_initial()
         voucher = self.get_voucher()
-        initial['description'] = voucher.offers.first().description
-        initial['limit_usage_by_group'] = voucher.limit_usage_by_group
-        initial['groups'] = voucher.groups.all()
+        offer = voucher.offers.all()[0]
+        benefit = offer.benefit
+        initial = {
+            'name': voucher.name,
+            'code': voucher.code,
+            'start_datetime': voucher.start_datetime,
+            'end_datetime': voucher.end_datetime,
+            'usage': voucher.usage,
+            'limit_usage_by_group': voucher.limit_usage_by_group,
+            'groups': voucher.groups.all(),
+            'benefit': benefit,
+            'description': offer.description,
+        }
         return initial
 
     @transaction.atomic()
@@ -113,16 +120,11 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
 
         offer = voucher.offers.all()[0]
         offer.description = form.cleaned_data['description']
+        offer.benefit = form.cleaned_data['benefit']
         offer.save()
 
-        offer.condition.range = form.cleaned_data['benefit_range']
+        offer.condition.range = offer.benefit.range
         offer.condition.save()
-
-        benefit = voucher.benefit
-        benefit.range = form.cleaned_data['benefit_range']
-        benefit.type = form.cleaned_data['benefit_type']
-        benefit.value = form.cleaned_data['benefit_value']
-        benefit.save()
 
         return HttpResponseRedirect(self.get_success_url())
 

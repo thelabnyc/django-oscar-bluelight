@@ -5,7 +5,7 @@
 {% load i18n %}
 
 {% block title %}
-    {% trans "Conditions" %} | {{ block.super }}
+    {% trans "Benefits" %} | {{ block.super }}
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -13,17 +13,16 @@
         <li>
             <a href="{{ homepage_url }}">{% trans "Dashboard" %}</a>
         </li>
-        <li class="active">{% trans "Conditions" %}</li>
+        <li class="active">{% trans "Benefits" %}</li>
     </ul>
 {% endblock %}
 
 {% block header %}
     <div class="page-header">
         <p class="pull-right">
-            <a href="{% url 'dashboard:condition-create' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new condition" %}</a>
-            <a href="{% url 'dashboard:condition-create-compound' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new compound condition" %}</a>
+            <a href="{% url 'dashboard:benefit-create' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new benfit" %}</a>
         </p>
-        <h1>{% trans "Conditions" %}</h1>
+        <h1>{% trans "Benefits" %}</h1>
     </div>
 {% endblock header %}
 
@@ -41,36 +40,28 @@
             <caption>
                 <i class="icon-gift icon-large"></i>{{ queryset_description }}
                 {% if is_filtered %}
-                    <a href="{% url 'dashboard:condition-list' %}" >{% trans "Reset" %}</a>
+                    <a href="{% url 'dashboard:benefit-list' %}" >{% trans "Reset" %}</a>
                 {% endif %}
             </caption>
-            {% if conditions %}
+            {% if benefits %}
                 <tr>
                     <th>{% trans 'Name' %}</th>
                     <th>{% trans 'Range' %}</th>
                     <th>{% trans 'Type' %}</th>
                     <th>{% trans 'Value' %}</th>
                     <th>{% trans 'Used by Offers' %}</th>
-                    <th>{% trans 'Used by Conditions' %}</th>
                     <th></th>
                 </tr>
-                {% for condition in conditions %}
+                {% for benefit in benefits %}
                     <tr>
-                        <td><a href="{% url 'dashboard:condition-update' pk=condition.pk %}">{{ condition.name }}</a></td>
-                        <td>{{ condition.range.name|default:"-" }}</td>
-                        <td>{{ condition.type_name|default:"-" }}</td>
-                        <td>{{ condition.value|default:"-" }}</td>
+                        <td><a href="">{{ benefit.name }}</a></td>
+                        <td>{{ benefit.range.name|default:"-" }}</td>
+                        <td>{{ benefit.type_name|default:"-" }}</td>
+                        <td>{{ benefit.value|default:"-" }}</td>
                         <td>
                             <ul>
-                                {% for offer in condition.conditionaloffer_set.all %}
+                                {% for offer in benefit.conditionaloffer_set.all %}
                                     <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                        <td>
-                            <ul>
-                                {% for condition in condition.parent_conditions.all %}
-                                    <li><a href="{% url 'dashboard:condition-update' pk=condition.pk %}">{{ condition.name }}</li>
                                 {% endfor %}
                             </ul>
                         </td>
@@ -82,8 +73,8 @@
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right">
-                                        <li><a class="" href="{% url 'dashboard:condition-update' pk=condition.pk %}">{% trans "Edit" %}</a></li>
-                                        <li><a class="" href="{% url 'dashboard:condition-delete' pk=condition.pk %}">{% trans "Delete" %}</a></li>
+                                        <li><a href="{% url 'dashboard:benefit-update' pk=benefit.pk %}">{% trans "Edit" %}</a></li>
+                                        <li><a href="{% url 'dashboard:benefit-delete' pk=benefit.pk %}">{% trans "Delete" %}</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -92,7 +83,7 @@
                 {% endfor %}
 
             {% else %}
-                <tr><td>{% trans "No conditions found." %}</td></tr>
+                <tr><td>{% trans "No benefits found." %}</td></tr>
             {% endif %}
         </table>
         {% include "dashboard/partials/pagination.html" %}

@@ -8,21 +8,27 @@ Range = get_model('offer', 'Range')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 
 
-@admin.register(Condition)
-class ConditionAdmin(admin.ModelAdmin):
-    list_display = ('type', 'value', 'range')
-
-
 @admin.register(Benefit)
 class BenefitAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'type', 'value', 'range')
+    list_display = ('__str__', 'proxy_class', 'value', 'range')
+
+
+@admin.register(Condition)
+class ConditionAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'proxy_class', 'value', 'range')
+
+
+@admin.register(CompoundCondition)
+class CompoundConditionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'conjunction', 'range')
+    list_filter = ('conjunction', )
+    fields = ('conjunction', 'subconditions')
 
 
 @admin.register(ConditionalOffer)
 class ConditionalOfferAdmin(admin.ModelAdmin):
-    list_display = ('name', 'offer_type', 'start_datetime', 'end_datetime',
-                    'condition', 'benefit', 'total_discount')
-    list_filter = ('offer_type',)
+    list_display = ('name', 'offer_type', 'start_datetime', 'end_datetime', 'condition', 'benefit', 'total_discount')
+    list_filter = ('offer_type', )
     readonly_fields = ('total_discount', 'num_orders')
     fieldsets = (
         (None, {
@@ -33,13 +39,6 @@ class ConditionalOfferAdmin(admin.ModelAdmin):
             'fields': ('total_discount', 'num_orders')
         }),
     )
-
-
-@admin.register(CompoundCondition)
-class CompoundConditionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'conjunction', 'range')
-    list_filter = ('conjunction', )
-    fields = ('conjunction', 'subconditions')
 
 
 admin.site.register(Range)

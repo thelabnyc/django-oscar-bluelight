@@ -7,12 +7,12 @@
 {% block body_class %}{{ block.super }} create-page{% endblock %}
 
 {% block title %}
-    {% if condition.pk %}
-        {{ condition.name }}:
+    {% if benefit.pk %}
+        {{ benefit.name }}:
     {% else %}
-        {% trans "Create new condition" %}:
+        {% trans "Create new benefit" %}:
     {% endif %}
-    {{ title }} | {% trans "Conditions" %} | {{ block.super }}
+    {{ title }} | {% trans "Benefits" %} | {{ block.super }}
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -21,25 +21,25 @@
         <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
     </li>
     <li>
-        <a href="{% url 'dashboard:condition-list' %}">{% trans "Conditions" %}</a>
+        <a href="{% url 'dashboard:benefit-list' %}">{% trans "Benefits" %}</a>
     </li>
-    {% if object.pk %}
+    {% if benefit.pk %}
         <li>
-            <a href="{% url 'dashboard:condition-update' pk=object.pk %}">{{ object.name }}</a>
+            <a href="{% url 'dashboard:benefit-update' pk=benefit.pk %}">{{ benefit.name }}</a>
         </li>
     {% else %}
         <li>
-            {% trans "Create new condition" %}
+            {% trans "Create new benefit" %}
         </li>
     {% endif %}
 </ul>
 {% endblock %}
 
 {% block headertext %}
-    {% if not object.pk %}
-        {% trans "Create new condition" %}
+    {% if not benefit.pk %}
+        {% trans "Create new benefit" %}
     {% else %}
-        {{ object.name }}
+        {{ benefit.name }}
     {% endif %}
 {% endblock %}
 
@@ -80,6 +80,7 @@
 
                         {% include "dashboard/partials/form_field.html" with field=form.proxy_class %}
                         {% include "dashboard/partials/form_field.html" with field=form.value %}
+                        {% include "dashboard/partials/form_field.html" with field=form.max_affected_items %}
                     {% endblock %}
                 </div>
 
@@ -88,22 +89,22 @@
                         <div class="pull-right">
                             <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button>
                         </div>
-                        <a class="btn btn-default" href="{% url 'dashboard:condition-list' %}">{% trans "Cancel" %}</a>
-                        {% if object.pk %}
-                            <a class="btn btn-danger" href="{% url 'dashboard:condition-delete' pk=object.pk %}">{% trans "Delete" %}</a></li>
+                        <a class="btn btn-default" href="{% url 'dashboard:benefit-list' %}">{% trans "Cancel" %}</a>
+                        {% if benefit.pk %}
+                            <a class="btn btn-danger" href="{% url 'dashboard:benefit-delete' pk=benefit.pk %}">{% trans "Delete" %}</a></li>
                         {% endif %}
                     </div>
                 </div>
             </form>
         </div>
-        {% if object.conditionaloffer_set.count %}
+        {% if benefit.conditionaloffer_set.count %}
             <div class="col-md-4">
                 <div class="table-header">
                     <h3>{% trans "Used by Offers" %}</h3>
                 </div>
                 <div class="well">
                     <ul>
-                        {% for offer in object.conditionaloffer_set.all %}
+                        {% for offer in benefit.conditionaloffer_set.all %}
                             <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
                         {% endfor %}
                     </ul>

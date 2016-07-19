@@ -12,17 +12,17 @@ class BaseTest(TestCase):
         basket.add_product(product, quantity=item_quantity)
         return basket
 
-    def _build_offer(self, cond_type, cond_value):
+    def _build_offer(self, cls, cond_value):
         all_products = Range()
         all_products.includes_all_products = True
         all_products.save()
         condition = Condition()
-        condition.type = cond_type
+        condition.proxy_class = cls
         condition.value = cond_value
         condition.range = all_products
         condition.save()
         benefit = Benefit()
-        benefit.type = Benefit.SHIPPING_FIXED_PRICE
+        benefit.proxy_class = 'oscar.apps.offer.benefits.ShippingFixedPriceBenefit'
         benefit.value = 0
         benefit.save()
         offer = ConditionalOffer()
@@ -35,7 +35,7 @@ class BaseTest(TestCase):
 class CountConditionTest(BaseTest):
     def test_consume_items(self):
         basket = self._build_basket()
-        offer = self._build_offer(Condition.COUNT, 2)
+        offer = self._build_offer('oscar.apps.offer.conditions.CountCondition', 2)
 
         line = basket.all_lines()[0]
         self.assertEquals(line.quantity_with_discount, 0)
@@ -66,7 +66,7 @@ class CountConditionTest(BaseTest):
 class ValueConditionTest(BaseTest):
     def test_consume_items(self):
         basket = self._build_basket()
-        offer = self._build_offer(Condition.VALUE, D('15.00'))
+        offer = self._build_offer('oscar.apps.offer.conditions.ValueCondition', D('15.00'))
 
         line = basket.all_lines()[0]
         self.assertEquals(line.quantity_with_discount, 0)
@@ -102,7 +102,7 @@ class CoverageConditionTest(BaseTest):
             create_stockrecord(product, D('10.00'), num_in_stock=10)
             basket.add_product(product, quantity=5)
 
-        offer = self._build_offer(Condition.COVERAGE, 2)
+        offer = self._build_offer('oscar.apps.offer.conditions.CoverageCondition', 2)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
         self.assertEquals(len(affected_lines), 2, 'Consumed 2 lines')
@@ -146,26 +146,26 @@ class CompoundConditionTest(BaseTest):
         all_products.save()
 
         cond_a = Condition()
-        cond_a.type = Condition.VALUE
+        cond_a.proxy_class = 'oscar.apps.offer.conditions.ValueCondition'
         cond_a.value = 10
         cond_a.range = all_products
         cond_a.save()
 
         cond_b = Condition()
-        cond_b.type = Condition.COUNT
+        cond_b.proxy_class = 'oscar.apps.offer.conditions.CountCondition'
         cond_b.value = 2
         cond_b.range = all_products
         cond_b.save()
 
         condition = CompoundCondition()
-        condition.type = Condition.COMPOUND
+        condition.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
         condition.conjunction = conjunction
         condition.save()
         condition.subconditions = [cond_a, cond_b]
         condition.save()
 
         benefit = Benefit()
-        benefit.type = Benefit.SHIPPING_FIXED_PRICE
+        benefit.proxy_class = 'oscar.apps.offer.benefits.ShippingFixedPriceBenefit'
         benefit.value = 0
         benefit.save()
 
@@ -180,8 +180,8 @@ class CompoundConditionTest(BaseTest):
         offer = self._build_offer()
         c = offer.condition.proxy()
         self.assertEqual(len(c.children), 2)
-        self.assertEqual(c.children[0].type, Condition.VALUE)
-        self.assertEqual(c.children[1].type, Condition.COUNT)
+        self.assertEqual(c.children[0].proxy_class, 'oscar.apps.offer.conditions.ValueCondition')
+        self.assertEqual(c.children[1].proxy_class, 'oscar.apps.offer.conditions.CountCondition')
 
     def test_name_and(self):
         offer = self._build_offer(CompoundCondition.AND)

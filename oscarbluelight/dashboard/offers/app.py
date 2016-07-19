@@ -4,6 +4,11 @@ from oscar.core.loading import get_class
 
 
 class OffersDashboardApplication(Application):
+    benefit_list_view = get_class('dashboard.offers.views', 'BenefitListView')
+    benefit_delete_view = get_class('dashboard.offers.views', 'BenefitDeleteView')
+    benefit_create_view = get_class('dashboard.offers.views', 'BenefitCreateView')
+    benefit_update_view = get_class('dashboard.offers.views', 'BenefitUpdateView')
+
     condition_list_view = get_class('dashboard.offers.views', 'ConditionListView')
     condition_delete_view = get_class('dashboard.offers.views', 'ConditionDeleteView')
     condition_create_view = get_class('dashboard.offers.views', 'ConditionCreateView')
@@ -13,6 +18,12 @@ class OffersDashboardApplication(Application):
     def get_urls(self):
         base_urls = super().get_urls()
         custom_urls = [
+            # Conditions
+            url(r'^benefits/$', self.benefit_list_view.as_view(), name='benefit-list'),
+            url(r'^benefits/new/$', self.benefit_create_view.as_view(), name='benefit-create'),
+            url(r'^benefits/(?P<pk>[0-9]+)/$', self.benefit_update_view.as_view(), name='benefit-update'),
+            url(r'^benefits/(?P<pk>[0-9]+)/delete/$', self.benefit_delete_view.as_view(), name='benefit-delete'),
+
             # Conditions
             url(r'^conditions/$', self.condition_list_view.as_view(), name='condition-list'),
             url(r'^conditions/new/$', self.condition_create_view.as_view(), name='condition-create'),

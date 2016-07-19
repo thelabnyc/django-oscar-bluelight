@@ -1,0 +1,46 @@
+{% extends 'dashboard/layout.html' %}
+{% load i18n %}
+
+{% block body_class %}{{ block.super }} create-page{% endblock %}
+
+{% block title %}
+    {% trans "Delete benefit" %} | {% trans "Benefits" %} | {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
+        </li>
+        <li>
+            <a href="{% url 'dashboard:benefit-list' %}">{% trans "Benefits" %}</a>
+        </li>
+        <li>
+            <a href="{% url 'dashboard:benefit-update' pk=object.pk %}">'{{ object.name }}'</a>
+        </li>
+        <li class="active">{% trans "Delete?" %}</li>
+    </ul>
+{% endblock %}
+
+{% block headertext %}
+    {{ object.name }}
+{% endblock %}
+
+{% block dashboard_content %}
+    <form action="." method="post">
+        {% csrf_token %}
+        <p>{% trans "Are you sure you want to delete this benefit?" %}</p>
+        {% if object.conditionaloffer_set.count %}
+            <p>{% trans "Deleting this benefit will also delete the following offers:" %}</p>
+            <ul>
+                {% for offer in object.conditionaloffer_set.all %}
+                    <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div class="form-actions">
+            <button class="btn btn-lg btn-danger" type="submit" data-loading-text="{% trans 'Deleting...' %}">{% trans "Delete" %}</button> {% trans "or" %}
+            <a href="{% url 'dashboard:benefit-list' %}">{% trans "cancel" %}</a>
+        </div>
+    </form>
+{% endblock dashboard_content %}

@@ -63,6 +63,7 @@ class Voucher(AbstractVoucher):
             children.append(child)
         return children
 
+
     @transaction.atomic()
     def save(self, *args, **kwargs):
         rc = super().save(*args, **kwargs)
@@ -70,6 +71,19 @@ class Voucher(AbstractVoucher):
         # hanging for too long if there are a lot of codes.
         for child in self.children.all():
             self._update_child(child)
+        return rc
+
+
+    @transaction.atomic()
+    def delete(self, *args, **kwargs):
+        offers = self.offers.all()
+        rc = super().delete(*args, **kwargs)
+        for offer in offers:
+            # Delete the benefit and offer, since they're auto created
+            condition = offer.condition
+            offer.delete()
+            if condition.conditionaloffer_set.count() == 0:
+                condition.delete()
         return rc
 
 
