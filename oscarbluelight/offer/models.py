@@ -1,3 +1,5 @@
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
     AbstractCondition,
@@ -23,7 +25,20 @@ __all__ = [
 
 
 class ConditionalOffer(AbstractConditionalOffer):
-    pass
+    # When offer_type == "User", we use groups to determine which users get the offer
+    groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
+
+
+    def availability_restrictions(self):
+        restrictions = super().availability_restrictions()
+        if self.offer_type == self.USER:
+            restrictions.append({
+                'description': _("Offer is limited to user groups: %s") % ', '.join(g.name for g in self.groups.all()),
+                'is_satisfied': True,
+            })
+        return restrictions
+
+
 __all__.append('ConditionalOffer')
 
 

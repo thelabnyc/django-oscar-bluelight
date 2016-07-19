@@ -1,7 +1,13 @@
 from django import forms
-from oscar.apps.dashboard.offers.forms import ConditionForm as BaseConditionForm
+from django.contrib.auth.models import Group
+from django.utils.translation import ugettext_lazy as _
+from oscar.apps.dashboard.offers.forms import (
+    ConditionForm as BaseConditionForm,
+    RestrictionsForm as BaseRestrictionsForm,
+)
 from oscar.core.loading import get_model
 
+ConditionalOffer = get_model('offer', 'ConditionalOffer')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
@@ -44,3 +50,28 @@ class CompoundConditionForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         self.instance.type = Condition.COMPOUND
         return super().save(*args, **kwargs)
+
+
+class RestrictionsForm(BaseRestrictionsForm):
+    limit_by_group = forms.BooleanField(
+        label=_("Limit offer to selected user groups"),
+        required=False)
+    groups = forms.ModelMultipleChoiceField(
+        label=_("User Groups"),
+        queryset=Group.objects.get_queryset(),
+        help_text=_("Which user groups will be able to apply this offer?"),
+        required=False)
+
+    class Meta:
+        model = ConditionalOffer
+        fields = ('start_datetime', 'end_datetime',
+                  'limit_by_group', 'groups',
+                  'max_basket_applications', 'max_user_applications',
+                  'max_global_applications', 'max_discount')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data['limit_by_group'] = cleaned_data.get('limit_by_group', False)
+        if not cleaned_data['limit_by_group']:
+            cleaned_data['groups'] = []
+        return cleaned_data
