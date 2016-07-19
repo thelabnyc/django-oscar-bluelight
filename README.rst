@@ -47,7 +47,7 @@ Install `django-oscar-bluelight`.::
 Import Bluelight's settings into your projects `settings.py` file.::
 
     from oscar.defaults import *
-    from oscarbluelight.defaults import OSCAR_DASHBOARD_NAVIGATION # Needed so that Bluelight's views show up in the dashboard
+    from oscarbluelight.defaults import *  # NOQA # Needed so that Bluelight's views show up in the dashboard
     from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
     from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
 
@@ -86,6 +86,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 
 Changelog
 =========
+
+0.3.0
+------------------
+- Makes it possible to selectively apply offers to specific groups of users (using django.auth.contrib.models.Group).
+- Adds custom dashboard screens for managing offer / voucher benefits.
 
 0.2.2
 ------------------
