@@ -54,7 +54,7 @@
                 </tr>
                 {% for benefit in benefits %}
                     <tr>
-                        <td><a href="">{{ benefit.name }}</a></td>
+                        <td><a href="{% url 'dashboard:benefit-update' pk=benefit.pk %}">{{ benefit.name }}</a></td>
                         <td>{{ benefit.range.name|default:"-" }}</td>
                         <td>{{ benefit.type_name|default:"-" }}</td>
                         <td>{{ benefit.value|default:"-" }}</td>
