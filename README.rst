@@ -87,6 +87,12 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.3.1
+------------------
+- Use correct transaction.atomic syntax in voucher creation.
+- Fix validation of voucher name and code when child codes exist.
+- Set max_length to 128 on name field of voucher form, to match model.
+
 0.3.0
 ------------------
 - Makes it possible to selectively apply offers to specific groups of users (using django.auth.contrib.models.Group).
