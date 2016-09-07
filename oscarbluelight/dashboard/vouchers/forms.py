@@ -13,7 +13,7 @@ MAX_CHILDREN_CREATE = 1000
 
 class VoucherForm(forms.Form):
     name = forms.CharField(
-        label=_("Name"))
+        label=_("Name"), max_length=128)
     description = forms.CharField(
         label=_("Description"),
         widget=forms.Textarea,
