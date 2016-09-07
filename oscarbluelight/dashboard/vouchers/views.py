@@ -39,7 +39,7 @@ class VoucherListView(DefaultVoucherListView):
 class VoucherCreateView(DefaultVoucherCreateView):
     form_class = VoucherForm
 
-    @transaction.atomic()
+    @transaction.atomic
     def form_valid(self, form):
         # Create offer and benefit
         benefit = form.cleaned_data['benefit']
@@ -106,7 +106,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         }
         return initial
 
-    @transaction.atomic()
+    @transaction.atomic
     def form_valid(self, form):
         voucher = self.get_voucher()
         voucher.name = form.cleaned_data['name']
@@ -142,7 +142,7 @@ class AddChildCodesView(generic.FormView):
         ctx['voucher'] = self.get_voucher()
         return ctx
 
-    @transaction.atomic()
+    @transaction.atomic
     def form_valid(self, form):
         voucher = self.get_voucher()
         # TODO: This should probably be asynchronous, via Celery or something, to prevent
