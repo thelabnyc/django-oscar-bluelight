@@ -88,10 +88,16 @@ class Voucher(AbstractVoucher):
         return rc
 
 
-    def record_usage(self, *args, **kwargs):
+    def record_usage(self, order, user, *args, **kwargs):
         if self.parent:
-            self.parent.record_usage(*args, **kwargs)
-        return super().record_usage(*args, **kwargs)
+            if user.is_authenticated():
+                self.parent.applications.create(voucher=self.parent, order=order, user=user)
+            else:
+                self.parent.applications.create(voucher=self.parent, order=order)
+            self.parent.num_orders += 1
+            self.parent.save(update_children=False)
+
+        return super().record_usage(order, user, *args, **kwargs)
     record_usage.alters_data = True
 
 
