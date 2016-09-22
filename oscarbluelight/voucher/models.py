@@ -65,12 +65,13 @@ class Voucher(AbstractVoucher):
 
 
     @transaction.atomic()
-    def save(self, *args, **kwargs):
+    def save(self, update_children=True, *args, **kwargs):
         rc = super().save(*args, **kwargs)
         # TODO: This should probably be asynchronous, via Celery or something, to prevent
         # hanging for too long if there are a lot of codes.
-        for child in self.children.all():
-            self._update_child(child)
+        if update_children:
+            for child in self.children.all():
+                self._update_child(child)
         return rc
 
 
@@ -94,10 +95,14 @@ class Voucher(AbstractVoucher):
     record_usage.alters_data = True
 
 
-    def record_discount(self, *args, **kwargs):
+    def record_discount(self, discount, *args, **kwargs):
+        """ Extends parent class to record discount on the parent Voucher
+        Ensures that parent save does not save it's children which would cause
+        excessive writes. """
         if self.parent:
-            self.parent.record_discount(*args, **kwargs)
-        return super().record_discount(*args, **kwargs)
+            self.parent.total_discount += discount['discount']
+            self.parent.save(update_children=False)
+        return super().record_discount(discount, *args, **kwargs)
     record_discount.alters_data = True
 
 

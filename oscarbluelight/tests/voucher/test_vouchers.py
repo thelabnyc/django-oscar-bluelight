@@ -269,7 +269,39 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(c1.applications.first().order, order)
         self.assertEqual(p.applications.first().user, user)
         self.assertEqual(c1.applications.first().user, user)
+    
+    def test_no_excessive_saving(self):
+        """ Ensure that record usage does not trigger excessive db writes on
+        all siblings """
+        p = Voucher.objects.create(
+            name='Test Voucher',
+            code='test-voucher',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False)
+        c1 = Voucher.objects.create(
+            parent=p,
+            name='Test Voucher',
+            code='test-voucher-x',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False)
+        
+        # These vouchers shouldn't save
+        for i in range(5):
+            Voucher.objects.create(
+                parent=p,
+                name='Test Voucher',
+                code='test-voucher-{}'.format(i),
+                usage=Voucher.MULTI_USE,
+                start_datetime=datetime.now(),
+                end_datetime=datetime.now(),
+                limit_usage_by_group=False)
 
+        with self.assertNumQueries(7):
+            c1.record_discount({"discount": 5})
 
     def test_record_discount(self):
         p = Voucher.objects.create(
