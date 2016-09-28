@@ -300,7 +300,7 @@ class ParentChildVoucherTest(TestCase):
                 end_datetime=datetime.now(),
                 limit_usage_by_group=False)
 
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(10):
             c1.record_discount({"discount": 5})
 
     def test_record_discount(self):

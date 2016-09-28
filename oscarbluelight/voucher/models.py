@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.voucher.abstract_models import AbstractVoucher
+from . import tasks
 import time
 
 
@@ -50,7 +51,7 @@ class Voucher(AbstractVoucher):
         return super().is_available_to_user(user)
 
 
-    @transaction.atomic()
+    @transaction.atomic
     def create_children(self, count):
         if self.parent is not None:
             raise RuntimeError('Can not create children for a child voucher. Nesting should only be 1 level.')
@@ -64,18 +65,21 @@ class Voucher(AbstractVoucher):
         return children
 
 
-    @transaction.atomic()
+    @transaction.atomic
+    def update_children(self):
+        for child in self.children.all():
+            self._update_child(child)
+
+
+    @transaction.atomic
     def save(self, update_children=True, *args, **kwargs):
         rc = super().save(*args, **kwargs)
-        # TODO: This should probably be asynchronous, via Celery or something, to prevent
-        # hanging for too long if there are a lot of codes.
         if update_children:
-            for child in self.children.all():
-                self._update_child(child)
+            tasks.update_child_vouchers.apply_async(args=(self.id, ), countdown=10)
         return rc
 
 
-    @transaction.atomic()
+    @transaction.atomic
     def delete(self, *args, **kwargs):
         offers = self.offers.all()
         rc = super().delete(*args, **kwargs)

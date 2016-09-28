@@ -24,6 +24,7 @@ setup_requires = [
 ]
 
 requires = [
+    'celery>=3.1.23',
     'Django>=1.9.6',
     'django-oscar>=1.2.1',
 ]
