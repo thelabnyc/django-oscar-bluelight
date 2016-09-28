@@ -64,6 +64,16 @@ class Benefit(AbstractBenefit):
         names = dict(benefit_classes)
         return names.get(self.proxy_class, self.proxy_class)
 
+    @property
+    def offers(self):
+        return self.conditionaloffer_set.exclude(offer_type=ConditionalOffer.VOUCHER).all()
+
+    @property
+    def vouchers(self):
+        for offer in self.conditionaloffer_set.filter(offer_type=ConditionalOffer.VOUCHER).all():
+            for voucher in offer.vouchers.filter(parent=None).all():
+                yield voucher
+
 
 class Condition(AbstractCondition):
     def proxy(self):
@@ -78,6 +88,17 @@ class Condition(AbstractCondition):
         names = dict(condition_classes)
         names['oscarbluelight.offer.conditions.CompoundCondition'] = _("Compound condition")
         return names.get(self.proxy_class, self.proxy_class)
+
+    @property
+    def offers(self):
+        return self.conditionaloffer_set.exclude(offer_type=ConditionalOffer.VOUCHER).all()
+
+    @property
+    def vouchers(self):
+        for offer in self.conditionaloffer_set.filter(offer_type=ConditionalOffer.VOUCHER).all():
+            for voucher in offer.vouchers.filter(parent=None).all():
+                yield voucher
+
 
 # Make proxy_class field not unique.
 Condition._meta.get_field('proxy_class')._unique = False
