@@ -87,6 +87,16 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.4.0
+------------------
+- Dashboard:
+    - Separate vouchers form offers in benefits and conditions lists
+    - Add condition field to voucher form. Allows creating more complex vouchers, such as those that require specific items in the basket.
+    - Add priority field to vouchers and offers forms. Display priority field in detail and list fields.
+    - Add offer restrictions fields to voucher form.
+- Performance:
+    - Move child code updating to Celery.
+
 0.3.1
 ------------------
 - Use correct transaction.atomic syntax in voucher creation.
