@@ -95,7 +95,7 @@ Changelog
     - Add priority field to vouchers and offers forms. Display priority field in detail and list fields.
     - Add offer restrictions fields to voucher form.
 - Performance:
-    - Move child code updating to Celery.
+    - Move child code creation and updating background task with Celery.
 
 0.3.1
 ------------------

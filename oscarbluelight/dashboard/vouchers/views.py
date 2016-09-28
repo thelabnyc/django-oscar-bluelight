@@ -12,6 +12,7 @@ from oscar.apps.dashboard.vouchers.views import (
     VoucherStatsView as DefaultVoucherStatsView,
     VoucherUpdateView as DefaultVoucherUpdateView
 )
+from oscarbluelight.voucher import tasks
 import csv
 import re
 
@@ -39,44 +40,43 @@ class VoucherListView(DefaultVoucherListView):
 class VoucherCreateView(DefaultVoucherCreateView):
     form_class = VoucherForm
 
-    @transaction.atomic
     def form_valid(self, form):
-        # Create offer and benefit
-        benefit = form.cleaned_data['benefit']
-        condition = form.cleaned_data['condition']
-        if not condition:
-            condition = Condition.objects.create(
-                range=benefit.range,
-                proxy_class='oscar.apps.offer.conditions.CountCondition',
-                value=1)
-        name = form.cleaned_data['name']
-        offer = ConditionalOffer.objects.create(
-            name=_("Offer for voucher '%s'") % name,
-            description=form.cleaned_data['description'],
-            offer_type=ConditionalOffer.VOUCHER,
-            benefit=benefit,
-            condition=condition,
-            priority=form.cleaned_data['priority'],
-            max_global_applications=form.cleaned_data['max_global_applications'],
-            max_user_applications=form.cleaned_data['max_user_applications'],
-            max_basket_applications=form.cleaned_data['max_basket_applications'],
-            max_discount=form.cleaned_data['max_discount'])
-        voucher = Voucher.objects.create(
-            name=name,
-            code=form.cleaned_data['code'],
-            usage=form.cleaned_data['usage'],
-            start_datetime=form.cleaned_data['start_datetime'],
-            end_datetime=form.cleaned_data['end_datetime'],
-            limit_usage_by_group=form.cleaned_data['limit_usage_by_group'])
-        voucher.groups = form.cleaned_data['groups']
-        voucher.save()
-        voucher.offers.add(offer)
+        with transaction.atomic():
+            # Create offer and benefit
+            benefit = form.cleaned_data['benefit']
+            condition = form.cleaned_data['condition']
+            if not condition:
+                condition = Condition.objects.create(
+                    range=benefit.range,
+                    proxy_class='oscar.apps.offer.conditions.CountCondition',
+                    value=1)
+            name = form.cleaned_data['name']
+            offer = ConditionalOffer.objects.create(
+                name=_("Offer for voucher '%s'") % name,
+                description=form.cleaned_data['description'],
+                offer_type=ConditionalOffer.VOUCHER,
+                benefit=benefit,
+                condition=condition,
+                priority=form.cleaned_data['priority'],
+                max_global_applications=form.cleaned_data['max_global_applications'],
+                max_user_applications=form.cleaned_data['max_user_applications'],
+                max_basket_applications=form.cleaned_data['max_basket_applications'],
+                max_discount=form.cleaned_data['max_discount'])
+            voucher = Voucher.objects.create(
+                name=name,
+                code=form.cleaned_data['code'],
+                usage=form.cleaned_data['usage'],
+                start_datetime=form.cleaned_data['start_datetime'],
+                end_datetime=form.cleaned_data['end_datetime'],
+                limit_usage_by_group=form.cleaned_data['limit_usage_by_group'])
+            voucher.groups = form.cleaned_data['groups']
+            voucher.save()
+            voucher.offers.add(offer)
 
         # Create child codes
         if form.cleaned_data['create_children']:
-            # TODO: This should probably be asynchronous, via Celery or something, to prevent
-            # hanging for too long if there are a lot of codes.
-            voucher.create_children( form.cleaned_data['child_count'] )
+            tasks.add_child_codes.apply_async(args=(voucher.pk, form.cleaned_data['child_count']), countdown=1)
+            messages.success(self.request, _("Creating %s child codes…") % form.cleaned_data['child_count'])
 
         return HttpResponseRedirect(self.get_success_url())
 
@@ -173,11 +173,8 @@ class AddChildCodesView(generic.FormView):
     @transaction.atomic
     def form_valid(self, form):
         voucher = self.get_voucher()
-        # TODO: This should probably be asynchronous, via Celery or something, to prevent
-        # hanging for too long if there are a lot of codes.
-        voucher.create_children( form.cleaned_data['child_count'] )
-        voucher.save()
-        messages.success(self.request, _("Created %s child codes") % form.cleaned_data['child_count'])
+        tasks.add_child_codes.apply_async(args=(voucher.pk, form.cleaned_data['child_count']), countdown=1)
+        messages.success(self.request, _("Creating %s child codes…") % form.cleaned_data['child_count'])
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
