@@ -51,6 +51,7 @@
                     <th>{% trans 'Type' %}</th>
                     <th>{% trans 'Value' %}</th>
                     <th>{% trans 'Used by Offers' %}</th>
+                    <th>{% trans 'Used by Vouchers' %}</th>
                     <th>{% trans 'Used by Conditions' %}</th>
                     <th></th>
                 </tr>
@@ -62,8 +63,15 @@
                         <td>{{ condition.value|default:"-" }}</td>
                         <td>
                             <ul>
-                                {% for offer in condition.conditionaloffer_set.all %}
+                                {% for offer in condition.offers %}
                                     <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for voucher in condition.vouchers %}
+                                    <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</li>
                                 {% endfor %}
                             </ul>
                         </td>
