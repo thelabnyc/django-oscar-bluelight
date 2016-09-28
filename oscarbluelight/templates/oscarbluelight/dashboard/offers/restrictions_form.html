@@ -1,0 +1,15 @@
+{% extends 'oscar/dashboard/offers/restrictions_form.html' %}
+
+{% block extrascripts %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        var groupCheckbox = $('#id_limit_by_group'),
+            groupSelect = $('#id_groups');
+
+        groupSelect.prop("disabled", !groupCheckbox.get(0).checked);
+        groupCheckbox.on('change', function() {
+            groupSelect.prop("disabled", !this.checked);
+        });
+    </script>
+{% endblock %}

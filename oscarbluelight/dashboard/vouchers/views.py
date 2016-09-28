@@ -53,7 +53,11 @@ class VoucherCreateView(DefaultVoucherCreateView):
             description=form.cleaned_data['description'],
             offer_type=ConditionalOffer.VOUCHER,
             benefit=benefit,
-            condition=condition)
+            condition=condition,
+            max_global_applications=form.cleaned_data['max_global_applications'],
+            max_user_applications=form.cleaned_data['max_user_applications'],
+            max_basket_applications=form.cleaned_data['max_basket_applications'],
+            max_discount=form.cleaned_data['max_discount'])
         voucher = Voucher.objects.create(
             name=name,
             code=form.cleaned_data['code'],
@@ -101,6 +105,10 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
             'usage': voucher.usage,
             'limit_usage_by_group': voucher.limit_usage_by_group,
             'groups': voucher.groups.all(),
+            'max_global_applications': offer.max_global_applications,
+            'max_user_applications': offer.max_user_applications,
+            'max_basket_applications': offer.max_basket_applications,
+            'max_discount': offer.max_discount,
             'benefit': benefit,
             'description': offer.description,
         }
@@ -121,6 +129,10 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer = voucher.offers.all()[0]
         offer.description = form.cleaned_data['description']
         offer.benefit = form.cleaned_data['benefit']
+        offer.max_global_applications = form.cleaned_data['max_global_applications']
+        offer.max_user_applications = form.cleaned_data['max_user_applications']
+        offer.max_basket_applications = form.cleaned_data['max_basket_applications']
+        offer.max_discount = form.cleaned_data['max_discount']
         offer.save()
 
         offer.condition.range = offer.benefit.range

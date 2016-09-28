@@ -43,11 +43,28 @@ class VoucherForm(forms.Form):
         required=False)
     groups = forms.ModelMultipleChoiceField(
         label=_('User Group Whitelist'),
+        help_text=_("Which user groups will be able to apply this offer?"),
         queryset=Group.objects.order_by('name'),
         required=False)
     benefit = forms.ModelChoiceField(
         label=_('Incentive'),
         queryset=Benefit.objects.get_queryset())
+    max_global_applications = forms.IntegerField(
+        label=_("Max global applications"),
+        min_value=0, required=False,
+        help_text=_("The number of times this offer can be used before it is unavailable"))
+    max_user_applications = forms.IntegerField(
+        label=_("Max user applications"),
+        min_value=0, required=False,
+        help_text=_("The number of times a single user can use this offer"))
+    max_basket_applications = forms.IntegerField(
+        label=_("Max basket applications"),
+        min_value=0, required=False,
+        help_text=_("The number of times this offer can be applied to a basket (and order)"))
+    max_discount = forms.DecimalField(
+        label=_("Max discount"),
+        min_value=0, decimal_places=2, max_digits=12, required=False,
+        help_text=_("When an offer has given more discount to orders than this threshold, then the offer becomes unavailable"))
 
     def __init__(self, voucher=None, *args, **kwargs):
         self.voucher = voucher
