@@ -31,6 +31,21 @@
 
                 <div class="table-header">
                     <h2><i class="icon-gift icon-large"></i>
+                        {% trans "Condition" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "dashboard/partials/form_field.html" with field=form.condition %}
+                    <p>
+                        {% url 'dashboard:condition-list' as condition_list_url %}
+                        {% blocktrans %}
+                        Conditions can be created and edited from within the <a href="{{ condition_list_url }}">condition dashboard</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+
+                <div class="table-header">
+                    <h2><i class="icon-gift icon-large"></i>
                         {% trans "Reward" %}
                     </h2>
                 </div>

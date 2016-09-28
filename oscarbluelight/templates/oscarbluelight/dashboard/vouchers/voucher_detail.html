@@ -64,6 +64,11 @@
                 <td></td>
             </tr>
             <tr>
+                <th>{% trans "Condition" %}</th>
+                <td>{{ voucher.condition.description|safe }}</td>
+                <td></td>
+            </tr>
+            <tr>
                 <th>{% trans "Discount" %}</th>
                 <td>{{ voucher.benefit.description|safe }}</td>
                 <td></td>

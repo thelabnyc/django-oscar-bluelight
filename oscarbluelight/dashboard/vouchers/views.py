@@ -43,10 +43,12 @@ class VoucherCreateView(DefaultVoucherCreateView):
     def form_valid(self, form):
         # Create offer and benefit
         benefit = form.cleaned_data['benefit']
-        condition = Condition.objects.create(
-            range=benefit.range,
-            proxy_class='oscar.apps.offer.conditions.CountCondition',
-            value=1)
+        condition = form.cleaned_data['condition']
+        if not condition:
+            condition = Condition.objects.create(
+                range=benefit.range,
+                proxy_class='oscar.apps.offer.conditions.CountCondition',
+                value=1)
         name = form.cleaned_data['name']
         offer = ConditionalOffer.objects.create(
             name=_("Offer for voucher '%s'") % name,
@@ -96,8 +98,9 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
 
     def get_initial(self):
         voucher = self.get_voucher()
-        offer = voucher.offers.all()[0]
+        offer = voucher.offers.first()
         benefit = offer.benefit
+        condition = offer.condition
         initial = {
             'name': voucher.name,
             'code': voucher.code,
@@ -111,6 +114,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
             'max_user_applications': offer.max_user_applications,
             'max_basket_applications': offer.max_basket_applications,
             'max_discount': offer.max_discount,
+            'condition': condition,
             'benefit': benefit,
             'description': offer.description,
         }
@@ -128,9 +132,18 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         voucher.groups = form.cleaned_data['groups']
         voucher.save()
 
+        benefit = form.cleaned_data['benefit']
+        condition = form.cleaned_data['condition']
+        if not condition:
+            condition = Condition.objects.create(
+                range=benefit.range,
+                proxy_class='oscar.apps.offer.conditions.CountCondition',
+                value=1)
+
         offer = voucher.offers.all()[0]
         offer.description = form.cleaned_data['description']
-        offer.benefit = form.cleaned_data['benefit']
+        offer.condition = condition
+        offer.benefit = benefit
         offer.priority = form.cleaned_data['priority']
         offer.max_global_applications = form.cleaned_data['max_global_applications']
         offer.max_user_applications = form.cleaned_data['max_user_applications']

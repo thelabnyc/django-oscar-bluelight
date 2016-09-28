@@ -6,6 +6,7 @@ from oscar.forms import widgets
 
 Voucher = get_model('voucher', 'Voucher')
 Benefit = get_model('offer', 'Benefit')
+Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
 
 MAX_CHILDREN_CREATE = 1000
@@ -50,8 +51,14 @@ class VoucherForm(forms.Form):
         help_text=_("Which user groups will be able to apply this offer?"),
         queryset=Group.objects.order_by('name'),
         required=False)
+    condition = forms.ModelChoiceField(
+        label=_('Condition'),
+        help_text=_("In addition to entering the voucher code, what precondition (if any) must be met before this voucher is applied?"),
+        queryset=Condition.objects.get_queryset(),
+        required=False)
     benefit = forms.ModelChoiceField(
         label=_('Incentive'),
+        help_text=_("What benefit should be given to the customer as a result of this voucher code?"),
         queryset=Benefit.objects.get_queryset())
     max_global_applications = forms.IntegerField(
         label=_("Max global applications"),

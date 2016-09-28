@@ -36,6 +36,11 @@ class Voucher(AbstractVoucher):
         return self.offers.first().priority
 
 
+    @property
+    def condition(self):
+        return self.offers.all()[0].condition
+
+
     def is_available_to_user(self, user=None):
         # Parent vouchers can not be used directly
         if self.children.exists():
