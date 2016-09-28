@@ -2,7 +2,10 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
-from oscar.apps.dashboard.offers.forms import RestrictionsForm as BaseRestrictionsForm
+from oscar.apps.dashboard.offers.forms import (
+    MetaDataForm as BaseMetaDataForm,
+    RestrictionsForm as BaseRestrictionsForm,
+)
 from oscar.core.loading import get_model
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
@@ -18,6 +21,11 @@ class BenefitSearchForm(forms.Form):
 
 class ConditionSearchForm(forms.Form):
     range = forms.ModelChoiceField(required=False, queryset=Range.objects.order_by('name'))
+
+
+class MetaDataForm(BaseMetaDataForm):
+    class Meta(BaseMetaDataForm.Meta):
+        fields = BaseMetaDataForm.Meta.fields + ('priority', )
 
 
 class BenefitForm(forms.ModelForm):

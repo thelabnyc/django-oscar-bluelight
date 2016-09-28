@@ -35,6 +35,10 @@ class VoucherForm(forms.Form):
     end_datetime = forms.DateTimeField(
         label=_("End datetime"),
         widget=widgets.DateTimePickerInput())
+    priority = forms.IntegerField(
+        label=_("Priority"),
+        initial=0, min_value=0,
+        help_text=_("The highest priority vouchers are applied first"))
     usage = forms.ChoiceField(
         label=_("Usage"),
         choices=Voucher.USAGE_CHOICES)

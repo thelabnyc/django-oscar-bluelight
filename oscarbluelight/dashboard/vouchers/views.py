@@ -54,6 +54,7 @@ class VoucherCreateView(DefaultVoucherCreateView):
             offer_type=ConditionalOffer.VOUCHER,
             benefit=benefit,
             condition=condition,
+            priority=form.cleaned_data['priority'],
             max_global_applications=form.cleaned_data['max_global_applications'],
             max_user_applications=form.cleaned_data['max_user_applications'],
             max_basket_applications=form.cleaned_data['max_basket_applications'],
@@ -100,6 +101,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         initial = {
             'name': voucher.name,
             'code': voucher.code,
+            'priority': voucher.priority,
             'start_datetime': voucher.start_datetime,
             'end_datetime': voucher.end_datetime,
             'usage': voucher.usage,
@@ -129,6 +131,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer = voucher.offers.all()[0]
         offer.description = form.cleaned_data['description']
         offer.benefit = form.cleaned_data['benefit']
+        offer.priority = form.cleaned_data['priority']
         offer.max_global_applications = form.cleaned_data['max_global_applications']
         offer.max_user_applications = form.cleaned_data['max_user_applications']
         offer.max_basket_applications = form.cleaned_data['max_basket_applications']
