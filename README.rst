@@ -87,6 +87,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.4.1
+------------------
+- Fixed several exceptions throw in dashboard views when a voucher had no offers linked to it.
+
 0.4.0
 ------------------
 - Dashboard:

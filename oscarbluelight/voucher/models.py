@@ -33,12 +33,20 @@ class Voucher(AbstractVoucher):
 
     @property
     def priority(self):
-        return self.offers.first().priority
+        offer = self.offers.first()
+        return offer.priority if offer else 0
 
 
     @property
     def condition(self):
-        return self.offers.all()[0].condition
+        offer = self.offers.first()
+        return offer.condition if offer else None
+
+
+    @property
+    def benefit(self):
+        offer = self.offers.first()
+        return offer.benefit if offer else None
 
 
     def is_available_to_user(self, user=None):

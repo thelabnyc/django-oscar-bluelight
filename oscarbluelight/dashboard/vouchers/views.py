@@ -98,9 +98,6 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
 
     def get_initial(self):
         voucher = self.get_voucher()
-        offer = voucher.offers.first()
-        benefit = offer.benefit
-        condition = offer.condition
         initial = {
             'name': voucher.name,
             'code': voucher.code,
@@ -110,14 +107,18 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
             'usage': voucher.usage,
             'limit_usage_by_group': voucher.limit_usage_by_group,
             'groups': voucher.groups.all(),
-            'max_global_applications': offer.max_global_applications,
-            'max_user_applications': offer.max_user_applications,
-            'max_basket_applications': offer.max_basket_applications,
-            'max_discount': offer.max_discount,
-            'condition': condition,
-            'benefit': benefit,
-            'description': offer.description,
         }
+
+        offer = voucher.offers.first()
+        if offer:
+            initial['max_global_applications'] = offer.max_global_applications
+            initial['max_user_applications'] = offer.max_user_applications
+            initial['max_basket_applications'] = offer.max_basket_applications
+            initial['max_discount'] = offer.max_discount
+            initial['condition'] = offer.condition
+            initial['benefit'] = offer.benefit
+            initial['description'] = offer.description
+
         return initial
 
     @transaction.atomic
@@ -140,7 +141,9 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
                 proxy_class='oscar.apps.offer.conditions.CountCondition',
                 value=1)
 
-        offer = voucher.offers.all()[0]
+        offer = voucher.offers.first()
+        if not offer:
+            offer = ConditionalOffer(name=_("Offer for voucher '%s'") % voucher.name, offer_type=ConditionalOffer.VOUCHER)
         offer.description = form.cleaned_data['description']
         offer.condition = condition
         offer.benefit = benefit
@@ -153,6 +156,8 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
 
         offer.condition.range = offer.benefit.range
         offer.condition.save()
+
+        voucher.offers.add(offer)
 
         return HttpResponseRedirect(self.get_success_url())
 
