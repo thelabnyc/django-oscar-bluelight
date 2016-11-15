@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core import exceptions
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -117,12 +117,12 @@ class Condition(AbstractCondition):
             return cleaner()
 
 
-# Make proxy_class field not unique.
-Condition._meta.get_field('proxy_class')._unique = False
-
-
 class Range(AbstractRange):
-    pass
+    def delete(self, *args, **kwargs):
+        # Disallow deleting a range with any dependents
+        if self.benefit_set.exists() or self.condition_set.exists():
+            raise IntegrityError('Can not delete range with a dependent benefit or condition.')
+        return super().delete(*args, **kwargs)
 
 
 class RangeProduct(AbstractRangeProduct):
@@ -131,6 +131,10 @@ class RangeProduct(AbstractRangeProduct):
 
 class RangeProductFileUpload(AbstractRangeProductFileUpload):
     pass
+
+
+# Make proxy_class field not unique.
+Condition._meta.get_field('proxy_class')._unique = False
 
 
 __all__ = [

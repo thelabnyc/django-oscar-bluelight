@@ -96,6 +96,7 @@ Changelog
     - Uses the benefit's assigned range instead of the condition's range.
     - Respects the ``max_affected_items`` setting.
 - Improved dashboard form validation using polymorphic ``_clean`` methods on benefits and conditions.
+- Disallow deleting a range when a benefit or a condition depends on it.
 
 0.4.1
 ------------------
