@@ -48,7 +48,7 @@ class VoucherCreateView(DefaultVoucherCreateView):
             if not condition:
                 condition = Condition.objects.create(
                     range=benefit.range,
-                    proxy_class='oscar.apps.offer.conditions.CountCondition',
+                    proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
                     value=1)
             name = form.cleaned_data['name']
             offer = ConditionalOffer.objects.create(
@@ -138,7 +138,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         if not condition:
             condition = Condition.objects.create(
                 range=benefit.range,
-                proxy_class='oscar.apps.offer.conditions.CountCondition',
+                proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
                 value=1)
 
         offer = voucher.offers.first()

@@ -87,6 +87,15 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.5.0
+------------------
+- Create custom subclasses of all built-in Oscar conditions and Benefits
+    - Eliminates need for monkey-patching the ``Condition.consume_items`` method.
+    - Adds migration to change all row's proxy_class from ``oscar.apps.offer.FOOBAR`` to ``oscarbluelight.offer.FOOBAR``.
+- Change behavior of ``FixedPriceBenefit`` to be more logical.
+    - Uses the benefit's assigned range instead of the condition's range.
+    - Respects the ``max_affected_items`` setting.
+
 0.4.1
 ------------------
 - Fixed several exceptions throw in dashboard views when a voucher had no offers linked to it.
