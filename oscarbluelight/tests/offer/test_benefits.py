@@ -44,15 +44,15 @@ class FixedPriceBenefitTest(BaseTest):
         offer.save()
 
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 0)
-        self.assertEquals(line.quantity_without_discount, 5)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
 
         discount = offer.apply_benefit(basket)
 
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 3)
-        self.assertEquals(line.quantity_without_discount, 2)
+        self.assertEqual(line.quantity_with_discount, 3)
+        self.assertEqual(line.quantity_without_discount, 2)
 
-        self.assertEquals(discount.discount, D('30.00'))
-        self.assertEquals(basket.total_excl_tax_excl_discounts, D('50.00'))
-        self.assertEquals(basket.total_excl_tax, D('20.00'))
+        self.assertEqual(discount.discount, D('30.00'))
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('50.00'))
+        self.assertEqual(basket.total_excl_tax, D('20.00'))
