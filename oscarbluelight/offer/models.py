@@ -124,10 +124,10 @@ __all__ = [
 ]
 
 
-from oscar.apps.offer.benefits import *  # NOQA
+from .benefits import *  # NOQA
 from .conditions import *  # NOQA
 
-from oscar.apps.offer.benefits import __all__ as benefit_classes  # NOQA
+from .benefits import __all__ as benefit_classes  # NOQA
 from .conditions import __all__ as condition_classes  # NOQA
 
 __all__.extend(benefit_classes)

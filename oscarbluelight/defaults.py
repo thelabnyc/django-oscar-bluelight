@@ -19,18 +19,18 @@ insert_nav_item('dashboard:benefit-list', _('Conditions'), 'dashboard:condition-
 
 
 BLUELIGHT_BENEFIT_CLASSES = [
-    ('oscar.apps.offer.benefits.PercentageDiscountBenefit', _("Discount is a percentage off of the product's value")),
-    ('oscar.apps.offer.benefits.AbsoluteDiscountBenefit', _("Discount is a fixed amount off of the product's value")),
-    ('oscar.apps.offer.benefits.MultibuyDiscountBenefit', _("Discount is to give the cheapest product for free")),
-    ('oscar.apps.offer.benefits.FixedPriceBenefit', _("Get the products that meet the condition for a fixed price")),
-    ('oscar.apps.offer.benefits.ShippingAbsoluteDiscountBenefit', _("Discount is a fixed amount of the shipping cost")),
-    ('oscar.apps.offer.benefits.ShippingFixedPriceBenefit', _("Get shipping for a fixed price")),
-    ('oscar.apps.offer.benefits.ShippingPercentageDiscountBenefit', _("Discount is a percentage off of the shipping cost")),
+    ('oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit', _("Discount is a percentage off of the product's value")),
+    ('oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit', _("Discount is a fixed amount off of the product's value")),
+    ('oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit', _("Discount is to give the cheapest product for free")),
+    ('oscarbluelight.offer.benefits.BluelightFixedPriceBenefit', _("Get the products that meet the condition for a fixed price")),
+    ('oscarbluelight.offer.benefits.BluelightShippingAbsoluteDiscountBenefit', _("Discount is a fixed amount of the shipping cost")),
+    ('oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit', _("Get shipping for a fixed price")),
+    ('oscarbluelight.offer.benefits.BluelightShippingPercentageDiscountBenefit', _("Discount is a percentage off of the shipping cost")),
 ]
 
 
 BLUELIGHT_CONDITION_CLASSES = [
-    ('oscar.apps.offer.conditions.CountCondition', _("Depends on number of items in basket that are in condition range")),
-    ('oscar.apps.offer.conditions.ValueCondition', _("Depends on value of items in basket that are in condition range")),
-    ('oscar.apps.offer.conditions.CoverageCondition', _("Needs to contain a set number of DISTINCT items from the condition range")),
+    ('oscarbluelight.offer.conditions.BluelightCountCondition', _("Depends on number of items in basket that are in condition range")),
+    ('oscarbluelight.offer.conditions.BluelightValueCondition', _("Depends on value of items in basket that are in condition range")),
+    ('oscarbluelight.offer.conditions.BluelightCoverageCondition', _("Needs to contain a set number of DISTINCT items from the condition range")),
 ]
