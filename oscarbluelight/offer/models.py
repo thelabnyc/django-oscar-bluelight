@@ -83,6 +83,17 @@ class Benefit(AbstractBenefit):
             return cleaner()
         return super().clean()
 
+    def save(self, *args, **kwargs):
+        ret = super().save(*args, **kwargs)
+        # If the elected proxy_class isn't a proxy model, it has it's own table where a row needs to exist.
+        if self.proxy_class:
+            Klass = load_proxy(self.proxy_class)
+            if self.__class__ != Klass and not Klass._meta.proxy and not Klass.objects.filter(pk=self.pk).exists():
+                proxy = copy.deepcopy(self)
+                proxy.__class__ = Klass
+                proxy.save()
+        return ret
+
 
 class Condition(AbstractCondition):
     def proxy(self):
@@ -115,6 +126,17 @@ class Condition(AbstractCondition):
         cleaner = getattr(proxy_instance, '_clean', None)
         if cleaner and callable(cleaner):
             return cleaner()
+
+    def save(self, *args, **kwargs):
+        ret = super().save(*args, **kwargs)
+        # If the elected proxy_class isn't a proxy model, it has it's own table where a row needs to exist.
+        if self.proxy_class:
+            Klass = load_proxy(self.proxy_class)
+            if self.__class__ != Klass and not Klass._meta.proxy and not Klass.objects.filter(pk=self.pk).exists():
+                proxy_instance = copy.deepcopy(self)
+                proxy_instance.__class__ = Klass
+                proxy_instance.save()
+        return ret
 
 
 class Range(AbstractRange):

@@ -10,29 +10,29 @@ class CountConditionTest(BaseTest):
         offer = self._build_offer('oscarbluelight.offer.conditions.BluelightCountCondition', 2)
 
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 0)
-        self.assertEquals(line.quantity_without_discount, 5)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 1, 'Consumed 1 line')
-        self.assertEquals(affected_lines[0][2], 2, 'Consumed quantity of 2')
+        self.assertEqual(len(affected_lines), 1, 'Consumed 1 line')
+        self.assertEqual(affected_lines[0][2], 2, 'Consumed quantity of 2')
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 2)
-        self.assertEquals(line.quantity_without_discount, 3)
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 3)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, affected_lines)
-        self.assertEquals(len(affected_lines), 1, 'Consumed 1 line')
-        self.assertEquals(affected_lines[0][2], 2, 'Consumed quantity of 2')
+        self.assertEqual(len(affected_lines), 1, 'Consumed 1 line')
+        self.assertEqual(affected_lines[0][2], 2, 'Consumed quantity of 2')
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 2)
-        self.assertEquals(line.quantity_without_discount, 3)
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 3)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 1, 'Consumed 1 line')
-        self.assertEquals(affected_lines[0][2], 2, 'Consumed quantity of 2')
+        self.assertEqual(len(affected_lines), 1, 'Consumed 1 line')
+        self.assertEqual(affected_lines[0][2], 2, 'Consumed quantity of 2')
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 4)
-        self.assertEquals(line.quantity_without_discount, 1)
+        self.assertEqual(line.quantity_with_discount, 4)
+        self.assertEqual(line.quantity_without_discount, 1)
 
 
 class ValueConditionTest(BaseTest):
@@ -41,29 +41,29 @@ class ValueConditionTest(BaseTest):
         offer = self._build_offer('oscarbluelight.offer.conditions.BluelightValueCondition', D('15.00'))
 
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 0)
-        self.assertEquals(line.quantity_without_discount, 5)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 1, 'Consumed 1 line')
-        self.assertEquals(affected_lines[0][2], 2, 'Consumed quantity of 2')
+        self.assertEqual(len(affected_lines), 1, 'Consumed 1 line')
+        self.assertEqual(affected_lines[0][2], 2, 'Consumed quantity of 2')
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 2)
-        self.assertEquals(line.quantity_without_discount, 3)
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 3)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, affected_lines)
-        self.assertEquals(len(affected_lines), 1, 'Consumed 1 line')
-        self.assertEquals(affected_lines[0][2], 2, 'Consumed quantity of 2')
+        self.assertEqual(len(affected_lines), 1, 'Consumed 1 line')
+        self.assertEqual(affected_lines[0][2], 2, 'Consumed quantity of 2')
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 2)
-        self.assertEquals(line.quantity_without_discount, 3)
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 3)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 1, 'Consumed 1 line')
-        self.assertEquals(affected_lines[0][2], 2, 'Consumed quantity of 2')
+        self.assertEqual(len(affected_lines), 1, 'Consumed 1 line')
+        self.assertEqual(affected_lines[0][2], 2, 'Consumed quantity of 2')
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 4)
-        self.assertEquals(line.quantity_without_discount, 1)
+        self.assertEqual(line.quantity_with_discount, 4)
+        self.assertEqual(line.quantity_without_discount, 1)
 
 
 class CoverageConditionTest(BaseTest):
@@ -77,37 +77,37 @@ class CoverageConditionTest(BaseTest):
         offer = self._build_offer('oscarbluelight.offer.conditions.BluelightCoverageCondition', 2)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 2, 'Consumed 2 lines')
-        self.assertEquals(affected_lines[0][2], 1, 'Consumed quantity of 1')
-        self.assertEquals(affected_lines[1][2], 1, 'Consumed quantity of 1')
-        self.assertEquals(basket.all_lines()[0].quantity_with_discount, 1)
-        self.assertEquals(basket.all_lines()[0].quantity_without_discount, 4)
-        self.assertEquals(basket.all_lines()[1].quantity_with_discount, 1)
-        self.assertEquals(basket.all_lines()[1].quantity_without_discount, 4)
-        self.assertEquals(basket.all_lines()[2].quantity_with_discount, 0)
-        self.assertEquals(basket.all_lines()[2].quantity_without_discount, 5)
+        self.assertEqual(len(affected_lines), 2, 'Consumed 2 lines')
+        self.assertEqual(affected_lines[0][2], 1, 'Consumed quantity of 1')
+        self.assertEqual(affected_lines[1][2], 1, 'Consumed quantity of 1')
+        self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
+        self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
+        self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
+        self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
+        self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
+        self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, affected_lines)
-        self.assertEquals(len(affected_lines), 2, 'Consumed 2 lines')
-        self.assertEquals(affected_lines[0][2], 1, 'Consumed quantity of 1')
-        self.assertEquals(affected_lines[1][2], 1, 'Consumed quantity of 1')
-        self.assertEquals(basket.all_lines()[0].quantity_with_discount, 1)
-        self.assertEquals(basket.all_lines()[0].quantity_without_discount, 4)
-        self.assertEquals(basket.all_lines()[1].quantity_with_discount, 1)
-        self.assertEquals(basket.all_lines()[1].quantity_without_discount, 4)
-        self.assertEquals(basket.all_lines()[2].quantity_with_discount, 0)
-        self.assertEquals(basket.all_lines()[2].quantity_without_discount, 5)
+        self.assertEqual(len(affected_lines), 2, 'Consumed 2 lines')
+        self.assertEqual(affected_lines[0][2], 1, 'Consumed quantity of 1')
+        self.assertEqual(affected_lines[1][2], 1, 'Consumed quantity of 1')
+        self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
+        self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
+        self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
+        self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
+        self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
+        self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 2, 'Consumed 2 lines')
-        self.assertEquals(affected_lines[0][2], 1, 'Consumed quantity of 1')
-        self.assertEquals(affected_lines[1][2], 1, 'Consumed quantity of 1')
-        self.assertEquals(basket.all_lines()[0].quantity_with_discount, 2)
-        self.assertEquals(basket.all_lines()[0].quantity_without_discount, 3)
-        self.assertEquals(basket.all_lines()[1].quantity_with_discount, 2)
-        self.assertEquals(basket.all_lines()[1].quantity_without_discount, 3)
-        self.assertEquals(basket.all_lines()[2].quantity_with_discount, 0)
-        self.assertEquals(basket.all_lines()[2].quantity_without_discount, 5)
+        self.assertEqual(len(affected_lines), 2, 'Consumed 2 lines')
+        self.assertEqual(affected_lines[0][2], 1, 'Consumed quantity of 1')
+        self.assertEqual(affected_lines[1][2], 1, 'Consumed quantity of 1')
+        self.assertEqual(basket.all_lines()[0].quantity_with_discount, 2)
+        self.assertEqual(basket.all_lines()[0].quantity_without_discount, 3)
+        self.assertEqual(basket.all_lines()[1].quantity_with_discount, 2)
+        self.assertEqual(basket.all_lines()[1].quantity_without_discount, 3)
+        self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
+        self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
 
 
 class CompoundConditionTest(BaseTest):
@@ -263,29 +263,47 @@ class CompoundConditionTest(BaseTest):
         offer = self._build_offer(CompoundCondition.OR)
 
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 0)
-        self.assertEquals(line.quantity_without_discount, 5)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 2)
-        self.assertEquals(affected_lines[0][2], 1)
-        self.assertEquals(affected_lines[1][2], 1)
+        self.assertEqual(len(affected_lines), 2)
+        self.assertEqual(affected_lines[0][2], 1)
+        self.assertEqual(affected_lines[1][2], 1)
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 2)
-        self.assertEquals(line.quantity_without_discount, 3)
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 3)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, affected_lines)
-        self.assertEquals(len(affected_lines), 2)
-        self.assertEquals(affected_lines[0][2], 1)
-        self.assertEquals(affected_lines[1][2], 1)
+        self.assertEqual(len(affected_lines), 2)
+        self.assertEqual(affected_lines[0][2], 1)
+        self.assertEqual(affected_lines[1][2], 1)
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 2)
-        self.assertEquals(line.quantity_without_discount, 3)
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 3)
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEquals(len(affected_lines), 2)
-        self.assertEquals(affected_lines[0][2], 1)
-        self.assertEquals(affected_lines[1][2], 1)
+        self.assertEqual(len(affected_lines), 2)
+        self.assertEqual(affected_lines[0][2], 1)
+        self.assertEqual(affected_lines[1][2], 1)
         line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 4)
-        self.assertEquals(line.quantity_without_discount, 1)
+        self.assertEqual(line.quantity_with_discount, 4)
+        self.assertEqual(line.quantity_without_discount, 1)
+
+    def test_create_compound_from_vanilla_condition(self):
+        a = Condition()
+        a.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
+        a.conjunction = CompoundCondition.OR
+        a.save()
+
+        self.assertEqual(a.conjunction, CompoundCondition.OR)
+
+        b = Condition.objects.get(pk=a.pk)
+        self.assertIsNotNone(b.compoundcondition)
+        self.assertEqual(b.compoundcondition.conjunction, CompoundCondition.OR)
+
+        # Saving the original model should work ok
+        a.save()
+
+        # Saving the proxy instance  should work too
+        b.save()
