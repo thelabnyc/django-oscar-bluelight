@@ -1,35 +1,7 @@
 from decimal import Decimal as D
-from django.test import TestCase
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit, CompoundCondition
 from oscar.test.factories import create_basket, create_product, create_stockrecord
-
-
-class BaseTest(TestCase):
-    def _build_basket(self, item_price=D('10.00'), item_quantity=5):
-        basket = create_basket(empty=True)
-        product = create_product()
-        create_stockrecord(product, item_price, num_in_stock=item_quantity * 2)
-        basket.add_product(product, quantity=item_quantity)
-        return basket
-
-    def _build_offer(self, cls, cond_value):
-        all_products = Range()
-        all_products.includes_all_products = True
-        all_products.save()
-        condition = Condition()
-        condition.proxy_class = cls
-        condition.value = cond_value
-        condition.range = all_products
-        condition.save()
-        benefit = Benefit()
-        benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
-        benefit.value = 0
-        benefit.save()
-        offer = ConditionalOffer()
-        offer.condition = condition
-        offer.benefit = benefit
-        offer.save()
-        return offer
+from .base import BaseTest
 
 
 class CountConditionTest(BaseTest):
@@ -317,30 +289,3 @@ class CompoundConditionTest(BaseTest):
         line = basket.all_lines()[0]
         self.assertEquals(line.quantity_with_discount, 4)
         self.assertEquals(line.quantity_without_discount, 1)
-
-    def test_compound_condition_with_fixed_price_benefit(self):
-        basket = self._build_basket()
-        offer = self._build_offer(CompoundCondition.OR)
-
-        all_products = Range()
-        all_products.includes_all_products = True
-        all_products.save()
-
-        offer.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightFixedPriceBenefit'
-        offer.benefit.range = all_products
-        offer.benefit.max_affected_items = 3
-        offer.benefit.save()
-
-        line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 0)
-        self.assertEquals(line.quantity_without_discount, 5)
-
-        discount = offer.apply_benefit(basket)
-
-        line = basket.all_lines()[0]
-        self.assertEquals(line.quantity_with_discount, 3)
-        self.assertEquals(line.quantity_without_discount, 2)
-
-        self.assertEquals(discount.discount, D('30.00'))
-        self.assertEquals(basket.total_excl_tax_excl_discounts, D('50.00'))
-        self.assertEquals(basket.total_excl_tax, D('20.00'))

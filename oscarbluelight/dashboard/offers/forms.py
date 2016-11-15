@@ -55,13 +55,20 @@ class ConditionForm(forms.ModelForm):
 
 
 class CompoundConditionForm(forms.ModelForm):
+    CPATH = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
+
+    proxy_class = forms.ChoiceField(
+        choices=(
+            (CPATH, 'Compound Condition'),
+        ),
+        initial=CPATH,
+        disabled=True,
+        label=_('Type'),
+        help_text='Select a condition type')
+
     class Meta:
         model = CompoundCondition
-        fields = ['conjunction', 'subconditions']
-
-    def save(self, *args, **kwargs):
-        self.instance.proxy_class = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
-        return super().save(*args, **kwargs)
+        fields = ['proxy_class', 'conjunction', 'subconditions']
 
 
 class BenefitSelectionForm(forms.ModelForm):

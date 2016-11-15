@@ -22,7 +22,7 @@ BLUELIGHT_BENEFIT_CLASSES = [
     ('oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit', _("Discount is a percentage off of the product's value")),
     ('oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit', _("Discount is a fixed amount off of the product's value")),
     ('oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit', _("Discount is to give the cheapest product for free")),
-    ('oscarbluelight.offer.benefits.BluelightFixedPriceBenefit', _("Get the products that meet the condition for a fixed price")),
+    ('oscarbluelight.offer.benefits.BluelightFixedPriceBenefit', _("Get the products in the range for a fixed price")),
     ('oscarbluelight.offer.benefits.BluelightShippingAbsoluteDiscountBenefit', _("Discount is a fixed amount of the shipping cost")),
     ('oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit', _("Get shipping for a fixed price")),
     ('oscarbluelight.offer.benefits.BluelightShippingPercentageDiscountBenefit', _("Discount is a percentage off of the shipping cost")),
