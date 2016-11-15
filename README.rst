@@ -95,6 +95,7 @@ Changelog
 - Change behavior of ``FixedPriceBenefit`` to be more logical.
     - Uses the benefit's assigned range instead of the condition's range.
     - Respects the ``max_affected_items`` setting.
+- Improved dashboard form validation using polymorphic ``_clean`` methods on benefits and conditions.
 
 0.4.1
 ------------------

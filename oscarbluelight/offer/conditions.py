@@ -1,19 +1,46 @@
 from decimal import Decimal as D, ROUND_UP
+from django.core import exceptions
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six
 from oscar.apps.offer import utils
 from oscar.apps.offer.conditions import CountCondition, CoverageCondition, ValueCondition
 from oscar.core.loading import get_model
+from oscar.templatetags.currency_filters import currency
 
 Condition = get_model('offer', 'Condition')
 
 
+def _default_clean(self):
+    if not self.range:
+        raise exceptions.ValidationError(_("Selected condition type requires a range."))
+    if not self.value:
+        raise exceptions.ValidationError(_("Selected condition type required a value."))
+
+
 class BluelightCountCondition(CountCondition):
+    _description = _("Basket includes %(count)d item(s) from %(range)s")
+
     class Meta:
         app_label = 'offer'
         proxy = True
         verbose_name = _("Count condition")
         verbose_name_plural = _("Count conditions")
+
+    @property
+    def name(self):
+        return self._description % {
+            'count': self.value,
+            'range': six.text_type(self.range).lower() if self.range else 'product range'}
+
+    @property
+    def description(self):
+        return self._description % {
+            'count': self.value,
+            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+
+    def _clean(self):
+        return _default_clean(self)
 
     def consume_items(self, offer, basket, affected_lines):
         """
@@ -39,11 +66,28 @@ class BluelightCountCondition(CountCondition):
 
 
 class BluelightCoverageCondition(CoverageCondition):
+    _description = _("Basket includes %(count)d distinct item(s) from %(range)s")
+
     class Meta:
         app_label = 'offer'
         proxy = True
         verbose_name = _("Coverage Condition")
         verbose_name_plural = _("Coverage Conditions")
+
+    @property
+    def name(self):
+        return self._description % {
+            'count': self.value,
+            'range': six.text_type(self.range).lower() if self.range else 'product range'}
+
+    @property
+    def description(self):
+        return self._description % {
+            'count': self.value,
+            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+
+    def _clean(self):
+        return _default_clean(self)
 
     def consume_items(self, offer, basket, affected_lines):
         """
@@ -78,11 +122,28 @@ class BluelightCoverageCondition(CoverageCondition):
 
 
 class BluelightValueCondition(ValueCondition):
+    _description = _("Basket includes %(amount)s from %(range)s")
+
     class Meta:
         app_label = 'offer'
         proxy = True
         verbose_name = _("Value condition")
         verbose_name_plural = _("Value conditions")
+
+    @property
+    def name(self):
+        return self._description % {
+            'amount': currency(self.value),
+            'range': six.text_type(self.range).lower() if self.range else 'product range'}
+
+    @property
+    def description(self):
+        return self._description % {
+            'amount': currency(self.value),
+            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+
+    def _clean(self):
+        return _default_clean(self)
 
     def consume_items(self, offer, basket, affected_lines):
         """
@@ -147,6 +208,12 @@ class CompoundCondition(Condition):
     def description(self):
         descrs = (c.description for c in self.children)
         return self._human_readable_conjoin(descrs, 'Empty Condition')
+
+    def _clean(self):
+        if self.range:
+            raise exceptions.ValidationError(_("Compound conditions should not have a range."))
+        if self.value:
+            raise exceptions.ValidationError(_("Compound conditions should not have a value."))
 
     def is_satisfied(self, *args):
         return self._reduce_results(self.conjunction, 'is_satisfied', *args)

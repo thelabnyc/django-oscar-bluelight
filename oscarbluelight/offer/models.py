@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core import exceptions
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
@@ -40,7 +41,6 @@ class ConditionalOffer(AbstractConditionalOffer):
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
 
-
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
         if self.offer_type == self.USER:
@@ -74,6 +74,15 @@ class Benefit(AbstractBenefit):
             for voucher in offer.vouchers.filter(parent=None).all():
                 yield voucher
 
+    def clean(self):
+        if self.type:
+            raise exceptions.ValidationError(_("Benefit should not have a type field. Use proxy class instead."))
+        proxy_instance = self.proxy()
+        cleaner = getattr(proxy_instance, '_clean', None)
+        if cleaner and callable(cleaner):
+            return cleaner()
+        return super().clean()
+
 
 class Condition(AbstractCondition):
     def proxy(self):
@@ -98,6 +107,14 @@ class Condition(AbstractCondition):
         for offer in self.conditionaloffer_set.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
                 yield voucher
+
+    def clean(self):
+        if self.type:
+            raise exceptions.ValidationError(_("Condition should not have a type field. Use proxy class instead."))
+        proxy_instance = self.proxy()
+        cleaner = getattr(proxy_instance, '_clean', None)
+        if cleaner and callable(cleaner):
+            return cleaner()
 
 
 # Make proxy_class field not unique.
