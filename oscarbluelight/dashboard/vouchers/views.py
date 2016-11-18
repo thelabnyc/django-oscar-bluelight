@@ -154,9 +154,6 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer.max_discount = form.cleaned_data['max_discount']
         offer.save()
 
-        offer.condition.range = offer.benefit.range
-        offer.condition.save()
-
         voucher.offers.add(offer)
 
         return HttpResponseRedirect(self.get_success_url())
