@@ -1,27 +1,15 @@
 #!/usr/bin/env python
+from setuptools import setup, find_packages, Distribution
 import codecs
 import os.path
-from setuptools import setup
-from versiontag import get_version, cache_git_tag
+
+# Make sure versiontag exists before going any further
+Distribution().fetch_build_eggs('versiontag>=1.2.0')
+
+from versiontag import get_version, cache_git_tag  # NOQA
 
 
-packages = [
-    'oscarbluelight',
-    'oscarbluelight.dashboard',
-    'oscarbluelight.dashboard.offers',
-    'oscarbluelight.dashboard.vouchers',
-    'oscarbluelight.offer',
-    'oscarbluelight.offer.migrations',
-    'oscarbluelight.tests',
-    'oscarbluelight.tests.offer',
-    'oscarbluelight.tests.voucher',
-    'oscarbluelight.voucher',
-    'oscarbluelight.voucher.migrations',
-]
-
-setup_requires = [
-    'versiontag>=1.1.0',
-]
+packages = find_packages()
 
 requires = [
     'celery>=3.1.23',
@@ -67,5 +55,4 @@ setup(
     packages=packages,
     include_package_data=True,
     install_requires=requires,
-    setup_requires=setup_requires
 )
