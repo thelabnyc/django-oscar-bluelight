@@ -11,11 +11,17 @@ from versiontag import get_version, cache_git_tag  # NOQA
 
 packages = find_packages()
 
-requires = [
+install_requires = [
     'celery>=3.1.23',
-    'Django>=1.9.6',
-    'django-oscar>=1.2.1',
+    'django-oscar>=1.3.0',
 ]
+
+extras_require = {
+    'development': [
+        'psycopg2>=2.6.2',
+        'flake8>=3.2.1',
+    ],
+}
 
 
 def fpath(name):
@@ -54,5 +60,6 @@ setup(
     license='ISC',
     packages=packages,
     include_package_data=True,
-    install_requires=requires,
+    install_requires=install_requires,
+    extras_require=extras_require,
 )
