@@ -16,4 +16,5 @@ class VoucherDashboardApplication(DefaultVoucherDashboardApplication):
         ]
         return super().get_urls() + self.post_process_urls(urls)
 
+
 application = VoucherDashboardApplication()

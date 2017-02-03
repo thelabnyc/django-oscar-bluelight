@@ -87,6 +87,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.5.3
+------------------
+- Upgrade test dependencies.
+
 0.5.2
 ------------------
 - Upgraded to ``versiontag`` 1.2.0.

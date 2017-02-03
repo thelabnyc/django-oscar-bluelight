@@ -11,7 +11,7 @@ services:
 
 before_script:
   - pip install -r requirements.txt
-  - pip install -e .
+  - pip install -e .[development]
 
 lint:
   stage: test
