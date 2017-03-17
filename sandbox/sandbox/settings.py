@@ -104,4 +104,5 @@ OSCAR_DEFAULT_CURRENCY = 'USD'
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
-CELERY_ALWAYS_EAGER = True
+# Celery Config
+CELERY_TASK_ALWAYS_EAGER = True

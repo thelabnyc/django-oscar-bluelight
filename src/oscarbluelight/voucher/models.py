@@ -147,10 +147,10 @@ class Voucher(AbstractVoucher):
         for field in copy_fields:
             setattr(child, field, getattr(self, field))
         # TODO: Might be useful to use django-dirtyfields here to prevent unnecessary DB writes.
-        child.save()
+        child.save(update_children=False)
         child.offers = list( self.offers.all() )
         child.groups = list( self.groups.all() )
-        child.save()
+        child.save(update_children=False)
 
 
     def _get_child_code(self, code_index, max_index, max_tries=50):

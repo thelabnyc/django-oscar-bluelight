@@ -135,7 +135,7 @@ class Condition(AbstractCondition):
             if self.__class__ != Klass and not Klass._meta.proxy and not Klass.objects.filter(pk=self.pk).exists():
                 proxy_instance = copy.deepcopy(self)
                 proxy_instance.__class__ = Klass
-                proxy_instance.save()
+                proxy_instance.save(force_insert=True)
         return ret
 
 
