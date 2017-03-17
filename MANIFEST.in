@@ -1,2 +1,2 @@
 include *.txt *.md *.rst
-recursive-include oscarbluelight/templates *.html
+recursive-include src *.html

@@ -3,9 +3,7 @@ postgres:
 
 test:
   build: .
-  command: ./server.sh
-  ports:
-    - "8000:8000"
+  command: env
   links:
     - postgres
   volumes:

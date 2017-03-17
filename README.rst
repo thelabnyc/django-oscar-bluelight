@@ -87,6 +87,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.5.4
+------------------
+- Improve unit testing with tox.
+
 0.5.3
 ------------------
 - Upgrade test dependencies.
