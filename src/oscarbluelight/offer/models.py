@@ -41,6 +41,12 @@ class ConditionalOffer(AbstractConditionalOffer):
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
 
+    applicable_to_discounted_lines = models.BooleanField(_("Is applicable to already-discounted lines?"), default=False, help_text=_((
+        "By default, offers are only applied to basket items that do not already have a discount applied "
+        "to them. Enabling this flag makes it possible to apply this offer to basket items which are already "
+        "affected by another discount."
+    )))
+
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
         if self.offer_type == self.USER:
@@ -73,6 +79,12 @@ class Benefit(AbstractBenefit):
         for offer in self.conditionaloffer_set.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
                 yield voucher
+
+    def get_line_quantity_affected(self, max_affected_items, already_affected_items, line, offer):
+        offer_max_affected = max_affected_items - already_affected_items
+        line_max_affected = line.quantity_without_discount
+        # line_max_affected = line.quantity if offer.applicable_to_discounted_lines else line.quantity_without_discount
+        return min(offer_max_affected, line_max_affected)
 
     def clean(self):
         if self.type:
