@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.core import exceptions
 from django.db import models, IntegrityError
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
