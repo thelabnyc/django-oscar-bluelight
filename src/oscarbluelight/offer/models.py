@@ -182,7 +182,7 @@ class BlackList(models.Model):
     instance_id -- PK of offer or voucher obj
     blacklist -- M2M field of BlackListObject
     """
-    name = models.CharField(max_length=128, null=False, blank=True)
+    name = models.CharField(max_length=64, null=False, blank=True)
     classname = models.CharField(max_length=128, null=False, blank=True)
     instance_id = models.PositiveIntegerField(null=False)
     blacklist = models.ManyToManyField(BlackListObject, related_name='blackisted_objects')
@@ -209,7 +209,8 @@ Condition._meta.get_field('proxy_class')._unique = False
 
 
 class OfferGroup(models.Model):
-    name = 
+    name = models.CharField(max_length=64, null=False, blank=True)
+    
 
 
 __all__ = [
