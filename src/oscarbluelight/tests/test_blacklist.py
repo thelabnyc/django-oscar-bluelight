@@ -39,6 +39,7 @@ class TestBlacklist(TestCase):
         )
         self.voucher2.save()
         self.blacklist = BlackList.objects.create(
+            name="Test BlackList",
             classname='Voucher',
             instance_id=self.voucher1.pk
         )
@@ -82,6 +83,7 @@ class TestBlacklist(TestCase):
         )
         blacklist_obj.save()
         blacklist = BlackList.objects.create(
+            name="Test BlackList",
             classname='Voucher',
             instance_id=self.voucher1.pk
         )
