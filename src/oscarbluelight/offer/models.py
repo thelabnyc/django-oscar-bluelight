@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core import exceptions
 from django.db import models, IntegrityError
+from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -153,6 +154,31 @@ class RangeProduct(AbstractRangeProduct):
 
 class RangeProductFileUpload(AbstractRangeProductFileUpload):
     pass
+
+
+class BlackList(models.Model):
+    """
+    model list of offers that
+    can not be combined
+    Need only know the id of the condition class
+    attributes:
+    offer FK to Condition
+    blacklist -- ids of blacklisted offers, store in M2M
+    """
+    offer = models.ForeignKey(Condition)
+    blacklist = models.ManyToManyField(Condition, related_name='blackisted_offers')
+
+    def __str__(self):
+        return 'offer:{}, blacklist:{}'.format(
+            self.offer,
+            self.blacklist
+        )
+
+    def is_blacklisted(self, obj):
+        '''
+        given an obj, return if blacklisted
+        '''
+        return obj in self.blacklist
 
 
 # Make proxy_class field not unique.
