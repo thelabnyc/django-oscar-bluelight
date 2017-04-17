@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import AnonymousUser
 # from decimal import Decimal as D
 from oscarbluelight.offer.models import BlackList, BlackListObject
-# from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
+from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
 # from django.contrib.contenttypes.models import ContentType
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 from oscarbluelight.voucher.models import Voucher
@@ -38,8 +38,6 @@ class TestBlacklist(TestCase):
             limit_usage_by_group=False
         )
         self.voucher2.save()
-        # is_available, message = self.voucher1.is_available_to_user(self.user)
-
         self.blacklist = BlackList.objects.create(
             classname='Voucher',
             instance_id=self.voucher1.pk
@@ -59,3 +57,39 @@ class TestBlacklist(TestCase):
         self.assertTrue(is_available)
         self.assertIsNotNone(self.blacklist)
         self.assertTrue(self.blacklist_obj in self.blacklist.blacklist.all())
+        self.assertTrue(self.blacklist.is_blacklisted('Voucher', self.voucher2))
+
+    def test_condition_blacklist(self):
+        all_products = Range()
+        all_products.includes_all_products = True
+        all_products.save()
+        condition = Condition()
+        condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition.value = 2
+        condition.range = all_products
+        condition.save()
+        benefit = Benefit()
+        benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        benefit.value = 0
+        benefit.save()
+        offer = ConditionalOffer()
+        offer.condition = condition
+        offer.benefit = benefit
+        offer.save()
+        blacklist_obj = BlackListObject(
+            classname='BluelightCountCondition',
+            instance_id=condition.pk
+        )
+        blacklist_obj.save()
+        blacklist = BlackList.objects.create(
+            classname='Voucher',
+            instance_id=self.voucher1.pk
+        )
+        blacklist.save()
+        blacklist.blacklist.add(blacklist_obj)
+        blacklist.save()
+        self.assertIsNotNone(blacklist)
+        self.assertTrue(blacklist_obj in blacklist.blacklist.all())
+        self.assertFalse(blacklist.is_blacklisted('Voucher', self.voucher1))
+        self.assertTrue(blacklist.is_blacklisted('BluelightCountCondition', condition))
+

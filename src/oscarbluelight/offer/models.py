@@ -176,7 +176,7 @@ class BlackList(models.Model):
     """
     model list of offers that
     can not be combined
-    Need only know the id of the condition class
+    Need only know the id of the offer obj
     attributes:
     classname -- name of class (offer or voucher)
     instance_id -- PK of offer or voucher obj
@@ -193,11 +193,14 @@ class BlackList(models.Model):
             self.blacklist
         )
 
-    def is_blacklisted(self, obj):
+    def is_blacklisted(self, classname, obj):
         '''
         given an obj, return if blacklisted
         '''
-        return obj in self.blacklist
+        for elem in self.blacklist.all():
+            if classname == elem.classname and obj.id == elem.instance_id:
+                return True
+        return False
 
 
 # Make proxy_class field not unique.
