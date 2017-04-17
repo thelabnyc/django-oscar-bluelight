@@ -156,21 +156,40 @@ class RangeProductFileUpload(AbstractRangeProductFileUpload):
     pass
 
 
+class BlackListObject(models.Model):
+    '''
+    model to hold blacklisted items
+    classname -- name of blacklisted class
+    instance_id -- PK of blacklisted obj
+    '''
+    classname = models.CharField(max_length=128, null=False)
+    instance_id = models.PositiveIntegerField(null=False)
+
+    def __str__(self):
+        return 'class: {}, instance_id: {}'.format(
+            self.classname,
+            self.instance_id
+        )
+
+
 class BlackList(models.Model):
     """
     model list of offers that
     can not be combined
     Need only know the id of the condition class
     attributes:
-    offer FK to Condition
-    blacklist -- ids of blacklisted offers, store in M2M
+    classname -- name of class (offer or voucher)
+    instance_id -- PK of offer or voucher obj
+    blacklist -- M2M field of BlackListObject
     """
-    offer = models.ForeignKey(Condition)
-    blacklist = models.ManyToManyField(Condition, related_name='blackisted_offers')
+    classname = models.CharField(max_length=128, null=False, blank=True)
+    instance_id = models.PositiveIntegerField(null=False)
+    blacklist = models.ManyToManyField(BlackListObject, related_name='blackisted_objects')
 
     def __str__(self):
-        return 'offer:{}, blacklist:{}'.format(
-            self.offer,
+        return 'classname:{}, instance_id: {}, blacklist:{}'.format(
+            self.classname,
+            self.instance_id,
             self.blacklist
         )
 
