@@ -58,4 +58,4 @@ class TestBlacklist(TestCase):
         is_available, message = self.voucher1.is_available_to_user(self.user)
         self.assertTrue(is_available)
         self.assertIsNotNone(self.blacklist)
-        # self.assertTrue(self.voucher2 in self.blacklist.blacklist)
+        self.assertTrue(self.blacklist_obj in self.blacklist.blacklist.all())
