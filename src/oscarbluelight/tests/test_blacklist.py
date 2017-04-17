@@ -92,4 +92,3 @@ class TestBlacklist(TestCase):
         self.assertTrue(blacklist_obj in blacklist.blacklist.all())
         self.assertFalse(blacklist.is_blacklisted('Voucher', self.voucher1))
         self.assertTrue(blacklist.is_blacklisted('BluelightCountCondition', condition))
-
