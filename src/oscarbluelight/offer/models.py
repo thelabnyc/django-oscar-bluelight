@@ -37,9 +37,26 @@ def _init_proxy_class(obj, Klass):
     return proxy
 
 
+class OfferGroup(models.Model):
+    '''
+    ordered group of Offers
+    '''
+    name = models.CharField(max_length=64, null=False, blank=True)
+    order = models.IntegerField()
+
+    def __str__(self):
+        return 'name: {}'.format(self.name, self.group)
+
+    class Meta:
+        verbose_name = _('OfferGroup')
+        ordering = ['order', ]
+
+
+
 class ConditionalOffer(AbstractConditionalOffer):
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
+    offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True)
 
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
@@ -204,13 +221,29 @@ class BlackList(models.Model):
         return False
 
 
+
+    # offer priority must be unique within a group
+
+    # def offer_list(self):
+    #     return [og.offer for og in OffersGroups.filter(offer=self).order_by('order')]
+
+
+# class OffersGroups(models.Model):
+#     '''
+#     The 'through' group for OfferGroup
+#     '''
+#     offer = models.ForeignKey(ConditionalOffer)
+#     group = models.ForeignKey(OfferGroup)
+#     order = models.IntegerField()
+
+#     class Meta:
+#         verbose_name = _('OffersGroups')
+#         verbose_name_plural = _('OffersGroups')
+#         ordering = ['order', ]
+
+
 # Make proxy_class field not unique.
 Condition._meta.get_field('proxy_class')._unique = False
-
-
-class OfferGroup(models.Model):
-    name = models.CharField(max_length=64, null=False, blank=True)
-    
 
 
 __all__ = [
