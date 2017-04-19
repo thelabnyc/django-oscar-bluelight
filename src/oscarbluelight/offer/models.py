@@ -45,7 +45,7 @@ class OfferGroup(models.Model):
     order = models.IntegerField()
 
     def __str__(self):
-        return 'name: {}'.format(self.name, self.group)
+        return 'name: {}, order: {}'.format(self.name, self.order)
 
     class Meta:
         verbose_name = _('OfferGroup')
@@ -66,6 +66,9 @@ class ConditionalOffer(AbstractConditionalOffer):
                 'is_satisfied': True,
             })
         return restrictions
+
+    class Meta:
+        ordering = ['offer_group', ]
 
 
 class Benefit(AbstractBenefit):
