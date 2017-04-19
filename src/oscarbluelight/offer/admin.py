@@ -6,6 +6,7 @@ Condition = get_model('offer', 'Condition')
 Benefit = get_model('offer', 'Benefit')
 Range = get_model('offer', 'Range')
 CompoundCondition = get_model('offer', 'CompoundCondition')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 
 @admin.register(Benefit)
@@ -25,8 +26,8 @@ class CompoundConditionAdmin(admin.ModelAdmin):
     fields = ('conjunction', 'subconditions')
 
 
-@admin.register(ConditionalOffer)
-class ConditionalOfferAdmin(admin.ModelAdmin):
+# @admin.register(ConditionalOffer)
+class ConditionalOfferAdmin(admin.TabularInline):
     list_display = ('name', 'offer_type', 'start_datetime', 'end_datetime', 'condition', 'benefit', 'total_discount')
     list_filter = ('offer_type', )
     readonly_fields = ('total_discount', 'num_orders')
@@ -39,6 +40,13 @@ class ConditionalOfferAdmin(admin.ModelAdmin):
             'fields': ('total_discount', 'num_orders')
         }),
     )
+    model = ConditionalOffer
 
+
+@admin.register(ConditionalOffer)
+class OfferGroupAdmin(admin.ModelAdmin):
+    inlines = [
+        ConditionalOfferAdmin,
+    ]
 
 admin.site.register(Range)
