@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.test import TestCase
 from oscarbluelight.offer.models import (
     OfferGroup,
@@ -7,6 +8,8 @@ from oscarbluelight.offer.models import (
     ConditionalOffer
 )
 from oscarbluelight.voucher.models import Voucher
+from django.contrib.auth.models import User, Group
+from oscar.test.factories import create_basket, create_product, create_stockrecord
 
 
 class TestOfferGroup(TestCase):
@@ -80,16 +83,188 @@ class TestOfferGroup(TestCase):
             order=4
         )
         offer_group3.save()
-        condition = Condition(name='test condition 2')
-        condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
-        condition.value = 5
-        condition.range = self.all_products
-        condition.save()
-        benefit = Benefit()
-        benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
-        benefit.value = 1
-        benefit.save()
-        offer = ConditionalOffer(name='test3')
-        offer.condition = condition
-        offer.benefit = benefit
-        offer.save()
+        condition1 = Condition(name='test condition 2')
+        condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition1.value = 5
+        condition1.range = self.all_products
+        condition1.save()
+        benefit1 = Benefit()
+        benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        benefit1.value = 1
+        benefit1.save()
+        offer1 = ConditionalOffer(name='test3')
+        offer1.condition = condition1
+        offer1.benefit = benefit1
+        offer1.save()
+        benefit1 = Benefit()
+        benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        benefit1.value = 1
+        benefit1.save()
+        offer1 = ConditionalOffer(name='test4')
+        offer1.condition = condition1
+        offer1.benefit = benefit1
+        offer1.save()
+
+        offer_group1.offers.add(offer1)
+        self.assertEqual(offer1.offer_group.order, 2)
+
+        offer2 = ConditionalOffer(name='test5')
+        offer2.condition = condition1
+        offer2.benefit = benefit1
+        offer2.save()
+        offer_group2.offers.add(offer2)
+        self.assertEqual(offer2.offer_group.order, 3)
+
+        condition2 = Condition(name='test condition 2')
+        condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition2.value = 5
+        condition2.range = self.all_products
+        condition2.save()
+        benefit2 = Benefit()
+        benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        benefit2.value = 1
+        benefit2.save()
+        offer3 = ConditionalOffer(name='test 234')
+        offer3.condition = condition1
+        offer3.benefit = benefit1
+        offer3.save()
+
+        offer_group3.offers.add(offer3)
+        self.assertEqual(offer3.offer_group.order, 4)
+
+
+class TestConsumeOfferGroupOffer(TestCase):
+    def setUp(self):
+        '''
+        offer_groups 1, 2 and 3 with ascending order (application order)
+        offers 1, 2, 3 and 4
+        offers 1 and 2 -> offer_group 1
+        offer3 -> offer_group2
+        offer4 -> offer_group3
+        '''
+        self.offer_group1 = OfferGroup.objects.create(
+            name='test offer group 1',
+            order=3
+        )
+        self.offer_group1.save()
+
+        self.offer_group2 = OfferGroup.objects.create(
+            name='test offer group 2',
+            order=5
+        )
+        self.offer_group2.save()
+
+        self.offer_group3 = OfferGroup.objects.create(
+            name='test offer group 3',
+            order=8
+        )
+        self.offer_group3.save()
+
+        self.all_products = Range()
+        self.all_products.includes_all_products = True
+        self.all_products.save()
+
+        self.condition1 = Condition(name='test condition 2')
+        self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        self.condition1.value = 5.0
+        self.condition1.range = self.all_products
+        self.condition1.save()
+        self.benefit1 = Benefit()
+        self.benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
+        self.benefit1.value = 2.0
+        self.benefit1.save()
+        self.offer1 = ConditionalOffer(name='cond offer test 1')
+        self.offer1.condition = self.condition1
+        self.offer1.benefit = self.benefit1
+        self.offer1.save()
+
+        self.offer_group1.offers.add(self.offer1)
+
+
+        self.benefit2 = Benefit()
+        self.benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
+        self.benefit2.value = 1.0
+        self.benefit2.save()
+        self.offer2 = ConditionalOffer(name='cond offer test 2')
+        self.offer2.condition = self.condition1
+        self.offer2.benefit = self.benefit2
+        self.offer2.save()
+
+        self.offer_group1.offers.add(self.offer2)
+
+        self.offer3 = ConditionalOffer(name='cond offer test 3')
+        self.offer3.condition = self.condition1
+        self.offer3.benefit = self.benefit1
+        self.offer3.save()
+        self.offer_group2.offers.add(self.offer3)
+
+        self.condition2 = Condition(name='test condition 2')
+        self.condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        self.condition2.value = 5.0
+        self.condition2.range = self.all_products
+        self.condition2.save()
+        self.benefit2 = Benefit()
+        self.benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightFixedPriceBenefit'
+        self.benefit2.value = 1.0
+        self.benefit2.save()
+        self.offer4 = ConditionalOffer(name='cond offer test 4')
+        self.offer4.condition = self.condition1
+        self.offer4.benefit = self.benefit1
+        self.offer4.save()
+
+        self.offer_group3.offers.add(self.offer4)
+
+        self.user = User.objects.create_user(
+            username='bob', email='bob@example.com', password='foo')
+
+        self.customer = Group.objects.create(name='Customers')
+        self.csrs = Group.objects.create(name='Customer Service Reps')
+
+        self.voucher = Voucher.objects.create(
+            name='Test Voucher',
+            code='test-voucher',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False)
+        self.voucher.offers.add(self.offer3)
+        self.offer_group2.offers.add(self.offer3)
+
+        item_price = 200.0
+        item_quantity = 5
+        self.basket = create_basket(empty=True)
+        self.product = create_product()
+        create_stockrecord(self.product, item_price, num_in_stock=item_quantity * 2)
+        self.basket.add_product(self.product, quantity=item_quantity)
+
+    def test_voucher_order(self):
+        self.assertEqual(self.voucher.offers.first().name, 'cond offer test 3')
+        self.assertEqual(self.voucher.offers.first().offer_group.order, 5)
+
+    def test_order_offers(self):
+        qs = ConditionalOffer.objects.all()
+        self.assertEqual(qs[0].offer_group.order, 3)
+        self.assertEqual(qs[1].offer_group.order, 3)
+        self.assertEqual(qs[2].offer_group.order, 5)
+        self.assertEqual(qs[3].offer_group.order, 8)
+
+    def test_offer_group1(self):
+        qs = ConditionalOffer.objects.filter(offer_group=self.offer_group1)
+        self.assertIn(self.offer1, qs)
+        self.assertIn(self.offer2, qs)
+
+    def test_apply_offer_group(self):
+        qs = ConditionalOffer.objects.all()
+        offer = qs[0]
+        line = self.basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
+        discount = offer.apply_benefit(self.basket)
+        print(line)
+        print(discount)
+        offer = qs[1]
+        discount = offer.apply_benefit(self.basket)
+        print(line)
+        print(discount)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
