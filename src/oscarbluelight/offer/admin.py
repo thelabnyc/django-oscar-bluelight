@@ -6,6 +6,7 @@ Condition = get_model('offer', 'Condition')
 Benefit = get_model('offer', 'Benefit')
 Range = get_model('offer', 'Range')
 CompoundCondition = get_model('offer', 'CompoundCondition')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 
 @admin.register(Benefit)
@@ -39,6 +40,11 @@ class ConditionalOfferAdmin(admin.ModelAdmin):
             'fields': ('total_discount', 'num_orders')
         }),
     )
+
+
+@admin.register(OfferGroup)
+class OfferGroupAdmin(admin.ModelAdmin):
+    pass
 
 
 admin.site.register(Range)
