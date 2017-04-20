@@ -64,6 +64,3 @@ class OfferGroupAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Range)
-
-
-admin.site.register(Range)
