@@ -54,6 +54,15 @@ class OfferGroup(models.Model):
 
 
 class ConditionalOffer(AbstractConditionalOffer):
+    '''
+    groups  -- user groups
+    offer_group -- FK to OfferGroup
+    offerGroupA => [ o1, v2, o3 ], order 1
+    offerGroupB => [ o4, v3 ], order 2
+    To consume offers, loop through offers in offer group based on priority
+    to consume OfferGroup -> only move to next (greater order val) when previous
+    offerGroup is consumed
+    '''
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
     offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True)
