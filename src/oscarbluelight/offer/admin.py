@@ -26,6 +26,11 @@ class CompoundConditionAdmin(admin.ModelAdmin):
     fields = ('conjunction', 'subconditions')
 
 
+# @admin.register(OfferGroup)
+class OfferGroupAdmin(admin.ModelAdmin):
+    model = OfferGroup
+
+
 @admin.register(ConditionalOffer)
 class ConditionalOfferAdmin(admin.ModelAdmin):
     list_display = ('name', 'offer_type', 'start_datetime', 'end_datetime', 'condition', 'benefit', 'total_discount')
@@ -40,11 +45,9 @@ class ConditionalOfferAdmin(admin.ModelAdmin):
             'fields': ('total_discount', 'num_orders')
         }),
     )
-
-
-@admin.register(OfferGroup)
-class OfferGroupAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        OfferGroupAdmin,
+    ]
 
 
 admin.site.register(Range)
