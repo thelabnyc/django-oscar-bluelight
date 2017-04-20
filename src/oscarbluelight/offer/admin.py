@@ -26,7 +26,7 @@ class CompoundConditionAdmin(admin.ModelAdmin):
     fields = ('conjunction', 'subconditions')
 
 
-class OfferGroupAdmin(admin.ModelAdmin):
+class OfferGroupAdmin(admin.TabularInline):
     model = OfferGroup
 
 
