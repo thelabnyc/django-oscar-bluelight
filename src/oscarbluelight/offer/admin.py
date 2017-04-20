@@ -26,7 +26,6 @@ class CompoundConditionAdmin(admin.ModelAdmin):
     fields = ('conjunction', 'subconditions')
 
 
-# @admin.register(OfferGroup)
 class OfferGroupAdmin(admin.ModelAdmin):
     model = OfferGroup
 
