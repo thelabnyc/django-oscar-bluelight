@@ -40,6 +40,7 @@ class ConditionalOfferAdmin(admin.TabularInline):
             'fields': ('total_discount', 'num_orders')
         }),
     )
+    model = ConditionalOffer
 
 
 @admin.register(ConditionalOffer)
