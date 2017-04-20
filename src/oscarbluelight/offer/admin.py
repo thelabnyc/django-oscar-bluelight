@@ -26,15 +26,23 @@ class CompoundConditionAdmin(admin.ModelAdmin):
     fields = ('conjunction', 'subconditions')
 
 
-# @admin.register(ConditionalOffer)
-class ConditionalOfferAdmin(admin.TabularInline):
-    list_display = ('name', 'offer_type', 'start_datetime', 'end_datetime', 'condition', 'benefit', 'total_discount')
+class ConditionalOfferAdmin(admin.StackedInline):
+    max_num = 4
+    list_display = ('name',
+                    'offer_type',
+                    'start_datetime',
+                    'end_datetime',
+                    'condition',
+                    'benefit',
+                    'total_discount'
+                    )
     list_filter = ('offer_type', )
     readonly_fields = ('total_discount', 'num_orders')
     fieldsets = (
         (None, {
-            'fields': ('name', 'description', 'offer_type', 'groups', 'condition',
-                       'benefit', 'start_datetime', 'end_datetime', 'priority')
+            'fields': ('name', 'description',
+                    'offer_type', 'groups', 'condition',
+                    'benefit', 'start_datetime', 'end_datetime', 'priority')
         }),
         ('Usage', {
             'fields': ('total_discount', 'num_orders')
@@ -43,10 +51,16 @@ class ConditionalOfferAdmin(admin.TabularInline):
     model = ConditionalOffer
 
 
-@admin.register(ConditionalOffer)
+@admin.register(OfferGroup)
 class OfferGroupAdmin(admin.ModelAdmin):
+    list_filter = ('name', )
+    list_display = ('name',
+                    'order'
+                    )
+    fields = ('name', 'order', )
     inlines = [
         ConditionalOfferAdmin,
     ]
+
 
 admin.site.register(Range)
