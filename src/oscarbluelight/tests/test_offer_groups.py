@@ -364,12 +364,12 @@ class TestConsumeOfferGroupOffer(TestCase):
 
         # FIXME -- these tests fail :
         # AttributeError: 'NoneType' object has no attribute 'contains'
-        # discount = qs[1].apply_benefit(self.basket)
+        discount = qs[1].apply_benefit(self.basket)
 
-        # line = self.basket.all_lines()[0]
-        # self.assertEqual(line.quantity_with_discount, 3)
-        # self.assertEqual(line.quantity_without_discount, 2)
+        line = self.basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 3)
+        self.assertEqual(line.quantity_without_discount, 2)
 
-        # self.assertEqual(discount.discount, D('600.00'))
-        # self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
-        # self.assertEqual(self.basket.total_excl_tax, D('400.00'))
+        self.assertEqual(discount.discount, D('600.00'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
+        self.assertEqual(self.basket.total_excl_tax, D('400.00'))
