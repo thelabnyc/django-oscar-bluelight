@@ -13,6 +13,7 @@ Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 
 class BenefitSearchForm(forms.Form):
@@ -87,16 +88,24 @@ class RestrictionsForm(BaseRestrictionsForm):
     limit_by_group = forms.BooleanField(
         label=_("Limit offer to selected user groups"),
         required=False)
+
     groups = forms.ModelMultipleChoiceField(
         label=_("User Groups"),
         queryset=Group.objects.get_queryset(),
         help_text=_("Which user groups will be able to apply this offer?"),
         required=False)
 
+    offer_groups = forms.ModelMultipleChoiceField(
+        label=_('Offer Group'),
+        queryset=OfferGroup.objects.get_queryset(),
+        help_text=_('Offer group to which this offer belongs'),
+        required=True  # TODO -- does this need to be required??
+    )
+
     class Meta:
         model = ConditionalOffer
         fields = ('start_datetime', 'end_datetime',
-                  'limit_by_group', 'groups',
+                  'limit_by_group', 'groups', 'offer_groups',
                   'max_basket_applications', 'max_user_applications',
                   'max_global_applications', 'max_discount')
 
@@ -106,3 +115,9 @@ class RestrictionsForm(BaseRestrictionsForm):
         if not cleaned_data['limit_by_group']:
             cleaned_data['groups'] = []
         return cleaned_data
+
+
+class OfferGroupForm(forms.ModelForm):
+    class Meta:
+        model = OfferGroup
+        fields = ('name', 'priority', )

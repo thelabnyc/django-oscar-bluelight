@@ -1,0 +1,67 @@
+{% extends 'dashboard/layout.html' %}
+
+{% load currency_filters %}
+
+{% load i18n %}
+
+{% block body_class %}{{ block.super }} create-page {% endblock %}
+
+{% block title %}
+    {% if offer_group.pk %}
+        {{ offer_group.name }}:
+    {% else %}
+        {% trans "Create new offer_group" %}:
+    {% endif %}
+    {{ title }} | {% trans "offer_groups" %} | {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ul class="breadcrumb">
+    <li>
+        <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
+    </li>
+    <li>
+        <a href="{% url 'dashboard:offergroup-list' %}">{% trans "offer groups" %}</a>
+    </li>
+    {% if offer_group.pk %}
+        <li>
+            <a href="{% url 'dashboard:offergroup-edit' pk=offer_group.pk %}">{{ offer_group.name }}</a>
+        </li>
+    {% else %}
+        <li>
+            {% trans "Create new offer group" %}
+        </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="form-group">
+        <form action="." method="post" class="order_table">
+            {% csrf_token %}
+            {{ form.as_p }}
+           <!--  <table class="table table-striped table-bordered">
+                <caption>
+                    <i class="icon-gift icon-large"></i>{{ queryset_description }}
+                    {% if is_filtered %}
+                        <a href="{% url 'dashboard:offergroup-list' %}" >{% trans "Reset" %}</a>
+                    {% endif %}
+                </caption>
+                {% if object.pk %}
+                <tr>
+                    <td><input type="text" name="name" value="{{ object.name }}"></td>
+                    <td><input type="text" name="priority" value="{{ object.priority }}"></td>
+                </tr>
+                {% else %}
+                    <tr><td>{% trans "Offer Groups not found." %}</td></tr>
+                {% endif %}
+            </table> -->
+            {% include "dashboard/partials/pagination.html" %}
+        <div class="pull-right">
+            <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}
+            </button>
+        </div>
+            <a class="btn btn-default" href="{% url 'dashboard:offergroup-list' %}">{% trans "Cancel" %}</a>
+        </form>
+    </div>
+{% endblock dashboard_content %}

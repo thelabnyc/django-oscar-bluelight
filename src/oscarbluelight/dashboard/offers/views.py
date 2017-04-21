@@ -13,14 +13,15 @@ ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 BenefitSearchForm = get_class('dashboard.offers.forms', 'BenefitSearchForm')
 BenefitForm = get_class('dashboard.offers.forms', 'BenefitForm')
+OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
 
 ConditionSearchForm = get_class('dashboard.offers.forms', 'ConditionSearchForm')
 ConditionForm = get_class('dashboard.offers.forms', 'ConditionForm')
 CompoundConditionForm = get_class('dashboard.offers.forms', 'CompoundConditionForm')
-
 
 MetaDataForm = get_class('dashboard.offers.forms', 'MetaDataForm')
 BenefitSelectionForm = get_class('dashboard.offers.forms', 'BenefitSelectionForm')
@@ -287,3 +288,29 @@ class ConditionUpdateView(UpdateView):
         if hasattr(self.object, 'subconditions'):
             return 'dashboard/offers/condition_edit_compound.html'
         return 'dashboard/offers/condition_edit.html'
+
+
+class OfferGroupCreateView(CreateView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_create.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-list')
+
+
+class OfferGroupListView(ListView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_list.html'
+    form_class = OfferGroupForm
+
+
+class OfferGroupDeleteView(DeleteView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_delete.html'
+    success_url = reverse_lazy('dashboard:offergroup-list')
+
+
+class OfferGroupUpdateView(UpdateView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_edit.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-list')

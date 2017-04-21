@@ -42,15 +42,14 @@ class OfferGroup(models.Model):
     ordered group of Offers
     '''
     name = models.CharField(max_length=64, null=False, blank=True)
-    order = models.IntegerField()
+    priority = models.IntegerField(null=False, unique=True)
 
     def __str__(self):
-        return 'name: {}, order: {}'.format(self.name, self.order)
+        return 'name: {}, priority: {}'.format(self.name, self.priority)
 
     class Meta:
         verbose_name = _('OfferGroup')
-        ordering = ['order', ]
-
+        ordering = ['priority', ]
 
 
 class ConditionalOffer(AbstractConditionalOffer):
@@ -77,7 +76,7 @@ class ConditionalOffer(AbstractConditionalOffer):
         return restrictions
 
     class Meta:
-        ordering = ['offer_group', ]
+        ordering = ['priority', ]
 
 
 class Benefit(AbstractBenefit):
@@ -233,25 +232,11 @@ class BlackList(models.Model):
         return False
 
 
-
     # offer priority must be unique within a group
 
     # def offer_list(self):
     #     return [og.offer for og in OffersGroups.filter(offer=self).order_by('order')]
 
-
-# class OffersGroups(models.Model):
-#     '''
-#     The 'through' group for OfferGroup
-#     '''
-#     offer = models.ForeignKey(ConditionalOffer)
-#     group = models.ForeignKey(OfferGroup)
-#     order = models.IntegerField()
-
-#     class Meta:
-#         verbose_name = _('OffersGroups')
-#         verbose_name_plural = _('OffersGroups')
-#         ordering = ['order', ]
 
 
 # Make proxy_class field not unique.
@@ -262,7 +247,7 @@ __all__ = [
     'BasketDiscount', 'ShippingDiscount', 'PostOrderAction',
     'SHIPPING_DISCOUNT', 'ZERO_DISCOUNT', 'ConditionalOffer',
     'Benefit', 'Condition', 'Range', 'RangeProduct',
-    'RangeProductFileUpload',
+    'RangeProductFileUpload', 'OfferGroup',
 ]
 
 
