@@ -13,6 +13,7 @@ Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 
 class BenefitSearchForm(forms.Form):
@@ -80,7 +81,7 @@ class BenefitSelectionForm(forms.ModelForm):
 class ConditionSelectionForm(forms.ModelForm):
     class Meta:
         model = ConditionalOffer
-        fields = ('condition', )
+        fields = ('condition', 'offer_group')
 
 
 class RestrictionsForm(BaseRestrictionsForm):
@@ -92,6 +93,13 @@ class RestrictionsForm(BaseRestrictionsForm):
         queryset=Group.objects.get_queryset(),
         help_text=_("Which user groups will be able to apply this offer?"),
         required=False)
+
+    offer_groups = forms.ModelMultipleChoiceField(
+        label=_('Offer Group'),
+        queryset=OfferGroup.objects.get_queryset(),
+        help_text=_('OfferGroup to which this offer belongs'),
+        required=False
+    )
 
     class Meta:
         model = ConditionalOffer
@@ -106,3 +114,9 @@ class RestrictionsForm(BaseRestrictionsForm):
         if not cleaned_data['limit_by_group']:
             cleaned_data['groups'] = []
         return cleaned_data
+
+
+class OfferGroupForm(forms.ModelForm):
+    class Meta:
+        model = OfferGroup
+        fields = ('name', 'order', )

@@ -13,9 +13,11 @@ ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 BenefitSearchForm = get_class('dashboard.offers.forms', 'BenefitSearchForm')
 BenefitForm = get_class('dashboard.offers.forms', 'BenefitForm')
+OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
 
 ConditionSearchForm = get_class('dashboard.offers.forms', 'ConditionSearchForm')
 ConditionForm = get_class('dashboard.offers.forms', 'ConditionForm')
@@ -287,3 +289,10 @@ class ConditionUpdateView(UpdateView):
         if hasattr(self.object, 'subconditions'):
             return 'dashboard/offers/condition_edit_compound.html'
         return 'dashboard/offers/condition_edit.html'
+
+
+class OfferGroupCreateView(CreateView):
+    model = OfferGroup
+    template = 'dashboard/offers/offer_group_create.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:condition-list')
