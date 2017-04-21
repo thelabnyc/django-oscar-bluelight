@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal as D
 from django.test import TestCase
 from oscarbluelight.offer.models import (
@@ -126,7 +126,7 @@ class TestOfferGroup(TestCase):
         condition2.save()
         benefit2 = Benefit()
         benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
-        benefit2.value = 1
+        benefit2.value = 12
         benefit2.save()
         offer3 = ConditionalOffer(name='test 234')
         offer3.condition = condition1
@@ -183,6 +183,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.benefit1 = Benefit()
         self.benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
         self.benefit1.value = 20
+        self.benefit1.range = self.all_products
         self.benefit1.save()
         self.offer1 = ConditionalOffer(name='cond offer test 1')
         self.offer1.condition = self.condition1
@@ -196,6 +197,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.benefit2 = Benefit()
         self.benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
         self.benefit2.value = 15
+        self.benefit2.range = self.all_products
         self.benefit2.save()
         self.offer2 = ConditionalOffer(name='cond offer test 2')
         self.offer2.condition = self.condition1
@@ -212,15 +214,16 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.offer3.priority = 30
         self.offer_group2.offers.add(self.offer3)
 
-        self.condition2 = Condition(name='test condition 2')
-        self.condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
-        self.condition2.value = 50
-        self.condition2.range = self.all_products
-        self.condition2.save()
-        self.benefit2 = Benefit()
-        self.benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightFixedPriceBenefit'
-        self.benefit2.value = 25
-        self.benefit2.save()
+        self.value_condition = Condition(name='test condition 2')
+        self.value_condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
+        self.value_condition.value = 50
+        self.value_condition.range = self.all_products
+        self.value_condition.save()
+        self.fixed_price_benefit = Benefit()
+        self.fixed_price_benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightFixedPriceBenefit'
+        self.fixed_price_benefit.value = 25
+        self.fixed_price_benefit.range = self.all_products
+        self.fixed_price_benefit.save()
         self.offer4 = ConditionalOffer(name='cond offer test 4')
         self.offer4.condition = self.condition1
         self.offer4.benefit = self.benefit1
@@ -240,10 +243,16 @@ class TestConsumeOfferGroupOffer(TestCase):
             code='test-voucher',
             usage=Voucher.MULTI_USE,
             start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
-            limit_usage_by_group=False)
+            end_datetime=datetime.now() + timedelta(seconds=120),
+            limit_usage_by_group=False
+        )
         self.voucher.offers.add(self.offer3)
-        self.offer_group2.offers.add(self.offer3)
+        self.offer_group2.offers.add(self.voucher.offers.first())
+
+
+    def test_offer_group2(self):
+        qs = OfferGroup.objects.filter(order=5)
+        self.assertEqual(qs.first().offers.first(), self.offer3)
 
     def test_voucher_order(self):
         self.assertEqual(self.voucher.offers.first().name, 'cond offer test 3')
@@ -282,26 +291,21 @@ class TestConsumeOfferGroupOffer(TestCase):
 
 
     def test_apply_offer_group(self):
-        pass
-        # FIXME -- this test throws an error offer.absract_models.py in get_applicable_lines
-        # qs = ConditionalOffer.objects.all()
-        # offer = qs[0]
-        # line = self.basket.all_lines()[0]
-        # self.assertEqual(line.quantity_with_discount, 0)
-        # self.assertEqual(line.quantity_without_discount, 5)
+        qs = ConditionalOffer.objects.all()
+        offer = qs[0]
+        line = self.basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
 
-        # discount = offer.apply_benefit(self.basket)
-        # print(line)
-        # print(discount)
-        # offer = qs[3]
-        # discount = offer.apply_benefit(self.basket)
-        # print(line)
-        # print(discount)
+        discount = offer.apply_benefit(self.basket)
+        self.assertEqual(discount.discount, D('15.0'))
+        offer = qs[3]
+        discount = offer.apply_benefit(self.basket)
 
-        # self.assertEqual(line.quantity_with_discount, 0)
-        # self.assertEqual(line.quantity_without_discount, 5)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
 
-    def test_apply_offer_group2(self):
+    def test_apply_another_offer_group(self):
         '''
         run through a tested test
         '''
@@ -362,14 +366,20 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
         self.assertEqual(self.basket.total_excl_tax, D('400.00'))
 
-        # FIXME -- these tests fail :
-        # AttributeError: 'NoneType' object has no attribute 'contains'
         discount = qs[1].apply_benefit(self.basket)
 
         line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 3)
-        self.assertEqual(line.quantity_without_discount, 2)
+        self.assertEqual(line.quantity_with_discount, 5)
+        self.assertEqual(line.quantity_without_discount, 0)
 
-        self.assertEqual(discount.discount, D('600.00'))
+        self.assertEqual(discount.discount, D('20.00'))
         self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
-        self.assertEqual(self.basket.total_excl_tax, D('400.00'))
+        self.assertEqual(self.basket.total_excl_tax, D('380.00'))
+
+        qs = OfferGroup.objects.filter(name='test offer group 2')
+        voucher = qs.first().offers.all()
+
+        discount = voucher[0].apply_benefit(self.basket)
+        self.assertEqual(discount.discount, D('0.00'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
+        self.assertEqual(self.basket.total_excl_tax, D('380.00'))
