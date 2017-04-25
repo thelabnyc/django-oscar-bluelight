@@ -52,7 +52,6 @@ class OfferGroup(models.Model):
         ordering = ['order', ]
 
 
-
 class ConditionalOffer(AbstractConditionalOffer):
     '''
     groups  -- user groups
@@ -231,7 +230,6 @@ class BlackList(models.Model):
             if classname == elem.classname and obj.id == elem.instance_id:
                 return True
         return False
-
 
 
     # offer priority must be unique within a group
