@@ -295,4 +295,4 @@ class OfferGroupCreateView(CreateView):
     model = OfferGroup
     template = 'dashboard/offers/offer_group_edit.html'
     form_class = OfferGroupForm
-    success_url = reverse_lazy('dashboard:condition-list')
+    success_url = reverse_lazy('dashboard:offer-detail')

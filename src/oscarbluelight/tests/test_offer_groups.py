@@ -9,6 +9,7 @@ from oscarbluelight.offer.models import (
     CompoundCondition,
     ConditionalOffer
 )
+from oscarbluelight.dashboard.offers.forms import OfferGroupForm
 from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import User, Group
 from oscar.test.factories import create_basket, create_product, create_stockrecord
@@ -362,3 +363,27 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(discount.discount, D('0.00'))
         self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
         self.assertEqual(self.basket.total_excl_tax, D('380.00'))
+
+
+class TestOfferGroupForm(TestCase):
+    def setUp(self):
+        self.name = 'An Offer Group'
+        self.order = 5
+
+    def test_form_valid(self):
+        data = {'name': self.name, 'order': self.order}
+        form = OfferGroupForm(data=data)
+        self.assertTrue(form.is_valid())
+
+    def test_form_invalid(self):
+        data = {'name': self.name, 'offer': 'lorem ipsum'}
+        form = OfferGroupForm(data=data)
+        self.assertFalse(form.is_valid())
+
+    def test_create_offer_group(self):
+        data = {'name': self.name, 'order': self.order}
+        form = OfferGroupForm(data=data)
+        form.save()
+        qs = OfferGroup.objects.all()
+        self.assertIsInstance(qs.first(), OfferGroup)
+

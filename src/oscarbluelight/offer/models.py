@@ -238,19 +238,6 @@ class BlackList(models.Model):
     #     return [og.offer for og in OffersGroups.filter(offer=self).order_by('order')]
 
 
-# class OffersGroups(models.Model):
-#     '''
-#     The 'through' group for OfferGroup
-#     '''
-#     offer = models.ForeignKey(ConditionalOffer)
-#     group = models.ForeignKey(OfferGroup)
-#     order = models.IntegerField()
-
-#     class Meta:
-#         verbose_name = _('OffersGroups')
-#         verbose_name_plural = _('OffersGroups')
-#         ordering = ['order', ]
-
 
 # Make proxy_class field not unique.
 Condition._meta.get_field('proxy_class')._unique = False
