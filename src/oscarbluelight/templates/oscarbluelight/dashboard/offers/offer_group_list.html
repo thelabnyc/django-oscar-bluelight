@@ -20,8 +20,7 @@
 {% block header %}
     <div class="page-header">
         <p class="pull-right">
-            <a href="{% url 'dashboard:offer-group-create' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new offer group" %}</a>
-            <a href="{% url 'dashboard:offer-group-create' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new offer group" %}</a>
+            <a href="{% url 'dashboard:offer-group-edit' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new offer group" %}</a>
         </p>
         <h1>{% trans "Offer Group" %}</h1>
     </div>
@@ -44,7 +43,7 @@
                     <a href="{% url 'dashboard:condition-list' %}" >{% trans "Reset" %}</a>
                 {% endif %}
             </caption>
-            {% if offer_groups %}
+            {% if offer_group %}
                 <tr>
                     <th>{% trans 'Name' %}</th>
                     <th>{% trans 'Order' %}</th>
