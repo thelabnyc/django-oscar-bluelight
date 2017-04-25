@@ -258,27 +258,6 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(self.voucher.offers.first().name, 'cond offer test 3')
         self.assertEqual(self.voucher.offers.first().offer_group.order, 5)
 
-    # def test_order_offers(self):
-    #     qs = ConditionalOffer.objects.all()
-    #     self.assertEqual(qs[0].offer_group.order, 5)
-    #     self.assertEqual(qs[0].name, 'cond offer test 3')
-    #     self.assertEqual(qs[1].offer_group.order, 3)
-    #     self.assertEqual(qs[1].name, 'cond offer test 1')
-    #     self.assertEqual(qs[2].offer_group.order, 3)
-    #     self.assertEqual(qs[2].name, 'cond offer test 2')
-    #     self.assertEqual(qs[3].offer_group.order, 8)
-    #     self.assertEqual(qs[3].name, 'cond offer test 4')
-    #     new_offer_group = OfferGroup.objects.create(
-    #         name='test offer group 1',
-    #         order=1
-    #     )
-    #     new_offer_group.save()
-    #     new_offer_group.offers.add(self.offer1)
-
-    #     qs = ConditionalOffer.objects.all()
-    #     self.assertEqual(qs[0].offer_group.order, 5)
-    #     self.assertEqual(qs[0].name, 'cond offer test 3')
-
     def test_offer_group1(self):
         qs = ConditionalOffer.objects.filter(offer_group=self.offer_group1)
         self.assertIn(self.offer1, qs)
