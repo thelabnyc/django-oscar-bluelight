@@ -15,6 +15,8 @@ class OffersDashboardApplication(Application):
     compound_condition_create_view = get_class('dashboard.offers.views', 'CompoundConditionCreateView')
     condition_update_view = get_class('dashboard.offers.views', 'ConditionUpdateView')
 
+    offer_group_create_view = get_class('dashboard.offers.views', 'OfferGroupCreateView')
+
     def get_urls(self):
         base_urls = super().get_urls()
         custom_urls = [
@@ -30,6 +32,9 @@ class OffersDashboardApplication(Application):
             url(r'^conditions/new-compound/$', self.compound_condition_create_view.as_view(), name='condition-create-compound'),
             url(r'^conditions/(?P<pk>[0-9]+)/$', self.condition_update_view.as_view(), name='condition-update'),
             url(r'^conditions/(?P<pk>[0-9]+)/delete/$', self.condition_delete_view.as_view(), name='condition-delete'),
+
+            # offer group
+
         ]
         return base_urls + self.post_process_urls(custom_urls)
 
