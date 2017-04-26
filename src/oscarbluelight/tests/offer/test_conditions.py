@@ -2,6 +2,8 @@ from decimal import Decimal as D
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit, CompoundCondition
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 from .base import BaseTest
+from django.test import TestCase
+from django.test import Client
 
 
 class CountConditionTest(BaseTest):
@@ -307,3 +309,7 @@ class CompoundConditionTest(BaseTest):
 
         # Saving the proxy instance  should work too
         b.save()
+
+
+class ConditionURL(TestCase):
+
