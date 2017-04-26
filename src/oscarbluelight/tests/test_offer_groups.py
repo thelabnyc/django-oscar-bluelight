@@ -447,7 +447,12 @@ class TestOfferGroupView(TestCase):
     def test_get(self):
         self.client.login(username='john', password='johnpassword')
         response = self.client.get(reverse('dashboard:offergroup-list'))
+        # response = self.client.get('/dashboard/offers/')
         print(response)
+        print(response.template_name)
+        # print(response.resolver_match)
+        # print(response.context)
+        # print(dir(response))
         self.assertEqual(response.status_code, 200)
 
 

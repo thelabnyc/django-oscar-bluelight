@@ -20,7 +20,7 @@
 {% block header %}
 <div class="page-header">
         <p class="pull-right">
-            <a href="{% url 'dashboard:offer-group-create' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new offer group" %}</a>
+            <a href="{% url 'dashboard:offergroup-edit' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new offer group" %}</a>
         </p>
         <h1>{% trans "Offer Groups" %}</h1>
     </div>
@@ -40,7 +40,7 @@
             <caption>
                 <i class="icon-gift icon-large"></i>{{ queryset_description }}
                 {% if is_filtered %}
-                    <a href="{% url 'dashboard:offer-group-list' %}" >{% trans "Reset" %}</a>
+                    <a href="{% url 'dashboard:offergroup-list' %}" >{% trans "Reset" %}</a>
                 {% endif %}
             </caption>
             {% if offer_groups %}
@@ -51,7 +51,7 @@
                 </tr>
                 {% for offer_group in offer_groups %}
                     <tr>
-                        <td><a href="{% url 'dashboard:offer-group-create' pk=offer_group.pk %}">{{ offer_group.name }}</a></td>
+                        <td><a href="{% url 'dashboard:offergroup-edit' pk=offer_group.pk %}">{{ offer_group.name }}</a></td>
                         <td>{{ offer_group.name|default:"-" }}</td>
                         <td>{{ offer_group.order|default:"0" }}</td>
                         <!-- <td>
