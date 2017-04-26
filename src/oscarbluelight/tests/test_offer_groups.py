@@ -42,7 +42,7 @@ class TestOfferGroup(TestCase):
 
         self.offer_group1 = OfferGroup(
             name='test',
-            order=1
+            priority=1
         )
         self.offer_group1.save()
         self.offer_group1.offers.add(self.offer1)
@@ -51,7 +51,7 @@ class TestOfferGroup(TestCase):
     def test_create_offer_group(self):
         self.assertIsNotNone(self.offer_group1)
         self.assertEqual(self.offer_group1.name, 'test')
-        self.assertEqual(self.offer_group1.order, 1)
+        self.assertEqual(self.offer_group1.priority, 1)
         self.assertIn(self.offer1, self.offer_group1.offers.all() )
 
     def test_add_to_offer_group(self):
@@ -75,17 +75,17 @@ class TestOfferGroup(TestCase):
     def test_offer_group_order(self):
         offer_group1 = OfferGroup.objects.create(
             name='test offer group 1',
-            order=2
+            priority=2
         )
         offer_group1.save()
         offer_group2 = OfferGroup.objects.create(
             name='test offer group 2',
-            order=3
+            priority=3
         )
         offer_group2.save()
         offer_group3 = OfferGroup.objects.create(
             name='test offer group 3',
-            order=4
+            priority=4
         )
         offer_group3.save()
         condition1 = Condition(name='test condition 2')
@@ -112,7 +112,7 @@ class TestOfferGroup(TestCase):
         offer1.save()
 
         offer_group1.offers.add(offer1)
-        self.assertEqual(offer1.offer_group.order, 2)
+        self.assertEqual(offer1.offer_group.priority, 2)
 
         offer2 = ConditionalOffer(name='test5')
         offer2.condition = condition1
@@ -120,7 +120,7 @@ class TestOfferGroup(TestCase):
         offer2.priority = 20
         offer2.save()
         offer_group2.offers.add(offer2)
-        self.assertEqual(offer2.offer_group.order, 3)
+        self.assertEqual(offer2.offer_group.priority, 3)
 
         condition2 = Condition(name='test condition 2')
         condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
@@ -138,7 +138,7 @@ class TestOfferGroup(TestCase):
         offer3.save()
 
         offer_group3.offers.add(offer3)
-        self.assertEqual(offer3.offer_group.order, 4)
+        self.assertEqual(offer3.offer_group.priority, 4)
 
 
 class TestConsumeOfferGroupOffer(TestCase):
@@ -162,19 +162,19 @@ class TestConsumeOfferGroupOffer(TestCase):
 
         self.offer_group1 = OfferGroup.objects.create(
             name='test offer group 1',
-            order=3
+            priority=3
         )
         self.offer_group1.save()
 
         self.offer_group2 = OfferGroup.objects.create(
             name='test offer group 2',
-            order=5
+            priority=5
         )
         self.offer_group2.save()
 
         self.offer_group3 = OfferGroup.objects.create(
             name='test offer group 3',
-            order=8
+            priority=8
         )
         self.offer_group3.save()
 
@@ -254,12 +254,12 @@ class TestConsumeOfferGroupOffer(TestCase):
 
 
     def test_offer_group2(self):
-        qs = OfferGroup.objects.filter(order=5)
+        qs = OfferGroup.objects.filter(priority=5)
         self.assertEqual(qs.first().offers.first(), self.offer3)
 
     def test_voucher_order(self):
         self.assertEqual(self.voucher.offers.first().name, 'cond offer test 3')
-        self.assertEqual(self.voucher.offers.first().offer_group.order, 5)
+        self.assertEqual(self.voucher.offers.first().offer_group.priority, 5)
 
     def test_offer_group1(self):
         qs = ConditionalOffer.objects.filter(offer_group=self.offer_group1)
@@ -268,7 +268,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         qs = OfferGroup.objects.all()
         self.assertIn(self.offer1, qs[0].offers.all())
         self.assertIn(self.offer2, qs[0].offers.all())
-        qs = OfferGroup.objects.filter(order=8)
+        qs = OfferGroup.objects.filter(priority=8)
         self.assertEqual(qs[0].offers.first().name, 'cond offer test 4')
 
 
@@ -326,7 +326,7 @@ class TestConsumeOfferGroupOffer(TestCase):
 
         self.offer_group3.offers.add(offer)
 
-        qs = OfferGroup.objects.all().order_by('order')
+        qs = OfferGroup.objects.all().order_by('priority')
         self.assertEqual(qs.first(), self.offer_group1)
 
         qs = qs.last().offers.all().order_by('priority')
@@ -370,7 +370,7 @@ class TestConsumeOfferGroupOffer(TestCase):
 class TestOfferGroupForm(TestCase):
     def setUp(self):
         self.name = 'An Offer Group'
-        self.order = 5
+        self.priority = 5
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
@@ -389,7 +389,7 @@ class TestOfferGroupForm(TestCase):
         self.offer.save()
 
     def test_form_valid(self):
-        data = {'name': self.name, 'order': self.order}
+        data = {'name': self.name, 'priority': self.priority}
         form = OfferGroupForm(data=data)
         self.assertTrue(form.is_valid())
 
@@ -399,14 +399,14 @@ class TestOfferGroupForm(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_create_offer_group(self):
-        data = {'name': self.name, 'order': self.order}
+        data = {'name': self.name, 'priority': self.priority}
         form = OfferGroupForm(data=data)
         form.save()
         qs = OfferGroup.objects.all()
         self.assertIsInstance(qs.first(), OfferGroup)
 
     def test_create_offer_offer_group(self):
-        data = {'name': self.name, 'order': self.order}
+        data = {'name': self.name, 'priority': self.priority}
         form = OfferGroupForm(data=data)
         form.save()
         
@@ -419,7 +419,7 @@ class TestOfferGroupView(TestCase):
     def setUp(self):
         self.client = Client()
         self.name = 'An Offer Group'
-        self.order = 5
+        self.priority = 5
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
@@ -438,7 +438,7 @@ class TestOfferGroupView(TestCase):
         self.offer.save()
         self.offer_group = OfferGroup.objects.create(
             name="someName",
-            order=5
+            priority=5
         )
         self.offer_group.offers.add(self.offer)
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
@@ -449,7 +449,7 @@ class TestOfferGroupView(TestCase):
         response = self.client.get(reverse('dashboard:offergroup-list'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data.get('offergroup_list')[0].name, 'someName')
-        self.assertEqual(response.context_data.get('offergroup_list')[0].order, 5)
+        self.assertEqual(response.context_data.get('offergroup_list')[0].priority, 5)
         print(response.context)
 
     # def test_get_create(self):

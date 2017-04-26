@@ -27,7 +27,7 @@ class CompoundConditionAdmin(admin.ModelAdmin):
 
 
 class ConditionalOfferAdmin(admin.StackedInline):
-    max_num = 4
+    max_num = 3
     list_display = ('name',
                     'offer_type',
                     'start_datetime',
@@ -55,9 +55,9 @@ class ConditionalOfferAdmin(admin.StackedInline):
 class OfferGroupAdmin(admin.ModelAdmin):
     list_filter = ('name', )
     list_display = ('name',
-                    'order'
+                    'priority'
                     )
-    fields = ('name', 'order', )
+    fields = ('name', 'priority', )
     inlines = [
         ConditionalOfferAdmin,
     ]

@@ -42,14 +42,14 @@ class OfferGroup(models.Model):
     ordered group of Offers
     '''
     name = models.CharField(max_length=64, null=False, blank=True)
-    order = models.IntegerField()
+    priority = models.IntegerField()
 
     def __str__(self):
-        return 'name: {}, order: {}'.format(self.name, self.order)
+        return 'name: {}, priority: {}'.format(self.name, self.priority)
 
     class Meta:
         verbose_name = _('OfferGroup')
-        ordering = ['order', ]
+        ordering = ['priority', ]
 
 
 class ConditionalOffer(AbstractConditionalOffer):

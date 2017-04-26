@@ -120,4 +120,4 @@ class RestrictionsForm(BaseRestrictionsForm):
 class OfferGroupForm(forms.ModelForm):
     class Meta:
         model = OfferGroup
-        fields = ('name', 'order', )
+        fields = ('name', 'priority', )
