@@ -450,6 +450,7 @@ class TestOfferGroupView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data.get('offergroup_list')[0].name, 'someName')
         self.assertEqual(response.context_data.get('offergroup_list')[0].order, 5)
+        print(response.context)
 
     # def test_get_create(self):
     #     self.client.login(username='john', password='johnpassword')

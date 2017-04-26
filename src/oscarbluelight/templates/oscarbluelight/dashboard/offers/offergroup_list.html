@@ -43,14 +43,14 @@
                     <a href="{% url 'dashboard:offergroup-list' %}" >{% trans "Reset" %}</a>
                 {% endif %}
             </caption>
-            {% if offergroups %}
+            {% if offergroup_list %}
                 <tr>
                     <th>{% trans 'Name' %}</th>
                     <th>{% trans 'Order' %}</th>
                     <th>{% trans 'Used by Offers' %}</th>
                     <th></th>
                 </tr>
-                {% for offergroup in offergroups %}
+                {% for offergroup in offergroup_list %}
                     <tr>
                         <td><a href="{% url 'dashboard:offergroup-update' pk=offergroup.pk %}">{{ offergroup.name }}</a></td>
                         <td>{{ offergroup.name|default:"-" }}</td>
@@ -86,3 +86,4 @@
         {% include "dashboard/partials/pagination.html" %}
     </form>
 {% endblock dashboard_content %}
+
