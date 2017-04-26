@@ -304,15 +304,22 @@ class OfferGroupListView(ListView):
     success_url = reverse_lazy('dashboard:offergroup-list')
 
 
-# class OfferGroupDeleteView(DeleteView):
-#     model = OfferGroup
-#     template_name = 'dashboard/offers/offergroup_delete.html'
-#     form_class = OfferGroupForm
-#     success_url = reverse_lazy('dashboard:offergroup-delete')
+class OfferGroupDeleteView(DeleteView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_delete.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-delete')
 
 
-# class OfferGroupUpdateView(UpdateView):
-#     model = OfferGroup
-#     template_name = 'dashboard/offers/offergroup_edit.html'
-#     form_class = OfferGroupForm
-#     success_url = reverse_lazy('dashboard:offergroup-edit')
+class OfferGroupUpdateView(UpdateView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_edit.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-edit')
+
+
+class OfferGroupUpdateView(UpdateView):
+    model = OfferGroup
+    template_name = 'dashboard:offergroup-edit'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-edit')

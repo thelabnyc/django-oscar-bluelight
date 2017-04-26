@@ -444,15 +444,21 @@ class TestOfferGroupView(TestCase):
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
         self.user.save()
 
-    def test_get(self):
+    def test_get_list(self):
         self.client.login(username='john', password='johnpassword')
         response = self.client.get(reverse('dashboard:offergroup-list'))
-        # response = self.client.get('/dashboard/offers/')
-        print(response)
-        print(response.template_name)
-        # print(response.resolver_match)
-        # print(response.context)
-        # print(dir(response))
         self.assertEqual(response.status_code, 200)
+
+    # def test_get_create(self):
+    #     self.client.login(username='john', password='johnpassword')
+    #     response = self.client.get(reverse('dashboard:offergroup-create'))
+    #     self.assertEqual(response.status_code, 200)
+
+    # def test_get_delete(self):
+    #     self.client.login(username='john', password='johnpassword')
+    #     response = self.client.get(reverse('dashboard:offergroup-delete'))
+    #     self.assertEqual(response.status_code, 200)
+    
+
 
 

@@ -4,7 +4,7 @@
 {% block body_class %}{{ block.super }} create-page{% endblock %}
 
 {% block title %}
-    {% trans "Delete benefit" %} | {% trans "Benefits" %} | {{ block.super }}
+    {% trans "Delete Offer Group" %} | {% trans "Offer Groups" %} | {{ block.super }}
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -13,10 +13,10 @@
             <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
         </li>
         <li>
-            <a href="{% url 'dashboard:benefit-list' %}">{% trans "Benefits" %}</a>
+            <a href="{% url 'dashboard:offergroup-list' %}">{% trans "Offer Groups" %}</a>
         </li>
         <li>
-            <a href="{% url 'dashboard:benefit-update' pk=object.pk %}">'{{ object.name }}'</a>
+            <a href="{% url 'dashboard:offergroup-edit' pk=object.pk %}">'{{ object.name }}'</a>
         </li>
         <li class="active">{% trans "Delete?" %}</li>
     </ul>

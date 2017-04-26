@@ -25,7 +25,7 @@
     </li>
     {% if offer_group.pk %}
         <li>
-            <a href="{% url 'dashboard:offergroup-update' pk=offer_group.pk %}">{{ offer_group.name }}</a>
+            <a href="{% url 'dashboard:offergroup-edit' pk=offer_group.pk %}">{{ offer_group.name }}</a>
         </li>
     {% else %}
         <li>
