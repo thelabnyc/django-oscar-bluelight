@@ -21,11 +21,11 @@
         <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
     </li>
     <li>
-        <a href="{% url 'dashboard:offer-group-list' %}">{% trans "offer groups" %}</a>
+        <a href="{% url 'dashboard:offergroup-list' %}">{% trans "offer groups" %}</a>
     </li>
     {% if offer_group.pk %}
         <li>
-            <a href="{% url 'dashboard:offer-group-update' pk=offer_group.pk %}">{{ offer_group.name }}</a>
+            <a href="{% url 'dashboard:offergroup-update' pk=offer_group.pk %}">{{ offer_group.name }}</a>
         </li>
     {% else %}
         <li>

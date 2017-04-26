@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from decimal import Decimal as D
 from django.test import TestCase
+from django.test import Client
+from django.core.urlresolvers import reverse
 from oscarbluelight.offer.models import (
     OfferGroup,
     Benefit,
@@ -9,7 +11,7 @@ from oscarbluelight.offer.models import (
     CompoundCondition,
     ConditionalOffer
 )
-from oscarbluelight.dashboard.offers.forms import OfferGroupForm
+from oscarbluelight.dashboard.offers.forms import OfferGroupForm, RestrictionsForm
 from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import User, Group
 from oscar.test.factories import create_basket, create_product, create_stockrecord
@@ -369,6 +371,22 @@ class TestOfferGroupForm(TestCase):
     def setUp(self):
         self.name = 'An Offer Group'
         self.order = 5
+        self.all_products = Range()
+        self.all_products.includes_all_products = True
+        self.all_products.save()
+        self.condition = Condition(name='test condition 2')
+        self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        self.condition.value = 5
+        self.condition.range = self.all_products
+        self.condition.save()
+        self.benefit = Benefit()
+        self.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        self.benefit.value = 1
+        self.benefit.save()
+        self.offer = ConditionalOffer(name='test3')
+        self.offer.condition = self.condition
+        self.offer.benefit = self.benefit
+        self.offer.save()
 
     def test_form_valid(self):
         data = {'name': self.name, 'order': self.order}
@@ -386,4 +404,50 @@ class TestOfferGroupForm(TestCase):
         form.save()
         qs = OfferGroup.objects.all()
         self.assertIsInstance(qs.first(), OfferGroup)
+
+    def test_create_offer_offer_group(self):
+        data = {'name': self.name, 'order': self.order}
+        form = OfferGroupForm(data=data)
+        form.save()
+        
+        qs = OfferGroup.objects.all()
+        self.assertIsInstance(qs.first(), OfferGroup)
+        qs.first().offers.add(self.offer)
+        self.assertIn(self.offer, qs.first().offers.all())
+
+class TestOfferGroupView(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.name = 'An Offer Group'
+        self.order = 5
+        self.all_products = Range()
+        self.all_products.includes_all_products = True
+        self.all_products.save()
+        self.condition = Condition(name='test condition 2')
+        self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        self.condition.value = 5
+        self.condition.range = self.all_products
+        self.condition.save()
+        self.benefit = Benefit()
+        self.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        self.benefit.value = 1
+        self.benefit.save()
+        self.offer = ConditionalOffer(name='test3')
+        self.offer.condition = self.condition
+        self.offer.benefit = self.benefit
+        self.offer.save()
+        self.offer_group = OfferGroup.objects.create(
+            name="someName",
+            order=5
+        )
+        self.offer_group.offers.add(self.offer)
+        self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
+        self.user.save()
+
+    def test_get(self):
+        self.client.login(username='john', password='johnpassword')
+        response = self.client.get(reverse('dashboard:offergroup-list'))
+        print(response)
+        self.assertEqual(response.status_code, 200)
+
 

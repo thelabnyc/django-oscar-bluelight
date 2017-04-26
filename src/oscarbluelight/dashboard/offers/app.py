@@ -16,6 +16,7 @@ class OffersDashboardApplication(Application):
     condition_update_view = get_class('dashboard.offers.views', 'ConditionUpdateView')
 
     offer_group_create_view = get_class('dashboard.offers.views', 'OfferGroupCreateView')
+    offer_group_list_view = get_class('dashboard.offers.views', 'OfferGroupListView')
 
     def get_urls(self):
         base_urls = super().get_urls()
@@ -34,7 +35,10 @@ class OffersDashboardApplication(Application):
             url(r'^conditions/(?P<pk>[0-9]+)/delete/$', self.condition_delete_view.as_view(), name='condition-delete'),
 
             # offer group
-
+            url(r'^offer_group/$', self.offer_group_list_view.as_view(), name='offergroup-list'),
+            url(r'^offer_group/new/$', self.offer_group_create_view.as_view(), name='offergroup-create'),
+            # url(r'^offer_group/(?P<pk>[0-9]+)/$', self.offer_group_update_view.as_view(), name='offergroup-update'),
+            # url(r'^offer_group/(?P<pk>[0-9]+)/delete$', self.offer_group_delete_view.as_view(), name='offergroup-delete'),
         ]
         return base_urls + self.post_process_urls(custom_urls)
 

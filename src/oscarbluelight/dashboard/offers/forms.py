@@ -81,13 +81,14 @@ class BenefitSelectionForm(forms.ModelForm):
 class ConditionSelectionForm(forms.ModelForm):
     class Meta:
         model = ConditionalOffer
-        fields = ('condition', 'offer_group')
+        fields = ('condition', )
 
 
 class RestrictionsForm(BaseRestrictionsForm):
     limit_by_group = forms.BooleanField(
         label=_("Limit offer to selected user groups"),
         required=False)
+
     groups = forms.ModelMultipleChoiceField(
         label=_("User Groups"),
         queryset=Group.objects.get_queryset(),
@@ -97,14 +98,14 @@ class RestrictionsForm(BaseRestrictionsForm):
     offer_groups = forms.ModelMultipleChoiceField(
         label=_('Offer Group'),
         queryset=OfferGroup.objects.get_queryset(),
-        help_text=_('OfferGroup to which this offer belongs'),
-        required=False
+        help_text=_('Offer group to which this offer belongs'),
+        required=True
     )
 
     class Meta:
         model = ConditionalOffer
         fields = ('start_datetime', 'end_datetime',
-                  'limit_by_group', 'groups',
+                  'limit_by_group', 'groups', 'offer_groups',
                   'max_basket_applications', 'max_user_applications',
                   'max_global_applications', 'max_discount')
 
