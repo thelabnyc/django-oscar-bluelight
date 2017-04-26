@@ -292,9 +292,9 @@ class ConditionUpdateView(UpdateView):
 
 class OfferGroupCreateView(CreateView):
     model = OfferGroup
-    template = 'dashboard/offers/offergroup_edit.html'
+    template = 'dashboard/offers/offergroup_create.html'
     form_class = OfferGroupForm
-    success_url = reverse_lazy('dashboard:offergroup-edit')
+    success_url = reverse_lazy('dashboard:offergroup-create')
 
 
 class OfferGroupListView(ListView):
@@ -307,19 +307,11 @@ class OfferGroupListView(ListView):
 class OfferGroupDeleteView(DeleteView):
     model = OfferGroup
     template_name = 'dashboard/offers/offergroup_delete.html'
-    form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-delete')
 
 
 class OfferGroupUpdateView(UpdateView):
     model = OfferGroup
     template_name = 'dashboard/offers/offergroup_edit.html'
-    form_class = OfferGroupForm
-    success_url = reverse_lazy('dashboard:offergroup-edit')
-
-
-class OfferGroupUpdateView(UpdateView):
-    model = OfferGroup
-    template_name = 'dashboard:offergroup-edit'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-edit')

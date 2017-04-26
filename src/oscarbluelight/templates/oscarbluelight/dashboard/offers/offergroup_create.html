@@ -34,3 +34,11 @@
     {% endif %}
 </ul>
 {% endblock %}
+
+{% block headertext %}
+    {% if not offer_group.pk %}
+        {% trans "Create new offer group" %}
+    {% else %}
+        {{ offer_group.name }}
+    {% endif %}
+{% endblock %}

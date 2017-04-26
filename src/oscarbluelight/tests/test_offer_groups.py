@@ -448,6 +448,8 @@ class TestOfferGroupView(TestCase):
         self.client.login(username='john', password='johnpassword')
         response = self.client.get(reverse('dashboard:offergroup-list'))
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data.get('offergroup_list')[0].name, 'someName')
+        self.assertEqual(response.context_data.get('offergroup_list')[0].order, 5)
 
     # def test_get_create(self):
     #     self.client.login(username='john', password='johnpassword')
@@ -456,7 +458,7 @@ class TestOfferGroupView(TestCase):
 
     # def test_get_delete(self):
     #     self.client.login(username='john', password='johnpassword')
-    #     response = self.client.get(reverse('dashboard:offergroup-delete'))
+    #     response = self.client.get(reverse('dashboard:offergroup-delete'), kwargs={'pk': 1})
     #     self.assertEqual(response.status_code, 200)
     
 
