@@ -99,7 +99,7 @@ class RestrictionsForm(BaseRestrictionsForm):
         label=_('Offer Group'),
         queryset=OfferGroup.objects.get_queryset(),
         help_text=_('Offer group to which this offer belongs'),
-        required=True
+        required=True  # TODO -- does this need to be required??
     )
 
     class Meta:

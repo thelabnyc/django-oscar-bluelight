@@ -247,7 +247,7 @@ __all__ = [
     'BasketDiscount', 'ShippingDiscount', 'PostOrderAction',
     'SHIPPING_DISCOUNT', 'ZERO_DISCOUNT', 'ConditionalOffer',
     'Benefit', 'Condition', 'Range', 'RangeProduct',
-    'RangeProductFileUpload',
+    'RangeProductFileUpload', 'OfferGroup',
 ]
 
 
