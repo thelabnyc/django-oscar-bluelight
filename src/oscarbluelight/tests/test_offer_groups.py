@@ -140,6 +140,14 @@ class TestOfferGroup(TestCase):
         offer_group3.offers.add(offer3)
         self.assertEqual(offer3.offer_group.priority, 4)
 
+    def test_unique_priority(self):
+        offer_group = OfferGroup(
+            name='test',
+            priority=1
+        )
+        with self.assertRaises(Exception):
+            offer_group.save()
+
 
 class TestConsumeOfferGroupOffer(TestCase):
     def setUp(self):
@@ -450,18 +458,24 @@ class TestOfferGroupView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data.get('offergroup_list')[0].name, 'someName')
         self.assertEqual(response.context_data.get('offergroup_list')[0].priority, 5)
-        print(response.context)
 
-    # def test_get_create(self):
-    #     self.client.login(username='john', password='johnpassword')
-    #     response = self.client.get(reverse('dashboard:offergroup-create'))
-    #     self.assertEqual(response.status_code, 200)
+    def test_create(self):
+        self.client.login(username='john', password='johnpassword')
+        print(reverse('dashboard:offergroup-create'))
+        response = self.client.post(
+            reverse('dashboard:offergroup-create', 
+                kwargs={'name': "another Test", 'priority': 17 }
+            )
+        )
+        self.assertEqual(response.status_code, 201)
+        qs = OfferGroup.objects.filter(name='another Test')
+        self.assertIsInstance(qs.first(), OfferGroup)
 
-    # def test_get_delete(self):
-    #     self.client.login(username='john', password='johnpassword')
-    #     response = self.client.get(reverse('dashboard:offergroup-delete'), kwargs={'pk': 1})
-    #     self.assertEqual(response.status_code, 200)
+    def test_delete(self):
+        self.client.login(username='john', password='johnpassword')
+        response = self.client.post(
+            reverse('dashboard:offergroup-delete', args=[self.offer_group.pk])
+        )
+        self.assertEqual(response.status_code, 302)
     
-
-
 

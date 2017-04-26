@@ -42,7 +42,7 @@ class OfferGroup(models.Model):
     ordered group of Offers
     '''
     name = models.CharField(max_length=64, null=False, blank=True)
-    priority = models.IntegerField()
+    priority = models.IntegerField(null=False, unique=True)
 
     def __str__(self):
         return 'name: {}, priority: {}'.format(self.name, self.priority)

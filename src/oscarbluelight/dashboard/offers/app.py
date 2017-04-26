@@ -40,7 +40,7 @@ class OffersDashboardApplication(Application):
             url(r'^offer_group/$', self.offergroup_list_view.as_view(), name='offergroup-list'),
             url(r'^offer_group/new/$', self.offergroup_create_view.as_view(), name='offergroup-create'),
             url(r'^offer_group/(?P<pk>[0-9]+)/$', self.offergroup_update_view.as_view(), name='offergroup-update'),
-            url(r'^offer_group/(?P<pk>[0-9]+)/delete$', self.offergroup_delete_view.as_view(), name='offergroup-delete'),
+            url(r'^offer_group/(?P<pk>[0-9]+)/delete/$', self.offergroup_delete_view.as_view(), name='offergroup-delete'),
         ]
         return base_urls + self.post_process_urls(custom_urls)
 
