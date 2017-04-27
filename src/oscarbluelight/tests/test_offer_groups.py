@@ -462,6 +462,9 @@ class TestOfferGroupView(TestCase):
     def test_create(self):
         self.client.login(username='john', password='johnpassword')
         print(reverse('dashboard:offergroup-create'))
+        resp_get = self.client.get(reverse('dashboard:offergroup-create'))
+        self.assertEqual(resp_get.status_code, 200)
+
         response = self.client.post(
             reverse('dashboard:offergroup-create', 
                 kwargs={'name': "another Test", 'priority': 17 }
