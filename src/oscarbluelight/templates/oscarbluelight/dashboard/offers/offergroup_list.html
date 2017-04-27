@@ -46,14 +46,14 @@
             {% if object_list %}
                 <tr>
                     <th>{% trans 'Name' %}</th>
-                    <th>{% trans 'Order' %}</th>
+                    <th>{% trans 'Priority' %}</th>
                     <th>{% trans 'Used by Offers' %}</th>
                     <th>{% trans 'Actions' %}</th>
                 </tr>
                 {% for offergroup in object_list %}
                     <tr>
                         <td>{{ offergroup.name|default:"-" }}</td>
-                        <td>{{ offergroup.order|default:"0" }}</td>
+                        <td>{{ offergroup.priority|default:"0" }}</td>
                         <td>
                             <ul>
                                 {% for offer in offergroup.offers.all %}

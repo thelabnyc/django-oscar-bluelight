@@ -1,8 +1,15 @@
 from datetime import datetime, timedelta
+from collections import defaultdict
 from decimal import Decimal as D
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.test import Client
 from django.core.urlresolvers import reverse
+from oscarbluelight.dashboard.offers.views import(
+    OfferGroupCreateView,
+    OfferGroupListView,
+    OfferGroupDeleteView,
+    OfferGroupUpdateView
+)
 from oscarbluelight.offer.models import (
     OfferGroup,
     Benefit,
@@ -17,7 +24,7 @@ from django.contrib.auth.models import User, Group
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 
 
-class TestOfferGroup(TestCase):
+class TestOfferGroupModel(TestCase):
     def setUp(self):
         self.all_products = Range()
         self.all_products.includes_all_products = True
@@ -168,23 +175,23 @@ class TestConsumeOfferGroupOffer(TestCase):
         create_stockrecord(self.product, item_price, num_in_stock=item_quantity * 2)
         self.basket.add_product(self.product, quantity=item_quantity)
 
-        self.offer_group1 = OfferGroup.objects.create(
-            name='test offer group 1',
+        self.offer_group_elvis = OfferGroup.objects.create(
+            name='test offer group elvis',
             priority=3
         )
-        self.offer_group1.save()
+        self.offer_group_elvis.save()
 
-        self.offer_group2 = OfferGroup.objects.create(
-            name='test offer group 2',
+        self.offer_group_beatles = OfferGroup.objects.create(
+            name='test offer group beatles',
             priority=5
         )
-        self.offer_group2.save()
+        self.offer_group_beatles.save()
 
-        self.offer_group3 = OfferGroup.objects.create(
+        self.offer_group_stones = OfferGroup.objects.create(
             name='test offer group 3',
             priority=8
         )
-        self.offer_group3.save()
+        self.offer_group_stones.save()
 
         self.condition1 = Condition(name='test condition 1')
         self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
@@ -202,7 +209,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.offer1.priority = 10
         self.offer1.save()
 
-        self.offer_group1.offers.add(self.offer1)
+        self.offer_group_elvis.offers.add(self.offer1)
 
 
         self.benefit2 = Benefit()
@@ -216,14 +223,14 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.offer2.priority = 20
         self.offer2.save()
 
-        self.offer_group1.offers.add(self.offer2)
+        self.offer_group_elvis.offers.add(self.offer2)
 
         self.offer3 = ConditionalOffer(name='cond offer test 3')
         self.offer3.condition = self.condition1
         self.offer3.benefit = self.benefit1
         self.offer3.save()
         self.offer3.priority = 30
-        self.offer_group2.offers.add(self.offer3)
+        self.offer_group_beatles.offers.add(self.offer3)
 
         self.value_condition = Condition(name='test condition 2')
         self.value_condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
@@ -241,7 +248,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.offer4.priority = 40
         self.offer4.save()
 
-        self.offer_group3.offers.add(self.offer4)
+        self.offer_group_stones.offers.add(self.offer4)
 
         self.user = User.objects.create_user(
             username='bob', email='bob@example.com', password='foo')
@@ -258,10 +265,10 @@ class TestConsumeOfferGroupOffer(TestCase):
             limit_usage_by_group=False
         )
         self.voucher.offers.add(self.offer3)
-        self.offer_group2.offers.add(self.voucher.offers.first())
+        self.offer_group_beatles.offers.add(self.voucher.offers.first())
 
 
-    def test_offer_group2(self):
+    def test_offer_group_beatles(self):
         qs = OfferGroup.objects.filter(priority=5)
         self.assertEqual(qs.first().offers.first(), self.offer3)
 
@@ -269,8 +276,8 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(self.voucher.offers.first().name, 'cond offer test 3')
         self.assertEqual(self.voucher.offers.first().offer_group.priority, 5)
 
-    def test_offer_group1(self):
-        qs = ConditionalOffer.objects.filter(offer_group=self.offer_group1)
+    def test_offer_group_elvis(self):
+        qs = ConditionalOffer.objects.filter(offer_group=self.offer_group_elvis)
         self.assertIn(self.offer1, qs)
         self.assertIn(self.offer2, qs)
         qs = OfferGroup.objects.all()
@@ -281,21 +288,41 @@ class TestConsumeOfferGroupOffer(TestCase):
 
 
     def test_apply_offer_group(self):
-        qs = ConditionalOffer.objects.all()
-        offer = qs[0]
-        line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+        pass
+        # from oscarbluelight.offer.applicator import get_offergroup_offers
+        # qs = OfferGroup.objects.all()
+        # # offers = ConditionalOffer.objects.all()
+        # priorities = get_offergroup_offers(ConditionalOffer.objects.all())
+        # print(priorities)
+        # results = defaultdict(list)
+        # for item_a in qs:
+        #     for item_b in qs:
+        #         if item_a == item_b:
+        #             continue
 
-        discount = offer.apply_benefit(self.basket)
-        self.assertEqual(discount.discount, D('20.0'))
-        offer = qs[3]
-        discount = offer.apply_benefit(self.basket)
+        #         for p in priorities.keys():
+        #             if item_a in priorities[p] and item_b in priorities[p]:
+        #                 print(item_a, item_b, " ok")
+        #                 results[item_a].extend(item_b)
+        #             else:
+        #                 print(item_a, item_b, " not ok")
+        # self.assertTrue(len(results) > 0)
 
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+    #     qs = ConditionalOffer.objects.all()
+    #     offer = qs[0]
+    #     line = self.basket.all_lines()[0]
+    #     self.assertEqual(line.quantity_with_discount, 0)
+    #     self.assertEqual(line.quantity_without_discount, 5)
 
-    def test_apply_another_offer_group(self):
+    #     discount = offer.apply_benefit(self.basket)
+    #     self.assertEqual(discount.discount, D('20.0'))
+    #     offer = qs[3]
+    #     discount = offer.apply_benefit(self.basket)
+
+    #     self.assertEqual(line.quantity_with_discount, 0)
+    #     self.assertEqual(line.quantity_without_discount, 5)
+
+    def test_add_another_offer_group(self):
         '''
         run through a tested test
         '''
@@ -332,10 +359,10 @@ class TestConsumeOfferGroupOffer(TestCase):
         offer.priority = 1
         offer.save()
 
-        self.offer_group3.offers.add(offer)
+        self.offer_group_stones.offers.add(offer)
 
         qs = OfferGroup.objects.all().order_by('priority')
-        self.assertEqual(qs.first(), self.offer_group1)
+        self.assertEqual(qs.first(), self.offer_group_elvis)
 
         qs = qs.last().offers.all().order_by('priority')
 
@@ -366,7 +393,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
         self.assertEqual(self.basket.total_excl_tax, D('380.00'))
 
-        qs = OfferGroup.objects.filter(name='test offer group 2')
+        qs = OfferGroup.objects.filter(name='test offer group beatles')
         voucher = qs.first().offers.all()
 
         discount = voucher[0].apply_benefit(self.basket)
@@ -426,6 +453,7 @@ class TestOfferGroupForm(TestCase):
 class TestOfferGroupView(TestCase):
     def setUp(self):
         self.client = Client()
+        self.factory = RequestFactory()
         self.name = 'An Offer Group'
         self.priority = 5
         self.all_products = Range()
@@ -461,11 +489,11 @@ class TestOfferGroupView(TestCase):
 
     def test_create(self):
         self.client.login(username='john', password='johnpassword')
-        print(reverse('dashboard:offergroup-create'))
+        # print(reverse('dashboard:offergroup-create'))
         resp_get = self.client.get(reverse('dashboard:offergroup-create'))
         self.assertEqual(resp_get.status_code, 200)
 
-        # TODO -- figure out why this is NOT working 
+        # TODO -- figure out why this is NOT working!!! 
         # response = self.client.post(
         #     reverse('dashboard:offergroup-create', 
         #         kwargs={'name': "another Test", 'priority': 17 }
@@ -481,5 +509,6 @@ class TestOfferGroupView(TestCase):
             reverse('dashboard:offergroup-delete', args=[self.offer_group.pk])
         )
         self.assertEqual(response.status_code, 302)
-    
 
+    def test_update(self):
+        pass
