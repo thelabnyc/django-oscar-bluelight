@@ -1,10 +1,9 @@
 % extends 'dashboard/layout.html' %}
 {% load i18n %}
 
-{% block body_class %}{{ block.super }} create-page{% endblock %}
 
 {% block title %}
-    {% trans "Delete Offer Group" %} | {% trans "Offer Groups" %} | {{ block.super }}
+    {% trans "Delete Offer Group" %} | {% trans "Offer Groups" %} 
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -16,7 +15,7 @@
             <a href="{% url 'dashboard:offergroup-list' %}">{% trans "Offer Groups" %}</a>
         </li>
         <li>
-            <a href="{% url 'dashboard:offergroup-edit' pk=object.pk %}">'{{ object.name }}'</a>
+            <a href="{% url 'dashboard:offergroup-delete' pk=object.pk %}">'{{ object.name }}'</a>
         </li>
         <li class="active">{% trans "Delete?" %}</li>
     </ul>
@@ -25,3 +24,14 @@
 {% block headertext %}
     {{ object.name }}
 {% endblock %}
+
+{% block dashboard_content %}
+    <form action="." method="post">
+        {% csrf_token %}
+        <p>{% trans "Are you sure you want to delete this offer group?" %}</p>
+        <div class="form-actions">
+            <button class="btn btn-lg btn-danger" type="submit" data-loading-text="{% trans 'Deleting...' %}">{% trans "Delete" %}</button> {% trans "or" %}
+            <a href="{% url 'dashboard:offergroup-list' %}">{% trans "cancel" %}</a>
+        </div>
+    </form>
+{% endblock dashboard_content %}
