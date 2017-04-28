@@ -1,9 +1,9 @@
-from django.db.models import Q, Max
+from django.db.models import Q
 from django.utils.timezone import now
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
-from collections import Counter
-from oscarbluelight.utils.ordered_set import OrderedSet
+# from oscarbluelight.utils.ordered_set import OrderedSet
+from collections import defaultdict
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
@@ -30,27 +30,25 @@ class Applicator(BaseApplicator):
         return qs.select_related('condition', 'benefit')
 
 
-def get_offergroup_offers(self, offers):
+def get_applicaple_offers(offer1, offer2):
     '''
     restrict usage to offers in available highest priority
     offergroup
     '''
-    priorities = OrderedSet()
-
+    priorities = defaultdict(list)
     cutoff = now()
     date_based = Q(
         Q(start_datetime__lte=cutoff),
         Q(end_datetime__gte=cutoff) | Q(end_datetime=None),
     )
     nondate_based = Q(start_datetime=None, end_datetime=None)
+
     qs = ConditionalOffer.objects.filter(
         date_based | nondate_based,
         status=ConditionalOffer.OPEN)
-    ogs = OfferGroup.objects.filter(offers__in=qs.all()).order_by('priority')
+    ogs = OfferGroup.objects.filter(offers__in=[offer1, offer2]).order_by('priority')
 
     for og in ogs:
-        priorities.add(og.priority)
+        priorities[og.priority].extend(og.offers.all())
 
-    for priority in priorities:
-        ogs.filter(priority=priority)
-    return ogs
+    return priorities

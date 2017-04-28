@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from collections import defaultdict
 from decimal import Decimal as D
 from django.test import TestCase, RequestFactory
 from django.test import Client
@@ -286,7 +287,27 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(qs[0].offers.first().name, 'cond offer test 4')
 
 
-    # def test_apply_offer_group(self):
+    def test_apply_offer_group(self):
+        pass
+        # from oscarbluelight.offer.applicator import get_offergroup_offers
+        # qs = OfferGroup.objects.all()
+        # # offers = ConditionalOffer.objects.all()
+        # priorities = get_offergroup_offers(ConditionalOffer.objects.all())
+        # print(priorities)
+        # results = defaultdict(list)
+        # for item_a in qs:
+        #     for item_b in qs:
+        #         if item_a == item_b:
+        #             continue
+
+        #         for p in priorities.keys():
+        #             if item_a in priorities[p] and item_b in priorities[p]:
+        #                 print(item_a, item_b, " ok")
+        #                 results[item_a].extend(item_b)
+        #             else:
+        #                 print(item_a, item_b, " not ok")
+        # self.assertTrue(len(results) > 0)
+
     #     qs = ConditionalOffer.objects.all()
     #     offer = qs[0]
     #     line = self.basket.all_lines()[0]
