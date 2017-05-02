@@ -170,7 +170,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.all_products.save()
         item_price = 200.0
         item_quantity = 5
-        self.basket = create_basket(empty=True)
+        self.basket = create_basket()
         self.product = create_product()
         create_stockrecord(self.product, item_price, num_in_stock=item_quantity * 2)
         self.basket.add_product(self.product, quantity=item_quantity)
@@ -288,39 +288,29 @@ class TestConsumeOfferGroupOffer(TestCase):
 
 
     def test_apply_offer_group(self):
-        pass
-        # from oscarbluelight.offer.applicator import get_offergroup_offers
-        # qs = OfferGroup.objects.all()
-        # # offers = ConditionalOffer.objects.all()
-        # priorities = get_offergroup_offers(ConditionalOffer.objects.all())
-        # print(priorities)
-        # results = defaultdict(list)
-        # for item_a in qs:
-        #     for item_b in qs:
-        #         if item_a == item_b:
-        #             continue
+        qs = OfferGroup.objects.all()
+        offers = qs[0].offers.all()
+        offer = offers[0]
+        line = self.basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 1)
 
-        #         for p in priorities.keys():
-        #             if item_a in priorities[p] and item_b in priorities[p]:
-        #                 print(item_a, item_b, " ok")
-        #                 results[item_a].extend(item_b)
-        #             else:
-        #                 print(item_a, item_b, " not ok")
-        # self.assertTrue(len(results) > 0)
+        discount = offer.apply_benefit(self.basket)
+        self.assertEqual(discount.discount, D('20.0'))
+        offer = offers[1]
+        
+        discount = offer.apply_benefit(self.basket)
+        self.assertEqual(discount.discount, D('0.0'))
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 1)
 
-    #     qs = ConditionalOffer.objects.all()
-    #     offer = qs[0]
-    #     line = self.basket.all_lines()[0]
-    #     self.assertEqual(line.quantity_with_discount, 0)
-    #     self.assertEqual(line.quantity_without_discount, 5)
+        offer = qs[1].offers.first()
+        discount = offer.apply_benefit(self.basket)
+        self.assertEqual(discount.discount, D('0.0'))
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 1)
 
-    #     discount = offer.apply_benefit(self.basket)
-    #     self.assertEqual(discount.discount, D('20.0'))
-    #     offer = qs[3]
-    #     discount = offer.apply_benefit(self.basket)
 
-    #     self.assertEqual(line.quantity_with_discount, 0)
-    #     self.assertEqual(line.quantity_without_discount, 5)
 
     def test_add_another_offer_group(self):
         '''
@@ -371,35 +361,35 @@ class TestConsumeOfferGroupOffer(TestCase):
 
         line = self.basket.all_lines()[0]
         self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+        self.assertEqual(line.quantity_without_discount, 1)
 
         discount = offer.apply_benefit(self.basket)
 
         line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 3)
-        self.assertEqual(line.quantity_without_discount, 2)
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 1)
 
         self.assertEqual(discount.discount, D('600.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
-        self.assertEqual(self.basket.total_excl_tax, D('400.00'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))  
+        self.assertEqual(self.basket.total_excl_tax, D('409.99'))
 
         discount = qs[1].apply_benefit(self.basket)
 
         line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 5)
+        self.assertEqual(line.quantity_with_discount, 1)
         self.assertEqual(line.quantity_without_discount, 0)
 
         self.assertEqual(discount.discount, D('20.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
-        self.assertEqual(self.basket.total_excl_tax, D('380.00'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99')) 
+        self.assertEqual(self.basket.total_excl_tax, D('389.99'))
 
         qs = OfferGroup.objects.filter(name='test offer group beatles')
         voucher = qs.first().offers.all()
 
         discount = voucher[0].apply_benefit(self.basket)
         self.assertEqual(discount.discount, D('0.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))  # 5 * 200
-        self.assertEqual(self.basket.total_excl_tax, D('380.00'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))
+        self.assertEqual(self.basket.total_excl_tax, D('389.99'))
 
 
 class TestOfferGroupForm(TestCase):
