@@ -56,36 +56,3 @@ class Applicator(BaseApplicator):
         # Store this list of discounts with the basket so it can be
         # rendered in templates
         basket.offer_applications = applications
-
-
-        # applicable_offers = set()
-        # p = defaultdict(list)
-        # cutoff = now()
-        # date_based = Q(
-        #     Q(start_datetime__lte=cutoff),
-        #     Q(end_datetime__gte=cutoff) | Q(end_datetime=None),
-        # )
-        # nondate_based = Q(start_datetime=None, end_datetime=None)
-
-        # # get all offers that are open, with valid date, that have an offer group
-        # qs = ConditionalOffer.objects.filter(
-        #     date_based | nondate_based,
-        #     status=ConditionalOffer.OPEN, offer_group__isnull=False)  # .order_by('priority')
-
-        # # all those offers, but excude given offer's offer group
-        # offers = qs.exclude(offer_group=this_offer.offer_group).order_by('priority')
-
-        # min_og_pri = OfferGroup.objects.aggregate(Min('priority'))
-
-        # for elem in qs:
-        #     p[elem.priority].append(elem.name)
-
-        # seq = sorted(p.keys())
-        # for other_offer in offers:
-        #     if offer.offer_group == other_offers.offer_group and other_offers.offer_group.priority == min_og_pri:
-        #         applicable_offers.add(other_offer)
-        #     elif ( offer.offer_group.offers.count() == 1 and other_offers.offer_group.offers.count() == 1):
-        #         if (offer.offer_group.priority, other_offers.offer_group.priority) in zip(seq[:-1], seq[1:]) or \
-        #                 (other_offer.offer_group.priority, offer.offer_group.priority) in zip(seq[:-1], seq[1:]):
-        #                 applicable_offers.add(other_offer)
-        # return applicable_offers

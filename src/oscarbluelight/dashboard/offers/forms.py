@@ -95,11 +95,11 @@ class RestrictionsForm(BaseRestrictionsForm):
         help_text=_("Which user groups will be able to apply this offer?"),
         required=False)
 
-    offer_groups = forms.ModelMultipleChoiceField(
+    offer_groups = forms.ModelChoiceField(
         label=_('Offer Group'),
         queryset=OfferGroup.objects.get_queryset(),
         help_text=_('Offer group to which this offer belongs'),
-        required=True  # TODO -- does this need to be required??
+        required=False
     )
 
     class Meta:
