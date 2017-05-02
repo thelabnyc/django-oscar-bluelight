@@ -45,12 +45,12 @@
                 </tr>
                 {% for offergroup in object_list|dictsort:"priority" %}
                     <tr>
-                        <td>{{ offergroup.name|default:"-" }}</td>
+                        <td><a href="{% url 'dashboard:offergroup-update-' pk=offergroup.pk %}">{{ offergroup.name|default:"-" }}</a></td>
                         <td>{{ offergroup.priority|default:"0" }}</td>
                         <td>
                             <ol>
                                 {% for offer in offergroup.offers.all %}
-                                    <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</li>
+                                    <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
                                 {% endfor %}
                             </ol>
                         </td>
