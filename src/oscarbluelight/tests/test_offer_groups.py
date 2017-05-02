@@ -291,7 +291,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         discount = offer.apply_benefit(self.basket)
         self.assertEqual(discount.discount, D('20.0'))
         offer = offers[1]
-        
+
         discount = offer.apply_benefit(self.basket)
         self.assertEqual(discount.discount, D('0.0'))
         self.assertEqual(line.quantity_with_discount, 0)
@@ -363,7 +363,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.assertEqual(line.quantity_without_discount, 1)
 
         self.assertEqual(discount.discount, D('600.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))  
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))
         self.assertEqual(self.basket.total_excl_tax, D('409.99'))
 
         discount = qs[1].apply_benefit(self.basket)
@@ -373,7 +373,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.assertEqual(line.quantity_without_discount, 0)
 
         self.assertEqual(discount.discount, D('20.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99')) 
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))
         self.assertEqual(self.basket.total_excl_tax, D('389.99'))
 
         qs = OfferGroup.objects.filter(name='test offer group beatles')
@@ -427,11 +427,12 @@ class OfferGroupFormTest(TestCase):
         data = {'name': self.name, 'priority': self.priority}
         form = OfferGroupForm(data=data)
         form.save()
-        
+
         qs = OfferGroup.objects.all()
         self.assertIsInstance(qs.first(), OfferGroup)
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
+
 
 class OfferGroupViewTest(TestCase):
     def setUp(self):
@@ -475,9 +476,9 @@ class OfferGroupViewTest(TestCase):
         resp_get = self.client.get(reverse('dashboard:offergroup-create'))
         self.assertEqual(resp_get.status_code, 200)
 
-        # TODO -- figure out why this is NOT working!!! 
+        # TODO -- figure out why this is NOT working!!!
         # response = self.client.post(
-        #     reverse('dashboard:offergroup-create', 
+        #     reverse('dashboard:offergroup-create',
         #         kwargs={'name': "another Test", 'priority': 17 }
         #     )
         # )
