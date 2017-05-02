@@ -52,7 +52,7 @@ class ConditionForm(forms.ModelForm):
 
     class Meta:
         model = Condition
-        fields = ['range', 'proxy_class', 'value']
+        fields = ['range', 'proxy_class', 'value', ]
 
 
 class CompoundConditionForm(forms.ModelForm):
