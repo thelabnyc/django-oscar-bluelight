@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.utils.timezone import now
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
+from oscar.apps.offer import results
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
