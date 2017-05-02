@@ -156,7 +156,7 @@ class OfferRestrictionsView(OfferWizardStepView):
         else:
             offer.offer_type = ConditionalOffer.SITE
         if form.cleaned_data['groups']:
-            offer_group = form.cleaned_data['offer_group']
+            offer_group = form.cleaned_data['groups']
             offer_group.add(offer)
 
         return super().save_offer(offer, form)
