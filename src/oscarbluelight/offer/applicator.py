@@ -2,7 +2,6 @@ from django.db.models import Q, Max, Min
 from django.utils.timezone import now
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
-# from oscarbluelight.utils.ordered_set import OrderedSet
 from collections import defaultdict
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
@@ -30,42 +29,64 @@ class Applicator(BaseApplicator):
         return qs.select_related('condition', 'benefit')
 
 
-def get_applicaple_offers(offer1, offer2):
-    '''
-    if either offer is NOT in higest priority og -> error
-    use offer_x iff
-        offer_y in same og and og has min priority
-        OR offer_x only offer in OG AND offer_y in NEXT priority og
-    '''
-    p = defaultdict(list)
-    cutoff = now()
-    date_based = Q(
-        Q(start_datetime__lte=cutoff),
-        Q(end_datetime__gte=cutoff) | Q(end_datetime=None),
-    )
-    nondate_based = Q(start_datetime=None, end_datetime=None)
+    def apply_offers(self, basket, offers):
+        '''
+        Want to apply offers within offer group
+        when offer group's offers applied, move to the next offer group
+        with offers
+        '''
+        offer_groups = OfferGroup.objects.all()
+        applications = results.OfferApplications()
 
-    qs = ConditionalOffer.objects.filter(
-        date_based | nondate_based,
-        status=ConditionalOffer.OPEN, offer_group__isnull=False).order_by('priority')
-    cos = qs.filter(Q(offer_group=offer1.offer_group) | Q(offer_group=offer2.offer_group)).order_by('priority')
+        for offer_group in offer_groups:
+            for offer in offer_group.offers:
+                if offer in offers:
+                    num_applications = 0
+                    # Keep applying the offer until either
+                    # (a) We reach the max number of applications for the offer.
+                    # (b) The benefit can't be applied successfully.
+                    while num_applications < offer.get_max_applications(basket.owner):
+                        result = offer.apply_benefit(basket)
+                        num_applications += 1
+                        if not result.is_successful:
+                            break
+                        applications.add(offer, result)
+                        if result.is_final:
+                            break
 
-    min_og_pri = OfferGroup.objects.aggregate(Min('priority'))
+        # Store this list of discounts with the basket so it can be
+        # rendered in templates
+        basket.offer_applications = applications
 
-    # Select priority from offer_groups order by priority
 
-    for elem in qs:
-        p[elem.priority].append(elem.name)
+        # applicable_offers = set()
+        # p = defaultdict(list)
+        # cutoff = now()
+        # date_based = Q(
+        #     Q(start_datetime__lte=cutoff),
+        #     Q(end_datetime__gte=cutoff) | Q(end_datetime=None),
+        # )
+        # nondate_based = Q(start_datetime=None, end_datetime=None)
 
-    seq = sorted(p.keys())
-    idx = 0
-    if offer1.offer_group == offer2.offer_group and offer2.offer_group.priority == min_og_pri:
-        return True
+        # # get all offers that are open, with valid date, that have an offer group
+        # qs = ConditionalOffer.objects.filter(
+        #     date_based | nondate_based,
+        #     status=ConditionalOffer.OPEN, offer_group__isnull=False)  # .order_by('priority')
 
-    if offer1 in cos and offer2 in cos:
-        if ( offer1.offer_group.offers.count() == 1 or offer2.offer_group.offers.count() == 1):
-            if (offer1.offer_group.priority, offer2.offer_group.priority) in zip(seq[:-1], seq[1:]) or \
-                    (offer2.offer_group.priority, offer1.offer_group.priority) in zip(seq[:-1], seq[1:]):
-                return True
-    else:
-        return False
+        # # all those offers, but excude given offer's offer group
+        # offers = qs.exclude(offer_group=this_offer.offer_group).order_by('priority')
+
+        # min_og_pri = OfferGroup.objects.aggregate(Min('priority'))
+
+        # for elem in qs:
+        #     p[elem.priority].append(elem.name)
+
+        # seq = sorted(p.keys())
+        # for other_offer in offers:
+        #     if offer.offer_group == other_offers.offer_group and other_offers.offer_group.priority == min_og_pri:
+        #         applicable_offers.add(other_offer)
+        #     elif ( offer.offer_group.offers.count() == 1 and other_offers.offer_group.offers.count() == 1):
+        #         if (offer.offer_group.priority, other_offers.offer_group.priority) in zip(seq[:-1], seq[1:]) or \
+        #                 (other_offer.offer_group.priority, offer.offer_group.priority) in zip(seq[:-1], seq[1:]):
+        #                 applicable_offers.add(other_offer)
+        # return applicable_offers
