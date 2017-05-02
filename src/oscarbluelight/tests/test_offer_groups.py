@@ -1,15 +1,8 @@
 from datetime import datetime, timedelta
-from collections import defaultdict
 from decimal import Decimal as D
 from django.test import TestCase, RequestFactory
 from django.test import Client
 from django.core.urlresolvers import reverse
-from oscarbluelight.dashboard.offers.views import(
-    OfferGroupCreateView,
-    OfferGroupListView,
-    OfferGroupDeleteView,
-    OfferGroupUpdateView
-)
 from oscarbluelight.offer.models import (
     OfferGroup,
     Benefit,
@@ -18,13 +11,13 @@ from oscarbluelight.offer.models import (
     CompoundCondition,
     ConditionalOffer
 )
-from oscarbluelight.dashboard.offers.forms import OfferGroupForm, RestrictionsForm
+from oscarbluelight.dashboard.offers.forms import OfferGroupForm
 from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import User, Group
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 
 
-class TestOfferGroupModel(TestCase):
+class OfferGroupModelTest(TestCase):
     def setUp(self):
         self.all_products = Range()
         self.all_products.includes_all_products = True
@@ -156,7 +149,7 @@ class TestOfferGroupModel(TestCase):
             offer_group.save()
 
 
-class TestConsumeOfferGroupOffer(TestCase):
+class ConsumeOfferGroupOfferTest(TestCase):
     def setUp(self):
         '''
         offer_groups 1, 2 and 3 with ascending order (application order)
@@ -392,7 +385,7 @@ class TestConsumeOfferGroupOffer(TestCase):
         self.assertEqual(self.basket.total_excl_tax, D('389.99'))
 
 
-class TestOfferGroupForm(TestCase):
+class OfferGroupFormTest(TestCase):
     def setUp(self):
         self.name = 'An Offer Group'
         self.priority = 5
@@ -440,7 +433,7 @@ class TestOfferGroupForm(TestCase):
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
 
-class TestOfferGroupView(TestCase):
+class OfferGroupViewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.factory = RequestFactory()
@@ -479,7 +472,6 @@ class TestOfferGroupView(TestCase):
 
     def test_create(self):
         self.client.login(username='john', password='johnpassword')
-        # print(reverse('dashboard:offergroup-create'))
         resp_get = self.client.get(reverse('dashboard:offergroup-create'))
         self.assertEqual(resp_get.status_code, 200)
 

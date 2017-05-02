@@ -1,8 +1,7 @@
-from django.db.models import Q, Max, Min
+from django.db.models import Q
 from django.utils.timezone import now
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
-from collections import defaultdict
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
