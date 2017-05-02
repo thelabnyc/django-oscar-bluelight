@@ -45,7 +45,7 @@
                 </tr>
                 {% for offergroup in object_list|dictsort:"priority" %}
                     <tr>
-                        <td><a href="{% url 'dashboard:offergroup-update-' pk=offergroup.pk %}">{{ offergroup.name|default:"-" }}</a></td>
+                        <td><a href="{% url 'dashboard:offergroup-update' pk=offergroup.pk %}">{{ offergroup.name|default:"-" }}</a></td>
                         <td>{{ offergroup.priority|default:"0" }}</td>
                         <td>
                             <ol>
