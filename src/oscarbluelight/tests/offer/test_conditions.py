@@ -331,5 +331,3 @@ class ConditionURL(TestCase):
         self.client.login(username='john', password='johnpassword')
         response = self.client.get(reverse('dashboard:condition-list'))
         self.assertEqual(response.status_code, 200)
-
-

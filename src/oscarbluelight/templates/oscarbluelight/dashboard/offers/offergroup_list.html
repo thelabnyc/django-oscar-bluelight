@@ -27,13 +27,6 @@
 {% endblock header %}
 
 {% block dashboard_content %}
-    <div class="well">
-        <form action="." method="get" class="form-inline">
-            {% include 'dashboard/partials/form_fields_inline.html' with form=form %}
-            <button type="submit" class="btn btn-primary" data-loading-text="{% trans 'Searching...' %}">{% trans "Search" %}</button>
-        </form>
-    </div>
-
     <form action="." method="post" class="order_table">
         {% csrf_token %}
         <table class="table table-striped table-bordered">
@@ -47,19 +40,19 @@
                 <tr>
                     <th>{% trans 'Name' %}</th>
                     <th>{% trans 'Priority' %}</th>
-                    <th>{% trans 'Used by Offers' %}</th>
+                    <th>{% trans 'Contains Offers' %}</th>
                     <th>{% trans 'Actions' %}</th>
                 </tr>
-                {% for offergroup in object_list %}
+                {% for offergroup in object_list|dictsort:"priority" %}
                     <tr>
                         <td>{{ offergroup.name|default:"-" }}</td>
                         <td>{{ offergroup.priority|default:"0" }}</td>
                         <td>
-                            <ul>
+                            <ol>
                                 {% for offer in offergroup.offers.all %}
                                     <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</li>
                                 {% endfor %}
-                            </ul>
+                            </ol>
                         </td>
                         <td>
                             <div class="btn-toolbar">
