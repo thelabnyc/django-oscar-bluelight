@@ -39,20 +39,19 @@ class Applicator(BaseApplicator):
         applications = results.OfferApplications()
 
         for offer_group in offer_groups:
-            for offer in offer_group.offers:
-                if offer in offers:
-                    num_applications = 0
-                    # Keep applying the offer until either
-                    # (a) We reach the max number of applications for the offer.
-                    # (b) The benefit can't be applied successfully.
-                    while num_applications < offer.get_max_applications(basket.owner):
-                        result = offer.apply_benefit(basket)
-                        num_applications += 1
-                        if not result.is_successful:
-                            break
-                        applications.add(offer, result)
-                        if result.is_final:
-                            break
+            for offer in offer_group.offers & offers:
+                num_applications = 0
+                # Keep applying the offer until either
+                # (a) We reach the max number of applications for the offer.
+                # (b) The benefit can't be applied successfully.
+                while num_applications < offer.get_max_applications(basket.owner):
+                    result = offer.apply_benefit(basket)
+                    num_applications += 1
+                    if not result.is_successful:
+                        break
+                    applications.add(offer, result)
+                    if result.is_final:
+                        break
 
         # Store this list of discounts with the basket so it can be
         # rendered in templates
