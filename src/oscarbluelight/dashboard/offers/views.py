@@ -158,7 +158,7 @@ class OfferRestrictionsView(OfferWizardStepView):
         if form.cleaned_data['offer_groups']:
             offer_group_qs = form.cleaned_data['offer_groups']
             for offer_group in offer_group_qs.all():
-                offer_group.offers.add(offer)
+                offer_group.offers.add(offer, bulk=False)
 
         return super().save_offer(offer, form)
 
