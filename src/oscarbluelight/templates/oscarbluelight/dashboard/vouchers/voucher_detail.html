@@ -95,6 +95,13 @@
                     <td></td>
                 </tr>
             {% endif %}
+            <tr>
+                <th>{% trans "Offer Group(s)" %}</th>
+                {% for offer in voucher.offers %}
+                    <td>{{ offer.offer_group|safe }}</td>
+                {% endfor %}
+                <td></td>
+            </tr>
         </tbody>
     </table>
 
