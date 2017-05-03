@@ -70,21 +70,24 @@
                             {% else %}
                                 <tr><td>{% trans "Offer Groups not found." %}</td></tr>
                             {% endif %}
-                            </table>
                             {% if object.pk %}
-                            <select class="form-control">
-                            {% for offer in object.offers.all %}
-                                <option value="offer"> {{ offer.name }} </option>
-                            {% endfor %} 
+                                {% for offer in object.offers.all %}
+                                    <tr><td> 
+                                        {% trans "Delete" %}
+                                        <a class="btn btn-danger" href="{% url 'dashboard:offergroup-delete' pk=offer.pk %}"> 
+                                        {{ offer.name }} 
+                                        </a> 
+                                    </td></tr>
+                                {% endfor %} 
                             {% endif %}
-
+                        </table>
                         {% endblock %}
                         {% include "dashboard/partials/pagination.html" %}
                     <div class="pull-right">
                         <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}
                         </button>
                     </div>
-                        <a class="btn btn-default" href="{% url 'dashboard:offergroup-list' %}">{% trans "Cancel" %}</a>
+                    <a class="btn btn-default" href="{% url 'dashboard:offergroup-list' %}">{% trans "Cancel" %}</a>
                     </form>
             </div>
         </div>
