@@ -187,8 +187,8 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.offer_group_stones.save()
 
         self.condition1 = Condition(name='test condition 1')
-        self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
-        self.condition1.value = 1
+        self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
+        self.condition1.value = 3.45
         self.condition1.range = self.all_products
         self.condition1.save()
         self.benefit1 = Benefit()
