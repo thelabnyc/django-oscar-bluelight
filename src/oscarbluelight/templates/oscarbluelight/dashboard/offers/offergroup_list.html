@@ -53,6 +53,11 @@
                                     <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
                                 {% endfor %}
                             </ol>
+                            <ol>
+                                {% for voucher in offergroup.voucher_set.all %}
+                                    <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</a></li>
+                                {% endfor %}
+                            </ol>
                         </td>
                         <td>
                             <div class="btn-toolbar">
