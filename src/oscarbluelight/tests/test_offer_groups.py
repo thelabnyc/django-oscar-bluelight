@@ -90,7 +90,7 @@ class OfferGroupModelTest(TestCase):
         offer_group3.save()
         condition1 = Condition(name='test condition 2')
         condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
-        condition1.value = 5
+        condition1.value = 3
         condition1.range = self.all_products
         condition1.save()
         benefit1 = Benefit()
@@ -152,96 +152,100 @@ class OfferGroupModelTest(TestCase):
 class ConsumeOfferGroupOfferTest(TestCase):
     def setUp(self):
         '''
-        offer_groups 1, 2 and 3 with ascending order (application order)
-        offers 1, 2, 3 and 4
-        offers 1 and 2 -> offer_group 1
-        offer3 -> offer_group2
-        offer4 -> offer_group3
+        offer_groups elvis, beatles, stones with ascending order (application order)
+        offers elvis, memphis, beatles and stones
+        offers elvis and memphis -> offer_group Elvis
+        offer beatles -> offer_groupbeatles
+        offer stones -> offer_group stones
         '''
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
         item_price = 200.0
         item_quantity = 5
-        self.basket = create_basket()
+        self.basket = create_basket(empty=True)
         self.product = create_product()
         create_stockrecord(self.product, item_price, num_in_stock=item_quantity * 2)
         self.basket.add_product(self.product, quantity=item_quantity)
 
         self.offer_group_elvis = OfferGroup.objects.create(
             name='test offer group elvis',
-            priority=3
+            priority=1
         )
         self.offer_group_elvis.save()
 
         self.offer_group_beatles = OfferGroup.objects.create(
             name='test offer group beatles',
-            priority=5
+            priority=2
         )
         self.offer_group_beatles.save()
 
         self.offer_group_stones = OfferGroup.objects.create(
-            name='test offer group 3',
-            priority=8
+            name='test offer group stones',
+            priority=3
         )
         self.offer_group_stones.save()
 
         self.condition1 = Condition(name='test condition 1')
-        self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
-        self.condition1.value = 2
+        self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
+        self.condition1.value = 3.45
         self.condition1.range = self.all_products
         self.condition1.save()
         self.benefit1 = Benefit()
-        self.benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
-        self.benefit1.value = 20
+        self.benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
+        self.benefit1.value = 22
         self.benefit1.range = self.all_products
         self.benefit1.save()
-        self.offer1 = ConditionalOffer(name='cond offer test 1')
-        self.offer1.condition = self.condition1
-        self.offer1.benefit = self.benefit1
-        self.offer1.priority = 10
-        self.offer1.save()
+        self.offer_elvis = ConditionalOffer(name='cond offer test 1')
+        self.offer_elvis.condition = self.condition1
+        self.offer_elvis.benefit = self.benefit1
+        self.offer_elvis.priority = 1
+        self.offer_elvis.save()
 
-        self.offer_group_elvis.offers.add(self.offer1)
+        self.offer_group_elvis.offers.add(self.offer_elvis)
 
 
         self.benefit2 = Benefit()
         self.benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
-        self.benefit2.value = 15
+        self.benefit2.value = 23
         self.benefit2.range = self.all_products
         self.benefit2.save()
-        self.offer2 = ConditionalOffer(name='cond offer test 2')
-        self.offer2.condition = self.condition1
-        self.offer2.benefit = self.benefit2
-        self.offer2.priority = 20
-        self.offer2.save()
+        self.offer_memphis = ConditionalOffer(name='cond offer test 2')
+        self.offer_memphis.condition = self.condition1
+        self.offer_memphis.benefit = self.benefit2
+        self.offer_memphis.priority = 2
+        self.offer_memphis.save()
 
-        self.offer_group_elvis.offers.add(self.offer2)
+        self.offer_group_elvis.offers.add(self.offer_memphis)
 
-        self.offer3 = ConditionalOffer(name='cond offer test 3')
-        self.offer3.condition = self.condition1
-        self.offer3.benefit = self.benefit1
-        self.offer3.save()
-        self.offer3.priority = 30
-        self.offer_group_beatles.offers.add(self.offer3)
+        self.benefit3 = Benefit()
+        self.benefit3.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
+        self.benefit3.value = 24
+        self.benefit3.range = self.all_products
+        self.benefit3.save()
+        self.offer_beatles = ConditionalOffer(name='cond offer test 3')
+        self.offer_beatles.condition = self.condition1
+        self.offer_beatles.benefit = self.benefit3
+        self.offer_beatles.save()
+        self.offer_beatles.priority = 3
+        self.offer_group_beatles.offers.add(self.offer_beatles)
 
         self.value_condition = Condition(name='test condition 2')
-        self.value_condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
-        self.value_condition.value = 50
+        self.value_condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCoverageCondition'
         self.value_condition.range = self.all_products
         self.value_condition.save()
         self.fixed_price_benefit = Benefit()
-        self.fixed_price_benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightFixedPriceBenefit'
-        self.fixed_price_benefit.value = 25
+        self.fixed_price_benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
+        self.fixed_price_benefit.value = 32
         self.fixed_price_benefit.range = self.all_products
         self.fixed_price_benefit.save()
-        self.offer4 = ConditionalOffer(name='cond offer test 4')
-        self.offer4.condition = self.condition1
-        self.offer4.benefit = self.benefit1
-        self.offer4.priority = 40
-        self.offer4.save()
+        self.offer_stones = ConditionalOffer(name='cond offer test stones')
+        self.offer_stones.condition = self.value_condition
+        self.offer_stones.benefit = self.fixed_price_benefit
+        self.offer_stones.priority = 4
+        self.offer_stones.save()
 
-        self.offer_group_stones.offers.add(self.offer4)
+        self.offer_group_stones.offers.add(self.offer_stones)
 
         self.user = User.objects.create_user(
             username='bob', email='bob@example.com', password='foo')
@@ -257,58 +261,49 @@ class ConsumeOfferGroupOfferTest(TestCase):
             end_datetime=datetime.now() + timedelta(seconds=120),
             limit_usage_by_group=False
         )
-        self.voucher.offers.add(self.offer3)
+        self.voucher.offers.add(self.offer_stones)
         self.offer_group_beatles.offers.add(self.voucher.offers.first())
 
-
-    def test_offer_group_beatles(self):
-        qs = OfferGroup.objects.filter(priority=5)
-        self.assertEqual(qs.first().offers.first(), self.offer3)
-
     def test_voucher_order(self):
-        self.assertEqual(self.voucher.offers.first().name, 'cond offer test 3')
-        self.assertEqual(self.voucher.offers.first().offer_group.priority, 5)
+        self.assertEqual(self.voucher.offers.first().name, 'cond offer test stones')
+        self.assertEqual(self.voucher.offers.first().offer_group.priority, 2)
 
     def test_offer_group_elvis(self):
         qs = ConditionalOffer.objects.filter(offer_group=self.offer_group_elvis)
-        self.assertIn(self.offer1, qs)
-        self.assertIn(self.offer2, qs)
+        self.assertIn(self.offer_elvis, qs)
+        self.assertIn(self.offer_memphis, qs)
         qs = OfferGroup.objects.all()
-        self.assertIn(self.offer1, qs[0].offers.all())
-        self.assertIn(self.offer2, qs[0].offers.all())
-        qs = OfferGroup.objects.filter(priority=8)
-        self.assertEqual(qs[0].offers.first().name, 'cond offer test 4')
-
+        self.assertIn(self.offer_elvis, qs[0].offers.all())
+        self.assertIn(self.offer_memphis, qs[0].offers.all())
 
     def test_apply_offer_group(self):
         qs = OfferGroup.objects.all()
         offers = qs[0].offers.all()
-        offer = offers[0]
+        offer = offers[0]  # offer_elvis
         line = self.basket.all_lines()[0]
         self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertEqual(line.quantity_without_discount, 5)
 
         discount = offer.apply_benefit(self.basket)
-        self.assertEqual(discount.discount, D('20.0'))
-        offer = offers[1]
+        self.assertEqual(discount.discount, D('220.0'))
+        self.assertEqual(line.quantity_with_discount, 0)  # !
+        self.assertEqual(line.quantity_without_discount, 5)  # !
 
+        offer = offers[1]  # offer memphis
         discount = offer.apply_benefit(self.basket)
-        self.assertEqual(discount.discount, D('0.0'))
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertEqual(discount.discount, D('0.0'))  # !
+        self.assertEqual(line.quantity_with_discount, 0)  # !
+        self.assertEqual(line.quantity_without_discount, 5)  # !
 
-        offer = qs[1].offers.first()
+        offer = qs[1].offers.first()  # offer beatles
         discount = offer.apply_benefit(self.basket)
-        self.assertEqual(discount.discount, D('0.0'))
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertEqual(discount.discount, D('0.0'))  # !
+        self.assertEqual(line.quantity_with_discount, 0)  # !
+        self.assertEqual(line.quantity_without_discount, 5)  # !
 
 
 
     def test_add_another_offer_group(self):
-        '''
-        run through a tested test
-        '''
         cond_a = Condition()
         cond_a.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
         cond_a.value = 10
@@ -350,39 +345,38 @@ class ConsumeOfferGroupOfferTest(TestCase):
         qs = qs.last().offers.all().order_by('priority')
 
         self.assertEqual(qs[0], offer)
-        self.assertEqual(qs[1], self.offer4)
 
         line = self.basket.all_lines()[0]
         self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertEqual(line.quantity_without_discount, 5)
 
         discount = offer.apply_benefit(self.basket)
 
         line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertEqual(line.quantity_with_discount, 3)
+        self.assertEqual(line.quantity_without_discount, 2)
 
         self.assertEqual(discount.discount, D('600.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))
-        self.assertEqual(self.basket.total_excl_tax, D('409.99'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))
+        self.assertEqual(self.basket.total_excl_tax, D('400.00'))
 
-        discount = qs[1].apply_benefit(self.basket)
+        discount = qs[0].apply_benefit(self.basket)
 
         line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 1)
+        self.assertEqual(line.quantity_with_discount, 5)
         self.assertEqual(line.quantity_without_discount, 0)
 
-        self.assertEqual(discount.discount, D('20.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))
-        self.assertEqual(self.basket.total_excl_tax, D('389.99'))
+        self.assertEqual(discount.discount, D('400.00'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))
+        self.assertEqual(self.basket.total_excl_tax, D('0.00'))
 
         qs = OfferGroup.objects.filter(name='test offer group beatles')
         voucher = qs.first().offers.all()
 
         discount = voucher[0].apply_benefit(self.basket)
         self.assertEqual(discount.discount, D('0.00'))
-        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1009.99'))
-        self.assertEqual(self.basket.total_excl_tax, D('389.99'))
+        self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))
+        self.assertEqual(self.basket.total_excl_tax, D('0.00'))
 
 
 class OfferGroupFormTest(TestCase):
@@ -494,4 +488,7 @@ class OfferGroupViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_update(self):
-        pass
+        self.client.login(username='john', password='johnpassword')
+        resp_get = self.client.get(reverse('dashboard:offergroup-update', args=[self.offer_group.pk]))
+        self.assertEqual(resp_get.status_code, 200)
+        self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)

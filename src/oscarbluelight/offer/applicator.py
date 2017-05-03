@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
+from collections import Counter
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
@@ -35,6 +36,7 @@ class Applicator(BaseApplicator):
         when offer group's offers applied, move to the next offer group
         with offers
         '''
+        affected_quantities = Counter()
         offer_groups = OfferGroup.objects.all()
         applications = results.OfferApplications()
 
@@ -52,6 +54,12 @@ class Applicator(BaseApplicator):
                     applications.add(offer, result)
                     if result.is_final:
                         break
+                for line in basket.lines.all():
+                    affected_quantities[line.id] += line._affected_quantity
+                    line._affected_quantity = 0
+
+        for line in basket.lines.all():
+            line._affected_quantity = min(line.quantity, affected_quantities[line.id])
 
         # Store this list of discounts with the basket so it can be
         # rendered in templates

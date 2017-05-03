@@ -68,7 +68,8 @@ class VoucherCreateView(DefaultVoucherCreateView):
                 usage=form.cleaned_data['usage'],
                 start_datetime=form.cleaned_data['start_datetime'],
                 end_datetime=form.cleaned_data['end_datetime'],
-                limit_usage_by_group=form.cleaned_data['limit_usage_by_group'])
+                limit_usage_by_group=form.cleaned_data['limit_usage_by_group'],
+                offer_group=form.cleaned_data['offer_group'])
             voucher.groups = form.cleaned_data['groups']
             voucher.save()
             voucher.offers.add(offer)
@@ -107,6 +108,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
             'usage': voucher.usage,
             'limit_usage_by_group': voucher.limit_usage_by_group,
             'groups': voucher.groups.all(),
+            'offer_group': voucher.offer_group,
         }
 
         offer = voucher.offers.first()
@@ -131,6 +133,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         voucher.end_datetime = form.cleaned_data['end_datetime']
         voucher.limit_usage_by_group = form.cleaned_data['limit_usage_by_group']
         voucher.groups = form.cleaned_data['groups']
+        voucher.offer_group = form.cleaned_data['offer_group']
         voucher.save()
 
         benefit = form.cleaned_data['benefit']

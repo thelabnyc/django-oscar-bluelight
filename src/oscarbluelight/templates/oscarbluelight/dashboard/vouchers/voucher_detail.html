@@ -95,6 +95,11 @@
                     <td></td>
                 </tr>
             {% endif %}
+            <tr>
+                <th>{% trans "Offer Group" %}</th>
+                    <td>{{ voucher.offer_group.name|default: "-" }}</td>
+                <td></td>
+            </tr>
         </tbody>
     </table>
 
