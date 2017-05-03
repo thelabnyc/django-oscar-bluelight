@@ -11,6 +11,7 @@
         <th>{% trans "Usage is Limited to User Groups" %}</th>
         <th>{% trans "Num child codes" %}</th>
         <th>{% trans "Priority" %}</th>
+        <th>{% trans "Offer Group" %}</th>
         <th>{% anchor 'num_basket_additions' _("Num baskets") %}</th>
         <th>{% anchor 'num_orders' _("Num orders") %}</th>
         <th>{% anchor 'date_created' _("Date created") %}</th>
@@ -42,6 +43,7 @@
         </td>
         <td>{{ voucher.children.count }}</td>
         <td>{{ voucher.priority }}</td>
+        <td>{{ voucher.offer_group.name }}</td>
         <td>{{ voucher.num_basket_additions }}</td>
         <td>{{ voucher.num_orders }}</td>
         <td>{{ voucher.date_created }}</td>

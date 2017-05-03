@@ -79,7 +79,7 @@ class VoucherForm(forms.Form):
         help_text=_("When an offer has given more discount to orders than this threshold, then the offer becomes unavailable"))
     offer_group = forms.ModelChoiceField(
         label=_('Offer Group'),
-        help_text=_("Coupon's Offer Group"),
+        help_text=_("Voucher's Offer Group"),
         queryset=OfferGroup.objects.get_queryset(),
         required=False)
 
