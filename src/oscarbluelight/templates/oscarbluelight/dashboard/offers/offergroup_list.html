@@ -55,7 +55,7 @@
                             </ol>
                             <ol>
                                 {% for voucher in offergroup.voucher_set.all %}
-                                    <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</a></li>
+                                    <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">voucher: {{ voucher.name }}</a></li>
                                 {% endfor %}
                             </ol>
                         </td>

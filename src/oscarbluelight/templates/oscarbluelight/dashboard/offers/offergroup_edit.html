@@ -64,13 +64,20 @@
                             </caption>
                             {% if object.pk %}
                             <tr>
-                                <td><input type="text" name="name" value="{{ object.name }}"></td>
-                                <td><input type="text" name="priority" value="{{ object.priority }}"></td>
+                                <td><label>Name: </label><input type="text" name="name" value="{{ object.name }}"></td>
+                                <td><label>Priority: </label><input type="text" name="priority" value="{{ object.priority }}"></td>
                             </tr>
                             {% else %}
                                 <tr><td>{% trans "Offer Groups not found." %}</td></tr>
                             {% endif %}
                             </table>
+                            {% if object.pk %}
+                            <select class="form-control">
+                            {% for offer in object.offers.all %}
+                                <option value="offer"> {{ offer.name }} </option>
+                            {% endfor %} 
+                            {% endif %}
+
                         {% endblock %}
                         {% include "dashboard/partials/pagination.html" %}
                     <div class="pull-right">
