@@ -64,7 +64,7 @@
                             </caption>
                             {% if object.pk %}
                             <tr>
-                                <td><label>Name: </label><input type="text" name="name" value="{{ object.name }}"></td>
+                                <td><label>Name: </label><ul class="dropdown-menu pull-right"></td>
                                 <td><label>Priority: </label><input type="text" name="priority" value="{{ object.priority }}"></td>
                             </tr>
                             {% else %}
@@ -80,9 +80,18 @@
                                     </td></tr>
                                 {% endfor %} 
                             {% endif %}
-                        </table>
+                            </table>
+                        <div class="btn-toolbar">
+                            <div class="btn-group">
+                                <select class="form-control">
+                                {% for offer in offers %}
+                                    <option>{{ offer.name }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+                        </div>
                         {% endblock %}
-                        {% include "dashboard/partials/pagination.html" %}
+                    {% include "dashboard/partials/pagination.html" %}
                     <div class="pull-right">
                         <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}
                         </button>

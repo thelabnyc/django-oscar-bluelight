@@ -318,3 +318,8 @@ class OfferGroupUpdateView(UpdateView):
     template_name = 'dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(OfferGroupUpdateView, self).get_context_data(**kwargs)
+        context['offers'] = ConditionalOffer.objects.all()
+        return context

@@ -488,4 +488,7 @@ class OfferGroupViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_update(self):
-        pass
+        self.client.login(username='john', password='johnpassword')
+        resp_get = self.client.get(reverse('dashboard:offergroup-update', args=[self.offer_group.pk]))
+        self.assertEqual(resp_get.status_code, 200)
+        self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
