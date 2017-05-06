@@ -22,7 +22,7 @@ class OfferGroupModelTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test1')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 2
         self.condition.range = self.all_products
@@ -88,7 +88,7 @@ class OfferGroupModelTest(TestCase):
             priority=4
         )
         offer_group3.save()
-        condition1 = Condition(name='test condition 2')
+        condition1 = Condition()
         condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         condition1.value = 3
         condition1.range = self.all_products
@@ -122,7 +122,7 @@ class OfferGroupModelTest(TestCase):
         offer_group2.offers.add(offer2)
         self.assertEqual(offer2.offer_group.priority, 3)
 
-        condition2 = Condition(name='test condition 2')
+        condition2 = Condition()
         condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         condition2.value = 5
         condition2.range = self.all_products
@@ -186,7 +186,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         )
         self.offer_group_stones.save()
 
-        self.condition1 = Condition(name='test condition 1')
+        self.condition1 = Condition()
         self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
         self.condition1.value = 3.45
         self.condition1.range = self.all_products
@@ -230,7 +230,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.offer_beatles.priority = 3
         self.offer_group_beatles.offers.add(self.offer_beatles)
 
-        self.value_condition = Condition(name='test condition 2')
+        self.value_condition = Condition()
         self.value_condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCoverageCondition'
         self.value_condition.range = self.all_products
         self.value_condition.save()
@@ -386,7 +386,7 @@ class OfferGroupFormTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test condition 2')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 5
         self.condition.range = self.all_products
@@ -437,7 +437,7 @@ class OfferGroupViewTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test condition 2')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 5
         self.condition.range = self.all_products
