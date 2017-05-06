@@ -56,10 +56,10 @@ class ConditionalOffer(AbstractConditionalOffer):
     '''
     groups  -- user groups
     offer_group -- FK to OfferGroup
-    offerGroupA => [ o1, v2, o3 ], order 1
-    offerGroupB => [ o4, v3 ], order 2
+    offerGroupA => [ o1, v2, o3 ], priority 1
+    offerGroupB => [ o4, v3 ], priority 2
     To consume offers, loop through offers in offer group based on priority
-    to consume OfferGroup -> only move to next (greater order val) when previous
+    to consume OfferGroup -> only move to next (greater priority val) when previous
     offerGroup is consumed
     '''
     # When offer_type == "User", we use groups to determine which users get the offer

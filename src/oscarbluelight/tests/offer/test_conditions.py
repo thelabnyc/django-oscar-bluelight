@@ -319,7 +319,7 @@ class ConditionURL(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test condition 2')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 5
         self.condition.range = self.all_products

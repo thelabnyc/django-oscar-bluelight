@@ -155,11 +155,19 @@ class OfferRestrictionsView(OfferWizardStepView):
             offer.offer_type = ConditionalOffer.USER
         else:
             offer.offer_type = ConditionalOffer.SITE
+
+        # save the offer
+        super().save_offer(offer, form)
+
+        # if there is an offer group, add offer
+        # that calls save_offer
         if form.cleaned_data['offer_groups']:
             offer_group = form.cleaned_data['offer_groups']
             offer_group.offers.add(offer, bulk=False)
 
-        return super().save_offer(offer, form)
+        # return offer detail view
+        return HttpResponseRedirect(reverse(
+            'dashboard:offer-detail', kwargs={'pk': offer.pk}))
 
     def form_valid(self, form):
         offer = form.save(commit=False)
@@ -323,3 +331,21 @@ class OfferGroupUpdateView(UpdateView):
         context = super(OfferGroupUpdateView, self).get_context_data(**kwargs)
         context['offers'] = ConditionalOffer.objects.all()
         return context
+
+    # TODO -- add to template
+    def edit_offers(self, offer, form):
+        if form.cleaned_data['offer']:
+            offer_group = form.cleaned_data['offer_group']
+            offer_group.remove(form.cleaned_data['offer'])
+        return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
+
+    # def add_offer(self, offer, form):
+    #     if form.cleaned_data['offer']:
+    #         offer_group = form.cleaned_data['offer_group']
+    #         offer_group.add(form.cleaned_data['offer'])
+    #     return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
+
+    def form_valid(self, form):
+        # offergroup = form.save()
+        # return self.remove_offer(offer, form)
+        return HttpResponseRedirect(reverse('dashboard:offergroup-list'))

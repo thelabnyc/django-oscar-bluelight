@@ -22,7 +22,7 @@ class OfferGroupModelTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test1')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 2
         self.condition.range = self.all_products
@@ -88,7 +88,7 @@ class OfferGroupModelTest(TestCase):
             priority=4
         )
         offer_group3.save()
-        condition1 = Condition(name='test condition 2')
+        condition1 = Condition()
         condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         condition1.value = 3
         condition1.range = self.all_products
@@ -122,7 +122,7 @@ class OfferGroupModelTest(TestCase):
         offer_group2.offers.add(offer2)
         self.assertEqual(offer2.offer_group.priority, 3)
 
-        condition2 = Condition(name='test condition 2')
+        condition2 = Condition()
         condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         condition2.value = 5
         condition2.range = self.all_products
@@ -186,7 +186,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         )
         self.offer_group_stones.save()
 
-        self.condition1 = Condition(name='test condition 1')
+        self.condition1 = Condition()
         self.condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
         self.condition1.value = 3.45
         self.condition1.range = self.all_products
@@ -230,7 +230,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.offer_beatles.priority = 3
         self.offer_group_beatles.offers.add(self.offer_beatles)
 
-        self.value_condition = Condition(name='test condition 2')
+        self.value_condition = Condition()
         self.value_condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCoverageCondition'
         self.value_condition.range = self.all_products
         self.value_condition.save()
@@ -386,7 +386,7 @@ class OfferGroupFormTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test condition 2')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 5
         self.condition.range = self.all_products
@@ -427,6 +427,16 @@ class OfferGroupFormTest(TestCase):
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
 
+    def test_related_offers(self):
+        data = {'name': self.name, 'priority': self.priority, 'related_offers': None}
+        form = OfferGroupForm(data=data)
+        self.assertTrue(form.is_valid())
+
+    def test_other_offers(self):
+        data = {'name': self.name, 'priority': self.priority, 'other_offers': None}
+        form = OfferGroupForm(data=data)
+        self.assertTrue(form.is_valid())
+
 
 class OfferGroupViewTest(TestCase):
     def setUp(self):
@@ -437,7 +447,7 @@ class OfferGroupViewTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        self.condition = Condition(name='test condition 2')
+        self.condition = Condition()
         self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
         self.condition.value = 5
         self.condition.range = self.all_products
@@ -469,16 +479,20 @@ class OfferGroupViewTest(TestCase):
         self.client.login(username='john', password='johnpassword')
         resp_get = self.client.get(reverse('dashboard:offergroup-create'))
         self.assertEqual(resp_get.status_code, 200)
+        # print(resp_get.context)
+        form = resp_get.context['form']
+        data = form.initial
+        data['name'] = 'test offergroup'
+        data['priority'] = 1234
 
-        # TODO -- figure out why this is NOT working!!!
-        # response = self.client.post(
-        #     reverse('dashboard:offergroup-create',
-        #         kwargs={'name': "another Test", 'priority': 17 }
-        #     )
-        # )
-        # self.assertEqual(response.status_code, 201)
-        # qs = OfferGroup.objects.filter(name='another Test')
-        # self.assertIsInstance(qs.first(), OfferGroup)
+        response = self.client.post(
+            reverse('dashboard:offergroup-create'), data
+        )
+        self.assertEqual(response.status_code, 302)
+        qs = OfferGroup.objects.filter(name='test offergroup')
+        self.assertIsInstance(qs.first(), OfferGroup)
+        self.assertEqual(qs.first().name, 'test offergroup')
+        self.assertEqual(qs.first().priority, 1234)
 
     def test_delete(self):
         self.client.login(username='john', password='johnpassword')
@@ -486,9 +500,28 @@ class OfferGroupViewTest(TestCase):
             reverse('dashboard:offergroup-delete', args=[self.offer_group.pk])
         )
         self.assertEqual(response.status_code, 302)
+        qs = OfferGroup.objects.filter(name='someName')
+        self.assertEqual(qs.count(), 0)
 
     def test_update(self):
         self.client.login(username='john', password='johnpassword')
         resp_get = self.client.get(reverse('dashboard:offergroup-update', args=[self.offer_group.pk]))
         self.assertEqual(resp_get.status_code, 200)
-        self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
+        form = resp_get.context['form']
+        data = form.initial
+        self.assertEqual(data.get('name'), 'someName')
+        data['name'] = 'another test'
+        data['priority'] = 2345
+        # data['related_offers'] = None
+        # data['other_offers'] = None
+
+        response = self.client.post(
+            reverse('dashboard:offergroup-update', args=[self.offer_group.pk]), data
+        )
+        self.assertEqual(response.status_code, 302)
+
+        print(resp_get.context_data)
+        # self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
+        qs = OfferGroup.objects.filter(name='another test')
+        self.assertEqual(qs.count(), 1)
+        self.assertEqual(qs.first().priority, 2345)
