@@ -332,7 +332,7 @@ class OfferGroupUpdateView(UpdateView):
         context['offers'] = ConditionalOffer.objects.all()
         return context
 
-    # TODO -- add to template
+    # TODO -- add to template?
     def remove_offer(self, offer, form):
         if form.cleaned_data['offer']:
             offer_group = form.cleaned_data['offer_group']
@@ -343,6 +343,6 @@ class OfferGroupUpdateView(UpdateView):
         pass
 
     def form_valid(self, form):
-        offergroup = form.save()
+        # offergroup = form.save()
         # return self.remove_offer(offer, form)
         return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
