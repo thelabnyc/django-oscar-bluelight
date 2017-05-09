@@ -331,3 +331,18 @@ class OfferGroupUpdateView(UpdateView):
         context = super(OfferGroupUpdateView, self).get_context_data(**kwargs)
         context['offers'] = ConditionalOffer.objects.all()
         return context
+
+    # TODO -- add to template
+    def remove_offer(self, offer, form):
+        if form.cleaned_data['offer']:
+            offer_group = form.cleaned_data['offer_group']
+            offer_group.remove(form.cleaned_data['offer'])
+        return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
+
+    def add_offer(self, offer, form):
+        pass
+
+    def form_valid(self, form):
+        offergroup = form.save()
+        # return self.remove_offer(offer, form)
+        return HttpResponseRedirect(reverse('dashboard:offergroup-list'))

@@ -469,16 +469,20 @@ class OfferGroupViewTest(TestCase):
         self.client.login(username='john', password='johnpassword')
         resp_get = self.client.get(reverse('dashboard:offergroup-create'))
         self.assertEqual(resp_get.status_code, 200)
+        # print(resp_get.context)
+        form = resp_get.context['form']
+        data = form.initial
+        data['name'] = 'test offergroup'
+        data['priority'] = 200
 
-        # TODO -- figure out why this is NOT working!!!
-        # response = self.client.post(
-        #     reverse('dashboard:offergroup-create',
-        #         kwargs={'name': "another Test", 'priority': 17 }
-        #     )
-        # )
-        # self.assertEqual(response.status_code, 201)
-        # qs = OfferGroup.objects.filter(name='another Test')
-        # self.assertIsInstance(qs.first(), OfferGroup)
+        response = self.client.post(
+            reverse('dashboard:offergroup-create'), data
+        )
+        self.assertEqual(response.status_code, 302)
+        qs = OfferGroup.objects.filter(name='test offergroup')
+        self.assertIsInstance(qs.first(), OfferGroup)
+        self.assertEqual(qs.first().name, 'test offergroup')
+        self.assertEqual(qs.first().priority, 200)
 
     def test_delete(self):
         self.client.login(username='john', password='johnpassword')
@@ -486,9 +490,24 @@ class OfferGroupViewTest(TestCase):
             reverse('dashboard:offergroup-delete', args=[self.offer_group.pk])
         )
         self.assertEqual(response.status_code, 302)
+        qs = OfferGroup.objects.filter(name='someName')
+        self.assertEqual(qs.count(), 0)
 
     def test_update(self):
         self.client.login(username='john', password='johnpassword')
         resp_get = self.client.get(reverse('dashboard:offergroup-update', args=[self.offer_group.pk]))
         self.assertEqual(resp_get.status_code, 200)
-        self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
+        form = resp_get.context['form']
+        data = form.initial
+        self.assertEqual(data.get('name'), 'someName')
+        data['name'] = 'another test'
+        data['priority'] = 300
+        data['offers'] = ConditionalOffer.objects.all()
+
+        response = self.client.post(
+            reverse('dashboard:offergroup-update', args=[self.offer_group.pk]), data
+        )
+        self.assertEqual(response.status_code, 302)
+
+        # print(resp_get.context_data.get('object'))
+        # self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
