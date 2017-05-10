@@ -467,7 +467,7 @@ class OfferGroupViewTest(TestCase):
         self.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
         self.benefit.value = 1
         self.benefit.save()
-        self.offer = ConditionalOffer()
+        self.offer = ConditionalOffer(name="Some Offer")
         self.offer.condition = self.condition
         self.offer.benefit = self.benefit
         self.offer.save()
@@ -521,6 +521,8 @@ class OfferGroupViewTest(TestCase):
         form = resp_get.context['form']
         data = form.initial
         self.assertEqual(data.get('name'), 'someName')
+        self.assertEqual(data.get('priority'), 5)
+        # self.assertEqual(data.get('offers'), self.offer)
         data['name'] = 'another test'
         data['priority'] = 2345
         data['offers'] = [self.offer.pk]
@@ -530,7 +532,6 @@ class OfferGroupViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
-        # self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
         qs = OfferGroup.objects.filter(name='another test')
         self.assertEqual(qs.count(), 1)
         self.assertEqual(qs.first().priority, 2345)

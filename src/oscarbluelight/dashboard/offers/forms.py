@@ -120,7 +120,7 @@ class RestrictionsForm(BaseRestrictionsForm):
 
 class OfferGroupForm(forms.ModelForm):
     offers = ModelMultipleChoiceField(queryset=ConditionalOffer.objects.all(),
-        widget=forms.widgets.CheckboxSelectMultiple())
+        widget=forms.widgets.SelectMultiple(), required=False)
 
     class Meta:
         model = OfferGroup
