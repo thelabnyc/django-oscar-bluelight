@@ -6,6 +6,7 @@ from oscar.apps.dashboard.offers.forms import (
     MetaDataForm as BaseMetaDataForm,
     RestrictionsForm as BaseRestrictionsForm,
 )
+from django.forms import ModelMultipleChoiceField
 from oscar.core.loading import get_model
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
@@ -118,6 +119,9 @@ class RestrictionsForm(BaseRestrictionsForm):
 
 
 class OfferGroupForm(forms.ModelForm):
+    offers = ModelMultipleChoiceField(queryset=ConditionalOffer.objects.all(),
+        widget=forms.widgets.CheckboxSelectMultiple())
+
     class Meta:
         model = OfferGroup
         fields = ('name', 'priority', 'offers', )
