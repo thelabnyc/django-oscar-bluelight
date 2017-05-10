@@ -405,8 +405,10 @@ class OfferGroupFormTest(TestCase):
 
 
     def test_form_valid(self):
-        data = {'name': self.offer_group.name, 'priority': self.offer_group.priority+1, 'offers': [self.offer.pk]}
-        form = OfferGroupForm(data=data)
+        data = {'name': self.offer_group.name, 'priority': self.offer_group.priority + 1, 'offers': [self.offer.pk]}
+        form = OfferGroupForm(
+            data=data
+        )
         self.assertTrue(form.is_valid())
 
     def test_form_invalid(self):
@@ -448,16 +450,6 @@ class OfferGroupFormTest(TestCase):
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
 
-    # def test_related_offers(self):
-    #     data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'offers': None}
-    #     form = OfferGroupForm(data=data)
-    #     self.assertTrue(form.is_valid())
-
-    # def test_other_offers(self):
-    #     data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'other_offers': None}
-    #     form = OfferGroupForm(data=data)
-    #     self.assertTrue(form.is_valid())
-
 
 class OfferGroupViewTest(TestCase):
     def setUp(self):
@@ -477,7 +469,7 @@ class OfferGroupViewTest(TestCase):
         self.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
         self.benefit.value = 1
         self.benefit.save()
-        self.offer = ConditionalOffer()
+        self.offer = ConditionalOffer(name="Some Offer")
         self.offer.condition = self.condition
         self.offer.benefit = self.benefit
         self.offer.save()
@@ -488,6 +480,10 @@ class OfferGroupViewTest(TestCase):
         self.offer_group.offers.add(self.offer)
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
         self.user.save()
+        # self.form = OfferGroupForm( 
+        #     qs=ConditionalOffer.objects.filter(offer_group__in=[self.offer_group])
+        # )
+        # self.form.save()
 
     def test_get_list(self):
         self.client.login(username='john', password='johnpassword')
@@ -531,6 +527,8 @@ class OfferGroupViewTest(TestCase):
         form = resp_get.context['form']
         data = form.initial
         self.assertEqual(data.get('name'), 'someName')
+        self.assertEqual(data.get('priority'), 5)
+        # self.assertEqual(data.get('offers'), self.offer)
         data['name'] = 'another test'
         data['priority'] = 2345
         data['offers'] = [self.offer.pk]
@@ -540,7 +538,6 @@ class OfferGroupViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
-        # self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
         qs = OfferGroup.objects.filter(name='another test')
         self.assertEqual(qs.count(), 1)
         self.assertEqual(qs.first().priority, 2345)

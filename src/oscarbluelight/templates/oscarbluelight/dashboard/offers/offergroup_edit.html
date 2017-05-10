@@ -57,35 +57,31 @@
                         {% block form_fields %}
                         {% include 'dashboard/partials/form_field.html' with field=form.name %}
                         {% include 'dashboard/partials/form_field.html' with field=form.priority %}
-                        {% include 'dashboard/partials/form_field.html' with field=form.offers %}
-                          <!--   <table class="table table-striped table-bordered">
-                            <caption>
-                                <i class="icon-gift icon-large"></i>{{ queryset_description }}
-                                {% if is_filtered %}
-                                    <a href="{% url 'dashboard:offergroup-list' %}" >{% trans "Reset" %}</a>
-                                {% endif %}
-                            </caption>
-                            {% if object.pk %}
-                            <tr>
-                                <td><label>Name: </label><input type="text" name="name" value="{{ object.name }}"></td>
-                                <td><label>Priority: </label><input type="text" name="priority" value="{{ object.priority }}"></td>
-                            </tr>
-                            {% else %}
-                                <tr><td>{% trans "Offer Groups not found." %}</td></tr>
-                            {% endif %}
-                            
-                            </table> -->
-                       <!--  <div class="btn-toolbar">
-                            <div class="btn-group">
-                                <caption><i class="icon-gift icon-large">Add offer to offer group</i></caption>
-                                <select class="form-control">
-                                <option selected="selected" value="">Select an offer to add</option>
-                                {% for offer in offers %}
-                                    <option value="{{ offer.name }}">{{ offer.name }}</option>
-                                {% endfor %}
-                                </select>
+<!--                         {% include 'dashboard/partials/form_field.html' with field=form.offers %}
+ -->                    <div class="select2-container select2-container-multi form-control" id="s2id_id_offers" style="width: 785px;">
+                            <ul class="select2-choices">  
+                                <li class="select2-search-field">    
+                                    <label for="s2id_autogen1" class="select2-offscreen">
+                                        Offers 
+                                    </label>    
+                                    <select name="offers">
+                                    {% for offer in offers %}
+                                        {% if offer in qs %}
+                                        <option value="{{ offer }}" selected=true>{{ offer }}</option>
+                                        {% else %}
+                                        <option value="{{ offer }}">{{ offer }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </select> 
+                                </li>
+                            </ul>
+                            <div class="select2-drop select2-drop-multi select2-display-none select2-drop-active">   
+                                <ul class="select2-results">   
+                                    <li class="select2-no-results">No matches found</li>
+                                </ul>
                             </div>
-                        </div> -->
+                        </div>
+                        {% for offer in }    
                         {% endblock %}
                     {% include "dashboard/partials/pagination.html" %}
                     <div class="pull-right">
