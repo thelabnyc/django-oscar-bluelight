@@ -327,25 +327,11 @@ class OfferGroupUpdateView(UpdateView):
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
 
-    def get_context_data(self, **kwargs):
-        context = super(OfferGroupUpdateView, self).get_context_data(**kwargs)
-        context['offers'] = ConditionalOffer.objects.all()
-        return context
-
-    # TODO -- add to template
-    def edit_offers(self, offer, form):
-        if form.cleaned_data['offer']:
-            offer_group = form.cleaned_data['offer_group']
-            offer_group.remove(form.cleaned_data['offer'])
-        return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
-
-    # def add_offer(self, offer, form):
-    #     if form.cleaned_data['offer']:
-    #         offer_group = form.cleaned_data['offer_group']
-    #         offer_group.add(form.cleaned_data['offer'])
+    # def add_offers(self, offer_group, form):
+    #     if form.cleaned_data['offers']:
+    #         offer_group.add(form.cleaned_data['offers'])
     #     return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
 
-    def form_valid(self, form):
-        # offergroup = form.save()
-        # return self.remove_offer(offer, form)
-        return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
+    # def form_valid(self, form):
+    #     offer_group = form.save(commit=False)
+    #     return self.add_offers(offer_group, form)

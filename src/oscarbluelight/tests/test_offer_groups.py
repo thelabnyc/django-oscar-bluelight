@@ -381,8 +381,10 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
 class OfferGroupFormTest(TestCase):
     def setUp(self):
-        self.name = 'An Offer Group'
-        self.priority = 5
+        self.offer_group = OfferGroup.objects.create(
+            name="An Offer Group",
+            priority=5
+        )
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
@@ -395,31 +397,50 @@ class OfferGroupFormTest(TestCase):
         self.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
         self.benefit.value = 1
         self.benefit.save()
-        self.offer = ConditionalOffer(name='test3')
+        self.offer = ConditionalOffer(name="123 test")
         self.offer.condition = self.condition
         self.offer.benefit = self.benefit
         self.offer.save()
+        self.offer_group.offers.add(self.offer)
+
 
     def test_form_valid(self):
-        data = {'name': self.name, 'priority': self.priority}
+        data = {'name': self.offer_group.name, 'priority': self.offer_group.priority+1, 'offers': [self.offer.pk]}
         form = OfferGroupForm(data=data)
         self.assertTrue(form.is_valid())
 
     def test_form_invalid(self):
-        data = {'name': self.name, 'offer': 'lorem ipsum'}
+        data = {'name': self.offer_group.name, 'offer': 'lorem ipsum'}
         form = OfferGroupForm(data=data)
         self.assertFalse(form.is_valid())
 
     def test_create_offer_group(self):
-        data = {'name': self.name, 'priority': self.priority}
+        condition = Condition()
+        condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition.value = 2
+        condition.range = self.all_products
+        condition.save()
+        benefit = Benefit()
+        benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        benefit.value = 3
+        benefit.save()
+        offer = ConditionalOffer(name='testing ABC')
+        offer.condition = condition
+        offer.benefit = benefit
+        offer.save()
+
+        data = {'name': "A New Name", 'priority': 4567, 'offers': [offer.pk]}
         form = OfferGroupForm(data=data)
+
+        self.assertTrue(form.is_valid())
         form.save()
         qs = OfferGroup.objects.all()
         self.assertIsInstance(qs.first(), OfferGroup)
 
     def test_create_offer_offer_group(self):
-        data = {'name': self.name, 'priority': self.priority}
+        data = {'name': "A New Name", 'priority': 4567, 'offers': [self.offer.pk]}
         form = OfferGroupForm(data=data)
+        self.assertTrue(form.is_valid())
         form.save()
 
         qs = OfferGroup.objects.all()
@@ -427,15 +448,15 @@ class OfferGroupFormTest(TestCase):
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
 
-    def test_related_offers(self):
-        data = {'name': self.name, 'priority': self.priority, 'related_offers': None}
-        form = OfferGroupForm(data=data)
-        self.assertTrue(form.is_valid())
+    # def test_related_offers(self):
+    #     data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'offers': None}
+    #     form = OfferGroupForm(data=data)
+    #     self.assertTrue(form.is_valid())
 
-    def test_other_offers(self):
-        data = {'name': self.name, 'priority': self.priority, 'other_offers': None}
-        form = OfferGroupForm(data=data)
-        self.assertTrue(form.is_valid())
+    # def test_other_offers(self):
+    #     data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'other_offers': None}
+    #     form = OfferGroupForm(data=data)
+    #     self.assertTrue(form.is_valid())
 
 
 class OfferGroupViewTest(TestCase):
@@ -456,7 +477,7 @@ class OfferGroupViewTest(TestCase):
         self.benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
         self.benefit.value = 1
         self.benefit.save()
-        self.offer = ConditionalOffer(name='test3')
+        self.offer = ConditionalOffer()
         self.offer.condition = self.condition
         self.offer.benefit = self.benefit
         self.offer.save()
@@ -479,11 +500,11 @@ class OfferGroupViewTest(TestCase):
         self.client.login(username='john', password='johnpassword')
         resp_get = self.client.get(reverse('dashboard:offergroup-create'))
         self.assertEqual(resp_get.status_code, 200)
-        # print(resp_get.context)
         form = resp_get.context['form']
         data = form.initial
         data['name'] = 'test offergroup'
         data['priority'] = 1234
+        data['offers'] = [self.offer.pk]
 
         response = self.client.post(
             reverse('dashboard:offergroup-create'), data
@@ -512,15 +533,13 @@ class OfferGroupViewTest(TestCase):
         self.assertEqual(data.get('name'), 'someName')
         data['name'] = 'another test'
         data['priority'] = 2345
-        # data['related_offers'] = None
-        # data['other_offers'] = None
+        data['offers'] = [self.offer.pk]
 
         response = self.client.post(
             reverse('dashboard:offergroup-update', args=[self.offer_group.pk]), data
         )
         self.assertEqual(response.status_code, 302)
 
-        print(resp_get.context_data)
         # self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
         qs = OfferGroup.objects.filter(name='another test')
         self.assertEqual(qs.count(), 1)
