@@ -427,6 +427,16 @@ class OfferGroupFormTest(TestCase):
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
 
+    def test_related_offers(self):
+        data = {'name': self.name, 'priority': self.priority, 'related_offers': None}
+        form = OfferGroupForm(data=data)
+        self.assertTrue(form.is_valid())
+
+    def test_other_offers(self):
+        data = {'name': self.name, 'priority': self.priority, 'other_offers': None}
+        form = OfferGroupForm(data=data)
+        self.assertTrue(form.is_valid())
+
 
 class OfferGroupViewTest(TestCase):
     def setUp(self):
@@ -473,7 +483,7 @@ class OfferGroupViewTest(TestCase):
         form = resp_get.context['form']
         data = form.initial
         data['name'] = 'test offergroup'
-        data['priority'] = 200
+        data['priority'] = 1234
 
         response = self.client.post(
             reverse('dashboard:offergroup-create'), data
@@ -482,7 +492,7 @@ class OfferGroupViewTest(TestCase):
         qs = OfferGroup.objects.filter(name='test offergroup')
         self.assertIsInstance(qs.first(), OfferGroup)
         self.assertEqual(qs.first().name, 'test offergroup')
-        self.assertEqual(qs.first().priority, 200)
+        self.assertEqual(qs.first().priority, 1234)
 
     def test_delete(self):
         self.client.login(username='john', password='johnpassword')
@@ -501,13 +511,17 @@ class OfferGroupViewTest(TestCase):
         data = form.initial
         self.assertEqual(data.get('name'), 'someName')
         data['name'] = 'another test'
-        data['priority'] = 300
-        data['offers'] = ConditionalOffer.objects.all()
+        data['priority'] = 2345
+        # data['related_offers'] = None
+        # data['other_offers'] = None
 
         response = self.client.post(
             reverse('dashboard:offergroup-update', args=[self.offer_group.pk]), data
         )
         self.assertEqual(response.status_code, 302)
 
-        # print(resp_get.context_data.get('object'))
+        print(resp_get.context_data)
         # self.assertEqual(resp_get.context_data.get('offers').first(), self.offer)
+        qs = OfferGroup.objects.filter(name='another test')
+        self.assertEqual(qs.count(), 1)
+        self.assertEqual(qs.first().priority, 2345)

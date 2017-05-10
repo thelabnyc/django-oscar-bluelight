@@ -332,15 +332,18 @@ class OfferGroupUpdateView(UpdateView):
         context['offers'] = ConditionalOffer.objects.all()
         return context
 
-    # TODO -- add to template?
-    def remove_offer(self, offer, form):
+    # TODO -- add to template
+    def edit_offers(self, offer, form):
         if form.cleaned_data['offer']:
             offer_group = form.cleaned_data['offer_group']
             offer_group.remove(form.cleaned_data['offer'])
         return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
 
-    def add_offer(self, offer, form):
-        pass
+    # def add_offer(self, offer, form):
+    #     if form.cleaned_data['offer']:
+    #         offer_group = form.cleaned_data['offer_group']
+    #         offer_group.add(form.cleaned_data['offer'])
+    #     return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
 
     def form_valid(self, form):
         # offergroup = form.save()

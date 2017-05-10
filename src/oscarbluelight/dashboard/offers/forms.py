@@ -118,18 +118,6 @@ class RestrictionsForm(BaseRestrictionsForm):
 
 
 class OfferGroupForm(forms.ModelForm):
-    # qs = ConditionalOffer.objects.all()
-    # related = qs.filter(offer)
-    # TDO -- fix these querysets
-    related_offers = forms.ModelChoiceField(
-        queryset=ConditionalOffer.objects.all(),
-        required=False
-    )
-    other_offers = forms.ModelChoiceField(
-        queryset=ConditionalOffer.objects.all(),
-        required=False
-    )
-
     class Meta:
         model = OfferGroup
-        fields = ('name', 'priority', )
+        fields = ('name', 'priority', 'offers', )
