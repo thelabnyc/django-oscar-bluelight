@@ -326,12 +326,3 @@ class OfferGroupUpdateView(UpdateView):
     template_name = 'dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
-
-    # def add_offers(self, offer_group, form):
-    #     if form.cleaned_data['offers']:
-    #         offer_group.add(form.cleaned_data['offers'])
-    #     return HttpResponseRedirect(reverse('dashboard:offergroup-list'))
-
-    # def form_valid(self, form):
-    #     offer_group = form.save(commit=False)
-    #     return self.add_offers(offer_group, form)

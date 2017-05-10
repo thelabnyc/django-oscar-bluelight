@@ -405,7 +405,7 @@ class OfferGroupFormTest(TestCase):
 
 
     def test_form_valid(self):
-        data = {'name': self.offer_group.name, 'priority': self.offer_group.priority+1, 'offers': [self.offer.pk]}
+        data = {'name': self.offer_group.name, 'priority': self.offer_group.priority + 1, 'offers': [self.offer.pk]}
         form = OfferGroupForm(data=data)
         self.assertTrue(form.is_valid())
 
@@ -447,16 +447,6 @@ class OfferGroupFormTest(TestCase):
         self.assertIsInstance(qs.first(), OfferGroup)
         qs.first().offers.add(self.offer)
         self.assertIn(self.offer, qs.first().offers.all())
-
-    # def test_related_offers(self):
-    #     data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'offers': None}
-    #     form = OfferGroupForm(data=data)
-    #     self.assertTrue(form.is_valid())
-
-    # def test_other_offers(self):
-    #     data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'other_offers': None}
-    #     form = OfferGroupForm(data=data)
-    #     self.assertTrue(form.is_valid())
 
 
 class OfferGroupViewTest(TestCase):
