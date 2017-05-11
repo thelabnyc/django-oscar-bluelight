@@ -406,7 +406,9 @@ class OfferGroupFormTest(TestCase):
 
     def test_form_valid(self):
         data = {'name': self.offer_group.name, 'priority': self.offer_group.priority + 1, 'offers': [self.offer.pk]}
-        form = OfferGroupForm(data=data)
+        form = OfferGroupForm(
+            data=data
+        )
         self.assertTrue(form.is_valid())
 
     def test_form_invalid(self):
@@ -478,6 +480,10 @@ class OfferGroupViewTest(TestCase):
         self.offer_group.offers.add(self.offer)
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
         self.user.save()
+        # self.form = OfferGroupForm( 
+        #     qs=ConditionalOffer.objects.filter(offer_group__in=[self.offer_group])
+        # )
+        # self.form.save()
 
     def test_get_list(self):
         self.client.login(username='john', password='johnpassword')

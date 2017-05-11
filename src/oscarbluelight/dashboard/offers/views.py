@@ -5,6 +5,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView, ListView, CreateView, UpdateView
+from django.shortcuts import get_object_or_404
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers import views
 import json
@@ -326,6 +327,13 @@ class OfferGroupUpdateView(UpdateView):
     template_name = 'dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = context.get('offergroup')
+        qs = ConditionalOffer.objects.filter(offer_group=obj)
+        context['qs'] = qs
+        return context
 
     def save_offers(self, offer_group, form):
         offers = form.cleaned_data['offers']
