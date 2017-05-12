@@ -162,9 +162,8 @@ class OfferRestrictionsView(OfferWizardStepView):
 
         # if there is an offer group, add offer
         # that calls save_offer
-        if form.cleaned_data['offer_groups']:
-            offer_group = form.cleaned_data['offer_groups']
-            offer_group.offers.add(offer, bulk=False)
+        if form.cleaned_data['offer_group']:
+            offer.offer_group = form.cleaned_data['offer_group']
 
         # return offer detail view
         return HttpResponseRedirect(reverse(

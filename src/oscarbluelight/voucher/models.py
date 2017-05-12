@@ -1,11 +1,8 @@
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 from oscar.apps.voucher.abstract_models import AbstractVoucher
-from oscar.core.loading import get_model
 from . import tasks
 import time
-
-OfferGroup = get_model('offer', 'OfferGroup')
 
 
 class VoucherQuerySet(models.QuerySet):

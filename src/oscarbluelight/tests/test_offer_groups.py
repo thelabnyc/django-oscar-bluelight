@@ -412,7 +412,16 @@ class OfferGroupFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_form_invalid(self):
+        # bad offer
         data = {'name': self.offer_group.name, 'offer': 'lorem ipsum'}
+        form = OfferGroupForm(data=data)
+        self.assertFalse(form.is_valid())
+        #bad offer
+        data = {'name': self.offer_group.name, 'priority': 123, 'offer': 'lorem ipsum'}
+        form = OfferGroupForm(data=data)
+        self.assertFalse(form.is_valid())
+        # dupe priority
+        data = {'name': self.offer_group.name, 'priority': self.offer_group.priority, 'offer': self.offer}
         form = OfferGroupForm(data=data)
         self.assertFalse(form.is_valid())
 
@@ -480,10 +489,6 @@ class OfferGroupViewTest(TestCase):
         self.offer_group.offers.add(self.offer)
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
         self.user.save()
-        # self.form = OfferGroupForm(
-        #     qs=ConditionalOffer.objects.filter(offer_group__in=[self.offer_group])
-        # )
-        # self.form.save()
 
     def test_get_list(self):
         self.client.login(username='john', password='johnpassword')
