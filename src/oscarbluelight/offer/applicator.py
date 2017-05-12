@@ -37,10 +37,10 @@ class Applicator(BaseApplicator):
         with offers
         '''
         affected_quantities = Counter()
-        offer_groups = OfferGroup.objects.all()
+        offer_group = OfferGroup.objects.all()
         applications = results.OfferApplications()
 
-        for offer_group in offer_groups:
+        for offer_group in offer_group:
             for offer in offer_group.offers & offers:
                 num_applications = 0
                 # Keep applying the offer until either

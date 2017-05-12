@@ -96,7 +96,7 @@ class RestrictionsForm(BaseRestrictionsForm):
         help_text=_("Which user groups will be able to apply this offer?"),
         required=False)
 
-    offer_groups = forms.ModelChoiceField(
+    offer_group = forms.ModelChoiceField(
         label=_('Offer Group'),
         queryset=OfferGroup.objects.get_queryset(),
         help_text=_('Offer group to which this offer belongs'),
@@ -106,7 +106,7 @@ class RestrictionsForm(BaseRestrictionsForm):
     class Meta:
         model = ConditionalOffer
         fields = ('start_datetime', 'end_datetime',
-                  'limit_by_group', 'groups', 'offer_groups',
+                  'limit_by_group', 'groups', 'offer_group',
                   'max_basket_applications', 'max_user_applications',
                   'max_global_applications', 'max_discount')
 
