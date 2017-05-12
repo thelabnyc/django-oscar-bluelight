@@ -35,13 +35,14 @@ class Applicator(BaseApplicator):
         Want to apply offers within offer group
         when offer group's offers applied, move to the next offer group
         with offers
+        have to reset affected quanity to 0 per offergroup
         '''
         affected_quantities = Counter()
         offer_group = OfferGroup.objects.all()
         applications = results.OfferApplications()
 
-        for offer_group in offer_group:
-            for offer in offer_group.offers & offers:
+        for group in offer_group:
+            for offer in group.offers & offers:
                 num_applications = 0
                 # Keep applying the offer until either
                 # (a) We reach the max number of applications for the offer.
@@ -56,6 +57,7 @@ class Applicator(BaseApplicator):
                         break
                 for line in basket.lines.all():
                     affected_quantities[line.id] += line._affected_quantity
+                    # want affected lines per offer group, not globally
                     line._affected_quantity = 0
 
         for line in basket.lines.all():

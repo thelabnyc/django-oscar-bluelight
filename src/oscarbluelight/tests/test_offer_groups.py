@@ -416,7 +416,7 @@ class OfferGroupFormTest(TestCase):
         data = {'name': self.offer_group.name, 'offer': 'lorem ipsum'}
         form = OfferGroupForm(data=data)
         self.assertFalse(form.is_valid())
-        #bad offer
+        # bad offer
         data = {'name': self.offer_group.name, 'priority': 123, 'offer': 'lorem ipsum'}
         form = OfferGroupForm(data=data)
         self.assertFalse(form.is_valid())
