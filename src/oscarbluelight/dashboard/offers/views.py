@@ -8,7 +8,6 @@ from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers import views
 import json
-from itertools import chain
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Benefit = get_model('offer', 'Benefit')
@@ -333,25 +332,16 @@ class OfferGroupUpdateView(UpdateView):
         context = super().get_context_data(**kwargs)
         form = context.get('form')
         obj = context.get('offergroup')
-        # vouchers NOT related to this offer_group
-        unrelated_vouchers = Voucher.objects.all().exclude(offer_group=obj).values_list('name', flat=True)
-        # add offers and vouchers not related to current offer_group to form's initial data
-        form.initial.update({'offers':
-            list(
-                chain(ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True),
-                    unrelated_vouchers)
-            ),
-        })
+        # add offers related to current offer_group to form's initial data
+        form.initial.update({'offers': obj.offers.all()})
         return context
 
     def save_data(self, offer_group, form):
         offer_group.name = form.cleaned_data['name']
         offer_group.priority = form.cleaned_data['priority']
-        if form.cleaned_data['offers']:
-            offers = form.cleaned_data['offers']
-            for offer in offers:
-                offer_group.offers.add(offer, bulk=False)
+        offer_group.offers = form.cleaned_data['offers']
         offer_group.save()
+
         return HttpResponseRedirect(reverse(
             'dashboard:offergroup-list'))
 
