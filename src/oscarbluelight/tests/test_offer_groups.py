@@ -480,7 +480,7 @@ class OfferGroupViewTest(TestCase):
         self.offer_group.offers.add(self.offer)
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
         self.user.save()
-        # self.form = OfferGroupForm( 
+        # self.form = OfferGroupForm(
         #     qs=ConditionalOffer.objects.filter(offer_group__in=[self.offer_group])
         # )
         # self.form.save()
