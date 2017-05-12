@@ -57,32 +57,9 @@
                         {% block form_fields %}
                         {% include 'dashboard/partials/form_field.html' with field=form.name %}
                         {% include 'dashboard/partials/form_field.html' with field=form.priority %}
-<!--                         {% include 'dashboard/partials/form_field.html' with field=form.offers %}
- -->                    <div class="select2-container select2-container-multi form-control" id="s2id_id_offers" style="width: 785px;">
-                            <ul class="select2-choices">  
-                                <li class="select2-search-field">    
-                                    <label for="s2id_autogen1" class="select2-offscreen">
-                                        Offers 
-                                    </label>    
-                                    <select name="offers">
-                                    {% for offer in offers %}
-                                        {% if offer in qs %}
-                                        <option value="{{ offer }}" selected=true>{{ offer }}</option>
-                                        {% else %}
-                                        <option value="{{ offer }}">{{ offer }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                    </select> 
-                                </li>
-                            </ul>
-                            <div class="select2-drop select2-drop-multi select2-display-none select2-drop-active">   
-                                <ul class="select2-results">   
-                                    <li class="select2-no-results">No matches found</li>
-                                </ul>
-                            </div>
-                        </div>
-                        {% for offer in }    
+                        {% include 'dashboard/partials/form_field.html' with field=form.offers %}
                         {% endblock %}
+
                     {% include "dashboard/partials/pagination.html" %}
                     <div class="pull-right">
                         <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}

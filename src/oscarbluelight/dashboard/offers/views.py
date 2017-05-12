@@ -5,16 +5,17 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView, ListView, CreateView, UpdateView
-from django.shortcuts import get_object_or_404
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers import views
 import json
+from itertools import chain
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 OfferGroup = get_model('offer', 'OfferGroup')
+Voucher = get_model('voucher', 'Voucher')
 
 BenefitSearchForm = get_class('dashboard.offers.forms', 'BenefitSearchForm')
 BenefitForm = get_class('dashboard.offers.forms', 'BenefitForm')
@@ -330,19 +331,30 @@ class OfferGroupUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        form = context.get('form')
         obj = context.get('offergroup')
-        qs = ConditionalOffer.objects.filter(offer_group=obj)
-        context['qs'] = qs
+        # vouchers NOT related to this offer_group
+        unrelated_vouchers = Voucher.objects.all().exclude(offer_group=obj).values_list('name', flat=True)
+        # add offers and vouchers not related to current offer_group to form's initial data
+        form.initial.update({'offers':
+            list(
+                chain(ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True),
+                    unrelated_vouchers)
+            ),
+        })
         return context
 
-    def save_offers(self, offer_group, form):
-        offers = form.cleaned_data['offers']
-        for offer in offers:
-            offer_group.offers.add(offer, bulk=False)
-        form.save()
+    def save_data(self, offer_group, form):
+        offer_group.name = form.cleaned_data['name']
+        offer_group.priority = form.cleaned_data['priority']
+        if form.cleaned_data['offers']:
+            offers = form.cleaned_data['offers']
+            for offer in offers:
+                offer_group.offers.add(offer, bulk=False)
+        offer_group.save()
         return HttpResponseRedirect(reverse(
             'dashboard:offergroup-list'))
 
     def form_valid(self, form):
         offer_group = form.save(commit=False)
-        return self.save_offers(offer_group, form)
+        return self.save_data(offer_group, form)
