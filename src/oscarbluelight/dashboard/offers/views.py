@@ -331,15 +331,17 @@ class OfferGroupUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        form = context.get('form')
         obj = context.get('offergroup')
-        qs = ConditionalOffer.objects.filter(offer_group=obj)
-        current_vouchers = Voucher.objects.filter(offer_group=obj).values_list('name', flat=True)
+        # vouchers NOT related to this offer_group
         unrelated_vouchers = Voucher.objects.all().exclude(offer_group=obj).values_list('name', flat=True)
-        context['current'] = list(chain(qs.values_list('name', flat=True), current_vouchers))
-        context['offers'] = list(
-            chain(ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True),
-                unrelated_vouchers)
-        )
+        # add offers and vouchers not related to current offer_group to form's initial data
+        form.initial.update({'offers':
+            list(
+                chain(ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True),
+                    unrelated_vouchers)
+            ),
+        })
         return context
 
     def save_data(self, offer_group, form):
