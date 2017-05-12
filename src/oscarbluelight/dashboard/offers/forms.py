@@ -120,7 +120,7 @@ class RestrictionsForm(BaseRestrictionsForm):
 
 class OfferGroupForm(forms.ModelForm):
     offers = ModelMultipleChoiceField(
-        queryset=ConditionalOffer.objects.all(),
+        queryset=ConditionalOffer.objects.order_by('name').all(),
         widget=forms.widgets.SelectMultiple(),
         required=True
     )
