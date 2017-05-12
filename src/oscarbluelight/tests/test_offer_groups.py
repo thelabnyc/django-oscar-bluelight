@@ -540,3 +540,31 @@ class OfferGroupViewTest(TestCase):
         qs = OfferGroup.objects.filter(name='another test')
         self.assertEqual(qs.count(), 1)
         self.assertEqual(qs.first().priority, 2345)
+
+    def test_update_voucher(self):
+        voucher = Voucher.objects.create(
+            name='Test Voucher',
+            code='test-voucher',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now() + timedelta(seconds=120),
+            limit_usage_by_group=False
+        )
+        voucher.offers.add(self.offer)
+        self.offer_group.offers.add(voucher.offers.first())
+        self.client.login(username='john', password='johnpassword')
+        resp_get = self.client.get(reverse('dashboard:offergroup-update', args=[self.offer_group.pk]))
+        self.assertEqual(resp_get.status_code, 200)
+        form = resp_get.context['form']
+        data = form.initial
+        self.assertEqual(data.get('name'), 'someName')
+        self.assertEqual(data.get('priority'), 5)
+        data['priority'] = 2345
+        data['offers'] = [self.offer.pk, voucher]
+        response = self.client.post(
+            reverse('dashboard:offergroup-update', args=[self.offer_group.pk]), data
+        )
+        self.assertEqual(response.status_code, 200)
+
+        qs = Voucher.objects.filter(name='Test Voucher')
+        self.assertEqual(qs.count(), 1)

@@ -8,12 +8,14 @@ from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers import views
 import json
+from itertools import chain
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 OfferGroup = get_model('offer', 'OfferGroup')
+Voucher = get_model('voucher', 'Voucher')
 
 BenefitSearchForm = get_class('dashboard.offers.forms', 'BenefitSearchForm')
 BenefitForm = get_class('dashboard.offers.forms', 'BenefitForm')
@@ -331,8 +333,13 @@ class OfferGroupUpdateView(UpdateView):
         context = super().get_context_data(**kwargs)
         obj = context.get('offergroup')
         qs = ConditionalOffer.objects.filter(offer_group=obj)
-        context['current'] = qs.values_list('name', flat=True)
-        context['offers'] = ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True)
+        current_vouchers = Voucher.objects.filter(offer_group=obj).values_list('name', flat=True)
+        unrelated_vouchers = Voucher.objects.all().exclude(offer_group=obj).values_list('name', flat=True)
+        context['current'] = list(chain(qs.values_list('name', flat=True), current_vouchers))
+        context['offers'] = list(
+            chain(ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True),
+                unrelated_vouchers)
+        )
         return context
 
     def save_data(self, offer_group, form):
