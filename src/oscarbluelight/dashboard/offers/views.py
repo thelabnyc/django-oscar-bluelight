@@ -331,8 +331,8 @@ class OfferGroupUpdateView(UpdateView):
         context = super().get_context_data(**kwargs)
         obj = context.get('offergroup')
         qs = ConditionalOffer.objects.filter(offer_group=obj)
-        context['selected'] = qs.values_list('name', flat=True)
-        context['offers'] = ConditionalOffer.objects.all().exclude(offer_group=obj)
+        context['current'] = qs.values_list('name', flat=True)
+        context['offers'] = ConditionalOffer.objects.all().exclude(offer_group=obj).values_list('name', flat=True)
         return context
 
     def save_data(self, offer_group, form):

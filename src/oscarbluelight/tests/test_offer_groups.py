@@ -528,7 +528,6 @@ class OfferGroupViewTest(TestCase):
         data = form.initial
         self.assertEqual(data.get('name'), 'someName')
         self.assertEqual(data.get('priority'), 5)
-        # self.assertEqual(data.get('offers'), self.offer)
         data['name'] = 'another test'
         data['priority'] = 2345
         data['offers'] = [self.offer.pk]
