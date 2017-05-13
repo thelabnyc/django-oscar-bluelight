@@ -122,7 +122,7 @@ class OfferGroupForm(forms.ModelForm):
     offers = ModelMultipleChoiceField(
         queryset=ConditionalOffer.objects.order_by('name').all(),
         widget=forms.widgets.SelectMultiple(),
-        required=True
+        required=False
     )
 
     class Meta:

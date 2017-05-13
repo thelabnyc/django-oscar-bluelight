@@ -412,12 +412,12 @@ class OfferGroupFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_form_invalid(self):
-        # bad offer
+        # no priority
         data = {'name': self.offer_group.name, 'offer': 'lorem ipsum'}
         form = OfferGroupForm(data=data)
         self.assertFalse(form.is_valid())
-        # bad offer
-        data = {'name': self.offer_group.name, 'priority': 123, 'offer': 'lorem ipsum'}
+        # bad priority
+        data = {'name': self.offer_group.name, 'priority': 'lorem ipsum', 'offer': 'lorem ipsum'}
         form = OfferGroupForm(data=data)
         self.assertFalse(form.is_valid())
         # dupe priority
@@ -536,12 +536,10 @@ class OfferGroupViewTest(TestCase):
         data['name'] = 'another test'
         data['priority'] = 2345
         data['offers'] = [self.offer.pk]
-
         response = self.client.post(
             reverse('dashboard:offergroup-update', args=[self.offer_group.pk]), data
         )
         self.assertEqual(response.status_code, 302)
-
         qs = OfferGroup.objects.filter(name='another test')
         self.assertEqual(qs.count(), 1)
         self.assertEqual(qs.first().priority, 2345)
