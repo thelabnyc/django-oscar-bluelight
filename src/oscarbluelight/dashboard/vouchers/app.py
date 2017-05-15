@@ -6,6 +6,7 @@ from oscar.core.loading import get_class
 class VoucherDashboardApplication(DefaultVoucherDashboardApplication):
     add_children_view = get_class('dashboard.vouchers.views', 'AddChildCodesView')
     export_children_view = get_class('dashboard.vouchers.views', 'ExportChildCodesView')
+    voucher_stats_view = get_class('dashboard.vouchers.views', 'VoucherStatsView')
 
     def get_urls(self):
         urls = [
@@ -13,6 +14,7 @@ class VoucherDashboardApplication(DefaultVoucherDashboardApplication):
                 name='voucher-add-children'),
             url(r'^stats/(?P<pk>\d+)/export-children.(?P<format>[\w]+)$', self.export_children_view.as_view(),
                 name='voucher-export-children'),
+            url(r'^stats/(?P<pk>\d+)/$', self.voucher_stats_view.as_view(), name='voucher-stats'),
         ]
         return super().get_urls() + self.post_process_urls(urls)
 

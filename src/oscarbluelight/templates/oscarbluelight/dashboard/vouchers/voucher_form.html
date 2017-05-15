@@ -58,6 +58,20 @@
                         {% endblocktrans %}
                     </p>
                 </div>
+                <div class="table-header">
+                    <h2><i class="icon-gift icon-large"></i>
+                        {% trans "Offer Group" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "dashboard/partials/form_field.html" with field=form.offer_group %}
+                    <p>
+                        {% url 'dashboard:offergroup-list' as offergroup_list_url %}
+                        {% blocktrans %}
+                        Offer groups can be created and edited from within the <a href="{{ offergroup_list_url }}">offer group dashboard</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
             </div>
             <div class="col-md-6">
                 <div class="table-header">

@@ -1,0 +1,73 @@
+{% extends 'dashboard/layout.html' %}
+
+{% load currency_filters %}
+
+{% load i18n %}
+
+{% block body_class %}{{ block.super }} create-page {% endblock %}
+
+{% block title %}
+    {% if offer_group.pk %}
+        {{ offer_group.name }}:
+    {% else %}
+        {% trans "Create new offer_group" %}:
+    {% endif %}
+    {{ title }} | {% trans "offer_groups" %} | {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ul class="breadcrumb">
+    <li>
+        <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
+    </li>
+    <li>
+        <a href="{% url 'dashboard:offergroup-list' %}">{% trans "offer groups" %}</a>
+    </li>
+    {% if offer_group.pk %}
+        <li>
+            <a href="{% url 'dashboard:offergroup-edit' pk=offer_group.pk %}">{{ offer_group.name }}</a>
+        </li>
+    {% else %}
+        <li>
+            {% trans "Edit offer group" %}
+        </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block dashboard_content %}
+    {% if form.is_bound and not form.is_valid %}
+        <div class="alert alert-danger">
+            <strong>{% trans "Oops! We found some errors" %}</strong> - {% trans "please check the error messages below and try again" %}
+        </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger form-group has-error">
+                <span class="help-inline"><i class="icon-exclamation-sign"></i> {{ error }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <div class="row">
+        <div class="col-md-offset-1 col-md-7">
+            <div class="well">
+                    <form action="." method="post" class="order_table">
+                        {% csrf_token %}
+                        {% block form_fields %}
+                        {% include 'dashboard/partials/form_field.html' with field=form.name %}
+                        {% include 'dashboard/partials/form_field.html' with field=form.priority %}
+                        {% include 'dashboard/partials/form_field.html' with field=form.offers %}
+                        {% endblock %}
+
+                    {% include "dashboard/partials/pagination.html" %}
+                    <div class="pull-right">
+                        <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}
+                        </button>
+                    </div>
+                    <a class="btn btn-default" href="{% url 'dashboard:offergroup-list' %}">{% trans "Cancel" %}</a>
+                    </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

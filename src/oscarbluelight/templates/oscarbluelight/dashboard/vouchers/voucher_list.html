@@ -19,19 +19,19 @@
 {% endblock table_head %}
 
 {% block table_row %}
-    <tr>
+    <tr> <!-- name -->
         <td><a href="{% url 'dashboard:voucher-stats' voucher.id %}">{{ voucher.name }}</a></td>
-        <td>
+        <td> <!-- code -->
             <span class="label label-info">{{ voucher.code }}</span>
         </td>
-        <td>
+        <td> <!-- status -->
             {% if voucher.is_active %}
                 <span class="label label-success">{% trans "Active" %}</span>
             {% else %}
                 <span class="label">{% trans "Inactive" %}</span>
             {% endif %}
         </td>
-        <td>
+        <td> <!-- user groups -->
             {% if voucher.limit_usage_by_group %}
                 {% for group in voucher.groups.all %}
                     <span class="label label-info">{{ group.name }}</span>
@@ -40,8 +40,8 @@
                 <span class="label label-danger">{% trans "No" %}</span>
             {% endif %}
         </td>
-        <td>{{ voucher.children.count }}</td>
-        <td>{{ voucher.priority }}</td>
+        <td>{{ voucher.children.count }}</td> <!-- num children -->
+        <td>{{ voucher.priority }}</td> <!-- priority -->
         <td>{{ voucher.num_basket_additions }}</td>
         <td>{{ voucher.num_orders }}</td>
         <td>{{ voucher.date_created }}</td>

@@ -37,9 +37,34 @@ def _init_proxy_class(obj, Klass):
     return proxy
 
 
+class OfferGroup(models.Model):
+    '''
+    ordered group of Offers
+    '''
+    name = models.CharField(max_length=64, null=False)
+    priority = models.IntegerField(null=False, unique=True)
+
+    def __str__(self):
+        return 'name: {}, priority: {}'.format(self.name, self.priority)
+
+    class Meta:
+        verbose_name = _('OfferGroup')
+        ordering = ['priority', ]
+
+
 class ConditionalOffer(AbstractConditionalOffer):
+    '''
+    groups  -- user groups
+    offer_group -- FK to OfferGroup
+    offerGroupA => [ o1, v2, o3 ], priority 1
+    offerGroupB => [ o4, v3 ], priority 2
+    To consume offers, loop through offers in offer group based on priority
+    to consume OfferGroup -> only move to next (greater priority val) when previous
+    offerGroup is consumed
+    '''
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
+    offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True)
 
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
@@ -49,6 +74,9 @@ class ConditionalOffer(AbstractConditionalOffer):
                 'is_satisfied': True,
             })
         return restrictions
+
+    class Meta:
+        ordering = ['priority', ]
 
 
 class Benefit(AbstractBenefit):
@@ -163,7 +191,7 @@ __all__ = [
     'BasketDiscount', 'ShippingDiscount', 'PostOrderAction',
     'SHIPPING_DISCOUNT', 'ZERO_DISCOUNT', 'ConditionalOffer',
     'Benefit', 'Condition', 'Range', 'RangeProduct',
-    'RangeProductFileUpload',
+    'RangeProductFileUpload', 'OfferGroup',
 ]
 
 

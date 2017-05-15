@@ -2,6 +2,10 @@ from decimal import Decimal as D
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit, CompoundCondition
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 from .base import BaseTest
+from django.test import TestCase
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from django.test import Client
 
 
 class CountConditionTest(BaseTest):
@@ -307,3 +311,23 @@ class CompoundConditionTest(BaseTest):
 
         # Saving the proxy instance  should work too
         b.save()
+
+
+class ConditionURL(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.all_products = Range()
+        self.all_products.includes_all_products = True
+        self.all_products.save()
+        self.condition = Condition()
+        self.condition.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        self.condition.value = 5
+        self.condition.range = self.all_products
+        self.condition.save()
+        self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword', is_staff=True)
+        self.user.save()
+
+    def test_get(self):
+        self.client.login(username='john', password='johnpassword')
+        response = self.client.get(reverse('dashboard:condition-list'))
+        self.assertEqual(response.status_code, 200)

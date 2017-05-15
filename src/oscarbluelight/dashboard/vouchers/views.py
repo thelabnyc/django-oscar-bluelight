@@ -68,7 +68,8 @@ class VoucherCreateView(DefaultVoucherCreateView):
                 usage=form.cleaned_data['usage'],
                 start_datetime=form.cleaned_data['start_datetime'],
                 end_datetime=form.cleaned_data['end_datetime'],
-                limit_usage_by_group=form.cleaned_data['limit_usage_by_group'])
+                limit_usage_by_group=form.cleaned_data['limit_usage_by_group'],
+            )
             voucher.groups = form.cleaned_data['groups']
             voucher.save()
             voucher.offers.add(offer)

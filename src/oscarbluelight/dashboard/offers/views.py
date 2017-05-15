@@ -13,14 +13,16 @@ ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
+OfferGroup = get_model('offer', 'OfferGroup')
+Voucher = get_model('voucher', 'Voucher')
 
 BenefitSearchForm = get_class('dashboard.offers.forms', 'BenefitSearchForm')
 BenefitForm = get_class('dashboard.offers.forms', 'BenefitForm')
+OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
 
 ConditionSearchForm = get_class('dashboard.offers.forms', 'ConditionSearchForm')
 ConditionForm = get_class('dashboard.offers.forms', 'ConditionForm')
 CompoundConditionForm = get_class('dashboard.offers.forms', 'CompoundConditionForm')
-
 
 MetaDataForm = get_class('dashboard.offers.forms', 'MetaDataForm')
 BenefitSelectionForm = get_class('dashboard.offers.forms', 'BenefitSelectionForm')
@@ -154,7 +156,18 @@ class OfferRestrictionsView(OfferWizardStepView):
             offer.offer_type = ConditionalOffer.USER
         else:
             offer.offer_type = ConditionalOffer.SITE
-        return super().save_offer(offer, form)
+
+        # save the offer
+        super().save_offer(offer, form)
+
+        # if there is an offer group, add offer
+        # that calls save_offer
+        if form.cleaned_data['offer_group']:
+            offer.offer_group = form.cleaned_data['offer_group']
+
+        # return offer detail view
+        return HttpResponseRedirect(reverse(
+            'dashboard:offer-detail', kwargs={'pk': offer.pk}))
 
     def form_valid(self, form):
         offer = form.save(commit=False)
@@ -287,3 +300,50 @@ class ConditionUpdateView(UpdateView):
         if hasattr(self.object, 'subconditions'):
             return 'dashboard/offers/condition_edit_compound.html'
         return 'dashboard/offers/condition_edit.html'
+
+
+class OfferGroupCreateView(CreateView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_create.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-list')
+
+
+class OfferGroupListView(ListView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_list.html'
+    form_class = OfferGroupForm
+
+
+class OfferGroupDeleteView(DeleteView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_delete.html'
+    success_url = reverse_lazy('dashboard:offergroup-list')
+
+
+class OfferGroupUpdateView(UpdateView):
+    model = OfferGroup
+    template_name = 'dashboard/offers/offergroup_edit.html'
+    form_class = OfferGroupForm
+    success_url = reverse_lazy('dashboard:offergroup-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context.get('form')
+        obj = context.get('offergroup')
+        # add offers related to current offer_group to form's initial data
+        form.initial.update({'offers': obj.offers.all()})
+        return context
+
+    def save_data(self, offer_group, form):
+        offer_group.name = form.cleaned_data['name']
+        offer_group.priority = form.cleaned_data['priority']
+        offer_group.offers = form.cleaned_data['offers']
+        offer_group.save()
+
+        return HttpResponseRedirect(reverse(
+            'dashboard:offergroup-list'))
+
+    def form_valid(self, form):
+        offer_group = form.save(commit=False)
+        return self.save_data(offer_group, form)

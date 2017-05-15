@@ -8,6 +8,7 @@ Voucher = get_model('voucher', 'Voucher')
 Benefit = get_model('offer', 'Benefit')
 Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
+OfferGroup = get_model('offer', 'OfferGroup')
 
 MAX_CHILDREN_CREATE = 1000
 

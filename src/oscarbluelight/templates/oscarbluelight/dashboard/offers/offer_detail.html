@@ -34,6 +34,10 @@
                 <td>{{ offer.description|safe|default:"-" }}</td>
             </tr>
             <tr>
+                <th>{% trans "Offer Group" %}</th>
+                <td>{{ offer.offer_group.name }}</td>
+            </tr>
+            <tr>
                 <th>{% trans "Priority" %}</th>
                 <td>{{ offer.priority }}</td>
             </tr>
