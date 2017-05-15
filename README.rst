@@ -87,6 +87,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.6.0
+------------------
+- Add concept of Offer groups.
+    - This makes it possible to create promotions which overlap on line items.
+
 0.5.4
 ------------------
 - Improve unit testing with tox.
