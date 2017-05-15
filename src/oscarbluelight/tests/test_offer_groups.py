@@ -285,7 +285,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.assertEqual(line.quantity_without_discount, 5)
 
         discount = offer.apply_benefit(self.basket)
-        self.assertEqual(discount.discount, D('220.0'))
+        self.assertEqual(discount.discount, D('23.0'))
         self.assertEqual(line.quantity_with_discount, 0)  # !
         self.assertEqual(line.quantity_without_discount, 5)  # !
 

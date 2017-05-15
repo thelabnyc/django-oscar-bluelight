@@ -76,7 +76,7 @@ class ConditionalOffer(AbstractConditionalOffer):
         return restrictions
 
     class Meta:
-        ordering = ['priority', ]
+        ordering = ['-priority', ]
 
 
 class Benefit(AbstractBenefit):
