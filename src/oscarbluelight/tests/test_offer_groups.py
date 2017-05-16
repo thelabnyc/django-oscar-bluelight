@@ -384,12 +384,12 @@ class OfferGroupApplicatorTest(TestCase):
         self.all_products = Range()
         self.all_products.includes_all_products = True
         self.all_products.save()
-        item_price = 175.50
+        item_price = 200.00
         item_quantity = 6
         self.basket = create_basket(empty=True)
         self.product = create_product()
         create_stockrecord(self.product, item_price, num_in_stock=item_quantity * 2)
-        self.basket.add_product(self.product, quantity=item_quantity)
+        self.basket.add_product(self.product, quantity=2)
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
 
         self.value_condition1 = Condition()
@@ -399,7 +399,7 @@ class OfferGroupApplicatorTest(TestCase):
         self.value_condition1.save()
         self.fixed_price_benefit1 = Benefit()
         self.fixed_price_benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
-        self.fixed_price_benefit1.value = 9.32
+        self.fixed_price_benefit1.value = 10.02
         self.fixed_price_benefit1.range = self.all_products
         self.fixed_price_benefit1.save()
         self.offer = ConditionalOffer(name='cond offer no offergroup')
@@ -415,7 +415,7 @@ class OfferGroupApplicatorTest(TestCase):
         self.value_condition2.save()
         self.fixed_price_benefit2 = Benefit()
         self.fixed_price_benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
-        self.fixed_price_benefit2.value = 12.42
+        self.fixed_price_benefit2.value = 15.02
         self.fixed_price_benefit2.range = self.all_products
         self.fixed_price_benefit2.save()
         self.offer_stooges = ConditionalOffer(name='offer stooges')
@@ -438,10 +438,10 @@ class OfferGroupApplicatorTest(TestCase):
         discount = self.basket.total_discount
 
         line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 6)
+        self.assertEqual(line.quantity_with_discount, 2)
         self.assertEqual(line.quantity_without_discount, 0)
 
-        self.assertEqual(discount, D('130.78'))  # ( 9.32 + 12.42 ) * 6
+        self.assertEqual(discount, D('60.08'))
         self.assertEqual(self.basket.offer_applications.offers, {})
 
 
