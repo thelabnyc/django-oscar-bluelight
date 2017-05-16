@@ -66,6 +66,7 @@ class Applicator(BaseApplicator):
             for line in lines:
                 line._affected_quantity = min(line.quantity, affected_quantities[line.id])
 
+        # and count these lines
         lines = self._apply(basket, offers_not_in_group)
         for line in lines:
             line._affected_quantity = min(line.quantity, affected_quantities[line.id])
