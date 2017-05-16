@@ -435,7 +435,6 @@ class OfferGroupApplicatorTest(TestCase):
         qs = ConditionalOffer.objects.all()
         offers = [offer for offer in qs]
         Applicator().apply(self.basket, self.user, offers)
-        discount = self.basket.total_discount
 
         line = self.basket.all_lines()[0]
         self.assertEqual(line.quantity_with_discount, 2)
