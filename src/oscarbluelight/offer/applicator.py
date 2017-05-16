@@ -4,6 +4,7 @@ from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
 from collections import Counter
+from itertools import chain
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
@@ -30,6 +31,23 @@ class Applicator(BaseApplicator):
         return qs.select_related('condition', 'benefit')
 
 
+    def _apply(self, basket, offers):
+        applications = results.OfferApplications()
+        for offer in offers:
+            num_applications = 0
+            # Keep applying the offer until either
+            # (a) We reach the max number of applications for the offer.
+            # (b) The benefit can't be applied successfully.
+            while num_applications < offer.get_max_applications(basket.owner):
+                result = offer.apply_benefit(basket)
+                num_applications += 1
+                if not result.is_successful:
+                    break
+                applications.add(offer, result)
+                if result.is_final:
+                    break
+            return basket.lines.all()
+
     def apply_offers(self, basket, offers):
         '''
         Want to apply offers within offer group
@@ -40,29 +58,19 @@ class Applicator(BaseApplicator):
         affected_quantities = Counter()
         offer_group = OfferGroup.objects.all()
         applications = results.OfferApplications()
+        offers_not_in_group = ConditionalOffer.objects.filter(offer_group__isnull=True)
 
         for group in offer_group:
-            for offer in group.offers & offers:
-                num_applications = 0
-                # Keep applying the offer until either
-                # (a) We reach the max number of applications for the offer.
-                # (b) The benefit can't be applied successfully.
-                while num_applications < offer.get_max_applications(basket.owner):
-                    result = offer.apply_benefit(basket)
-                    num_applications += 1
-                    if not result.is_successful:
-                        break
-                    applications.add(offer, result)
-                    if result.is_final:
-                        break
-                for line in basket.lines.all():
-                    affected_quantities[line.id] += line._affected_quantity
-                    # want affected lines per offer group, not globally
-                    line._affected_quantity = 0
+            offers = list(chain(group.offers.all(), offers))
+            lines = self._apply(basket, offers)
+            for line in lines:
+                line._affected_quantity = min(line.quantity, affected_quantities[line.id])
 
-        for line in basket.lines.all():
+        lines = self._apply(basket, offers_not_in_group)
+        for line in lines:
             line._affected_quantity = min(line.quantity, affected_quantities[line.id])
 
         # Store this list of discounts with the basket so it can be
         # rendered in templates
+
         basket.offer_applications = applications
