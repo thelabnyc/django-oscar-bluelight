@@ -443,6 +443,8 @@ class OfferGroupApplicatorTest(TestCase):
 
         self.assertEqual(discount, D('60.08'))
         self.assertEqual(self.basket.offer_applications.offers, {})
+        for line in self.basket.lines.all():
+            self.assertEqual(line._affected_quantity, 0)  # !
 
 
 class OfferGroupFormTest(TestCase):

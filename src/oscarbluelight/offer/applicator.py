@@ -31,7 +31,7 @@ class Applicator(BaseApplicator):
         return qs.select_related('condition', 'benefit')
 
 
-    def _apply(self, basket, offers):
+    def _apply(self, basket, offers, affected_quantities):
         applications = results.OfferApplications()
         for offer in offers:
             num_applications = 0
@@ -46,7 +46,9 @@ class Applicator(BaseApplicator):
                 applications.add(offer, result)
                 if result.is_final:
                     break
-            return basket.lines.all()
+            for line in basket.lines.all():
+                affected_quantities[line.id] += line._affected_quantity
+        return basket.lines.all()
 
     def apply_offers(self, basket, offers):
         '''
@@ -62,14 +64,15 @@ class Applicator(BaseApplicator):
 
         for group in offer_group:
             offers = list(chain(group.offers.all(), offers))
-            lines = self._apply(basket, offers)
+            lines = self._apply(basket, offers, affected_quantities)
             for line in lines:
                 line._affected_quantity = min(line.quantity, affected_quantities[line.id])
 
         # and count these lines
-        lines = self._apply(basket, offers_not_in_group)
+        lines = self._apply(basket, offers_not_in_group, affected_quantities)
         for line in lines:
-            line._affected_quantity = min(line.quantity, affected_quantities[line.id])
+            line._affected_quantity += affected_quantities[line.id]
+        # print(line._affected_quantity)  # == 0 ?
 
         # Store this list of discounts with the basket so it can be
         # rendered in templates
