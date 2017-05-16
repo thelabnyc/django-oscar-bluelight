@@ -170,7 +170,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
         self.offer_group_elvis = OfferGroup.objects.create(
             name='test offer group elvis',
-            priority=1
+            priority=3
         )
         self.offer_group_elvis.save()
 
@@ -182,7 +182,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
         self.offer_group_stones = OfferGroup.objects.create(
             name='test offer group stones',
-            priority=3
+            priority=1
         )
         self.offer_group_stones.save()
 
@@ -339,7 +339,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
         self.offer_group_stones.offers.add(offer)
 
-        qs = OfferGroup.objects.all().order_by('priority')
+        qs = OfferGroup.objects.all()
         self.assertEqual(qs.first(), self.offer_group_elvis)
 
         qs = qs.last().offers.all().order_by('priority')

@@ -49,7 +49,7 @@ class OfferGroup(models.Model):
 
     class Meta:
         verbose_name = _('OfferGroup')
-        ordering = ['priority', ]
+        ordering = ['-priority', ]
 
 
 class ConditionalOffer(AbstractConditionalOffer):
