@@ -11,6 +11,7 @@ from oscarbluelight.offer.models import (
     CompoundCondition,
     ConditionalOffer
 )
+from oscarbluelight.offer.applicator import Applicator
 from oscarbluelight.dashboard.offers.forms import OfferGroupForm
 from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import User, Group
@@ -302,7 +303,6 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.assertEqual(line.quantity_without_discount, 5)  # !
 
 
-
     def test_add_another_offer_group(self):
         cond_a = Condition()
         cond_a.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
@@ -377,6 +377,78 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.assertEqual(discount.discount, D('0.00'))
         self.assertEqual(self.basket.total_excl_tax_excl_discounts, D('1000.00'))
         self.assertEqual(self.basket.total_excl_tax, D('0.00'))
+
+
+class OfferGroupApplicatorTest(TestCase):
+    def setUp(self):
+        self.all_products = Range()
+        self.all_products.includes_all_products = True
+        self.all_products.save()
+        item_price = 200.00
+        item_quantity = 6
+        self.basket = create_basket(empty=True)
+        self.product = create_product()
+        create_stockrecord(self.product, item_price, num_in_stock=item_quantity * 2)
+        self.basket.add_product(self.product, quantity=2)
+        self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
+
+        self.value_condition1 = Condition()
+        self.value_condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
+        self.value_condition1.range = self.all_products
+        self.value_condition1.value = 5.32
+        self.value_condition1.save()
+        self.fixed_price_benefit1 = Benefit()
+        self.fixed_price_benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
+        self.fixed_price_benefit1.value = 10.02
+        self.fixed_price_benefit1.range = self.all_products
+        self.fixed_price_benefit1.save()
+        self.offer = ConditionalOffer(name='cond offer no offergroup')
+        self.offer.condition = self.value_condition1
+        self.offer.benefit = self.fixed_price_benefit1
+        self.offer.priority = 2
+        self.offer.save()
+
+        self.value_condition2 = Condition()
+        self.value_condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
+        self.value_condition2.range = self.all_products
+        self.value_condition2.value = 6.32
+        self.value_condition2.save()
+        self.fixed_price_benefit2 = Benefit()
+        self.fixed_price_benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
+        self.fixed_price_benefit2.value = 15.02
+        self.fixed_price_benefit2.range = self.all_products
+        self.fixed_price_benefit2.save()
+        self.offer_stooges = ConditionalOffer(name='offer stooges')
+        self.offer_stooges.condition = self.value_condition2
+        self.offer_stooges.benefit = self.fixed_price_benefit2
+        self.offer_stooges.priority = 1
+        self.offer_stooges.save()
+
+        self.offer_group_stooges = OfferGroup.objects.create(
+            name='test offer group stooges',
+            priority=1
+        )
+        self.offer_group_stooges.save()
+        self.offer_group_stooges.offers.add(self.offer_stooges)
+
+    def test_apply_offers(self):
+        qs = ConditionalOffer.objects.all()
+        offers = [offer for offer in qs]
+        Applicator().apply(self.basket, self.user, offers)
+
+        line = self.basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 2)
+        self.assertEqual(line.quantity_without_discount, 0)
+
+        # offers are NOT compounding
+        # self.assertEqual(discount, D('94.14'))
+        # self.assertEqual(self.basket.total_excl_tax, D('305.86'))
+        self.assertEqual(list(self.basket.offer_applications.offers.values())[0], self.offer_stooges)
+        self.assertEqual(list(self.basket.offer_applications.offers.values())[1], self.offer)
+
+        # my understanding is that line_affected_quantity should be 1
+        for line in self.basket.all_lines():
+            self.assertEqual(line._affected_quantity, 2)  # !
 
 
 class OfferGroupFormTest(TestCase):

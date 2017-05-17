@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.utils.timezone import now
+from itertools import groupby
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
@@ -29,7 +30,6 @@ class Applicator(BaseApplicator):
             status=ConditionalOffer.OPEN)
         return qs.select_related('condition', 'benefit')
 
-
     def apply_offers(self, basket, offers):
         '''
         Want to apply offers within offer group
@@ -38,11 +38,14 @@ class Applicator(BaseApplicator):
         have to reset affected quanity to 0 per offergroup
         '''
         affected_quantities = Counter()
-        offer_group = OfferGroup.objects.all()
         applications = results.OfferApplications()
 
-        for group in offer_group:
-            for offer in group.offers & offers:
+        max_offer_group_priority = max([o.offer_group_id for o in offers if o.offer_group_id is not None])
+        offers = sorted(offers, key=lambda s: s.offer_group_id or max_offer_group_priority + 1)
+        grouped_offers = groupby(offers, key=lambda s: s.offer_group_id)
+
+        for group_id, group in grouped_offers:
+            for offer in group:
                 num_applications = 0
                 # Keep applying the offer until either
                 # (a) We reach the max number of applications for the offer.
@@ -55,14 +58,16 @@ class Applicator(BaseApplicator):
                     applications.add(offer, result)
                     if result.is_final:
                         break
-                for line in basket.lines.all():
+                for line in basket.all_lines():
                     affected_quantities[line.id] += line._affected_quantity
                     # want affected lines per offer group, not globally
                     line._affected_quantity = 0
 
-        for line in basket.lines.all():
+        for line in basket.all_lines():
             line._affected_quantity = min(line.quantity, affected_quantities[line.id])
+
 
         # Store this list of discounts with the basket so it can be
         # rendered in templates
+
         basket.offer_applications = applications
