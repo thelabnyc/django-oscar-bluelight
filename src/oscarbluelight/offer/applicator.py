@@ -15,14 +15,14 @@ def group_offers(offers):
     # Figure out the priority for the "null-group", the implicit group of offers which don't belong to
     # any other group. This group is applied last, and is therefore given the lowest priority.
     offer_group_priorities = [o.offer_group.priority for o in offers if o.offer_group is not None]
-    min_offer_group_priority = min(offer_group_priorities)
+    min_offer_group_priority = min(offer_group_priorities) if len(offer_group_priorities) else 0
     null_group_priority = min_offer_group_priority - 1
 
     def get_offer_group_priority(offer):
         return offer.offer_group.priority if offer.offer_group else null_group_priority
 
     # Sort the list of offers by their offer group's priority, descending
-    offers = sorted(offers, reverse=True, key=get_offer_group_priority)
+    offers = sorted(offers, key=lambda offer: (-get_offer_group_priority(offer), -offer.priority))
 
     # Group the sorted list by the offer group priority
     return groupby(offers, key=get_offer_group_priority)
@@ -90,3 +90,19 @@ class Applicator(BaseApplicator):
 
         # Store this list of discounts with the basket so it can be rendered in templates
         basket.offer_applications = applications
+
+
+    def get_cosmetic_price(self, product, price_excl_tax):
+        offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True).all()
+        for group_id, group in group_offers(offers):
+            for offer in group:
+                benefit = offer.benefit.proxy()
+                rng = benefit.range
+                if not rng:
+                    continue
+                if not rng.contains_product(product):
+                    continue
+                if not hasattr(benefit, 'apply_cosmetic_discount'):
+                    continue
+                price_excl_tax = benefit.apply_cosmetic_discount(price_excl_tax)
+        return price_excl_tax

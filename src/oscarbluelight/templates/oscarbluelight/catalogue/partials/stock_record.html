@@ -1,0 +1,41 @@
+{% load currency_filters %}
+{% load i18n %}
+{% load purchase_info_tags %}
+
+{% purchase_info_for_product request product as session %}
+
+{% if session.price.exists %}
+    {% if session.price.excl_tax == 0 %}
+        <p class="price_color">{% trans "Free" %}</p>
+    {% elif session.price.is_tax_known %}
+        {% if session.price.cosmetic_incl_tax and session.price.cosmetic_incl_tax != session.price.incl_tax %}
+            <p class="price_color">
+                <span style="font-size: 0.6em; color: #000; text-decoration: line-through;">{{ session.price.incl_tax|currency:session.price.currency }}</span>
+                <br/ >
+                {{ session.price.cosmetic_incl_tax|currency:session.price.currency }}
+            </p>
+        {% else %}
+            <p class="price_color">{{ session.price.incl_tax|currency:session.price.currency }}</p>
+        {% endif %}
+    {% else %}
+        {% if session.price.cosmetic_excl_tax and session.price.cosmetic_excl_tax != session.price.excl_tax %}
+            <p class="price_color">
+                <span style="font-size: 0.6em; color: #000; text-decoration: line-through;">{{ session.price.excl_tax|currency:session.price.currency }}</span>
+                <br/ >
+                {{ session.price.cosmetic_excl_tax|currency:session.price.currency }}
+            </p>
+        {% else %}
+            <p class="price_color">{{ session.price.excl_tax|currency:session.price.currency }}</p>
+        {% endif %}
+    {% endif %}
+{% else %}
+    <p class="price_color">&nbsp;</p>
+{% endif %}
+<p class="{{ session.availability.code }} availability">
+    <i class="icon-{% if session.availability.is_available_to_buy %}ok{% else %}remove{% endif %}"></i>
+    {% if verbose %}
+        {{ session.availability.message }}
+    {% else %}
+        {{ session.availability.short_message }}
+    {% endif %}
+</p>

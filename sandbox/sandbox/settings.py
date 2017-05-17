@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'oscarbluelight.dashboard.vouchers',
     'oscarbluelight.offer',
     'oscarbluelight.voucher',
+    'sandbox.partner',
 ])
 
 MIDDLEWARE_CLASSES = (
@@ -97,9 +98,9 @@ CACHES = {
 }
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'tmp/static/')
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), '../tmp/static/')
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'tmp/media/')
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), '../tmp/media/')
 
 OSCAR_DEFAULT_CURRENCY = 'USD'
 

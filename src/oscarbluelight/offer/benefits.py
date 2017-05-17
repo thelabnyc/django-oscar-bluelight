@@ -15,6 +15,7 @@ from oscar.apps.offer.benefits import (
 from oscar.templatetags.currency_filters import currency
 
 
+
 class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
     """
     An offer benefit that gives a percentage discount
@@ -27,17 +28,25 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         verbose_name = _("Percentage discount benefit")
         verbose_name_plural = _("Percentage discount benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'value': self.value,
             'range': self.range.name if self.range else 'product range'}
 
+
     @property
     def description(self):
         return self._description % {
             'value': self.value,
             'range': utils.range_anchor(self.range) if self.range else 'product range'}
+
+
+    def apply_cosmetic_discount(self, price_excl_tax):
+        discount = (self.value / 100) * price_excl_tax
+        return price_excl_tax - discount
+
 
     def _clean(self):
         if not self.range:
@@ -46,6 +55,8 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         if self.value > 100:
             raise exceptions.ValidationError(
                 _("Percentage discount cannot be greater than 100"))
+
+
 
 
 class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
@@ -60,17 +71,24 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         verbose_name = _("Absolute discount benefit")
         verbose_name_plural = _("Absolute discount benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'value': currency(self.value),
             'range': self.range.name.lower() if self.range else 'product range'}
 
+
     @property
     def description(self):
         return self._description % {
             'value': currency(self.value),
             'range': utils.range_anchor(self.range) if self.range else 'product range'}
+
+
+    def apply_cosmetic_discount(self, price_excl_tax):
+        return price_excl_tax - self.value
+
 
     def _clean(self):
         if not self.range:
@@ -79,6 +97,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         if not self.value:
             raise exceptions.ValidationError(
                 _("Fixed discount benefits require a value"))
+
 
 
 class BluelightFixedPriceBenefit(FixedPriceBenefit):
@@ -99,15 +118,22 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         verbose_name = _("Fixed price benefit")
         verbose_name_plural = _("Fixed price benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'amount': currency(self.value)}
 
+
     def _clean(self):
         if not self.range:
             raise exceptions.ValidationError(
                 _("Fixed price benefits require a product range."))
+
+
+    def apply_cosmetic_discount(self, price_excl_tax):
+        return self.value
+
 
     def apply(self, basket, condition, offer):
         # Fetch basket lines that are in the range and available to be used in an offer.
@@ -150,6 +176,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         return results.BasketDiscount(discount)
 
 
+
 class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
     _description = _("Cheapest product from %(range)s is free")
 
@@ -159,15 +186,18 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         verbose_name = _("Multibuy discount benefit")
         verbose_name_plural = _("Multibuy discount benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'range': self.range.name.lower() if self.range else 'product range'}
 
+
     @property
     def description(self):
         return self._description % {
             'range': utils.range_anchor(self.range) if self.range else 'product range'}
+
 
     def _clean(self):
         if not self.range:
@@ -182,10 +212,12 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
                   "attribute"))
 
 
+
 class BluelightShippingBenefit(ShippingBenefit):
     class Meta:
         app_label = 'offer'
         proxy = True
+
 
 
 class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
@@ -197,10 +229,12 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
         verbose_name = _("Shipping absolute discount benefit")
         verbose_name_plural = _("Shipping absolute discount benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'amount': currency(self.value)}
+
 
     def _clean(self):
         if not self.value:
@@ -216,6 +250,7 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
                   "attribute"))
 
 
+
 class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
     _description = _("Get shipping for %(amount)s")
 
@@ -225,10 +260,12 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
         verbose_name = _("Fixed price shipping benefit")
         verbose_name_plural = _("Fixed price shipping benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'amount': currency(self.value)}
+
 
     def _clean(self):
         if self.range:
@@ -241,6 +278,7 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
                   "attribute"))
 
 
+
 class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenefit):
     _description = _("%(value)s%% off of shipping cost")
 
@@ -250,10 +288,12 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
         verbose_name = _("Shipping percentage discount benefit")
         verbose_name_plural = _("Shipping percentage discount benefits")
 
+
     @property
     def name(self):
         return self._description % {
             'value': self.value}
+
 
     def _clean(self):
         if self.value > 100:
@@ -267,6 +307,7 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
             raise exceptions.ValidationError(
                 _("Shipping discounts don't require a 'max affected items' "
                   "attribute"))
+
 
 
 __all__ = [
