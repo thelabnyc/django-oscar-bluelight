@@ -5,7 +5,6 @@ from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
 from collections import Counter
-from itertools import chain
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
@@ -39,7 +38,6 @@ class Applicator(BaseApplicator):
         have to reset affected quanity to 0 per offergroup
         '''
         affected_quantities = Counter()
-        offer_group = OfferGroup.objects.all()
         applications = results.OfferApplications()
 
         max_offer_group_priority = max([o.offer_group_id for o in offers if o.offer_group_id is not None])
