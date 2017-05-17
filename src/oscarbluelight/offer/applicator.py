@@ -10,6 +10,25 @@ ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
 
 
+
+def group_offers(offers):
+    # Figure out the priority for the "null-group", the implicit group of offers which don't belong to
+    # any other group. This group is applied last, and is therefore given the lowest priority.
+    offer_group_priorities = [o.offer_group.priority for o in offers if o.offer_group is not None]
+    min_offer_group_priority = min(offer_group_priorities)
+    null_group_priority = min_offer_group_priority - 1
+
+    def get_offer_group_priority(offer):
+        return offer.offer_group.priority if offer.offer_group else null_group_priority
+
+    # Sort the list of offers by their offer group's priority, descending
+    offers = sorted(offers, reverse=True, key=get_offer_group_priority)
+
+    # Group the sorted list by the offer group priority
+    return groupby(offers, key=get_offer_group_priority)
+
+
+
 class Applicator(BaseApplicator):
     def get_user_offers(self, user):
         """
@@ -30,21 +49,20 @@ class Applicator(BaseApplicator):
             status=ConditionalOffer.OPEN)
         return qs.select_related('condition', 'benefit')
 
+
     def apply_offers(self, basket, offers):
-        '''
-        Want to apply offers within offer group
-        when offer group's offers applied, move to the next offer group
-        with offers
-        have to reset affected quanity to 0 per offergroup
-        '''
+        """
+        Apply offers to the basket in priority order
+
+        Group the given flat list of offers into groups based on their offer_group_id. Then, apply
+        the offers in order of (1) offer group priority and (2) offer priority. Within each group,
+        an item in a line is limited to being consumed by a single offer, but this limitation is
+        reset for each group. This makes it possible to apply multiple offers to a single line item.
+        """
         affected_quantities = Counter()
         applications = results.OfferApplications()
 
-        max_offer_group_priority = max([o.offer_group_id for o in offers if o.offer_group_id is not None])
-        offers = sorted(offers, key=lambda s: s.offer_group_id or max_offer_group_priority + 1)
-        grouped_offers = groupby(offers, key=lambda s: s.offer_group_id)
-
-        for group_id, group in grouped_offers:
+        for group_id, group in group_offers(offers):
             for offer in group:
                 num_applications = 0
                 # Keep applying the offer until either
@@ -58,16 +76,17 @@ class Applicator(BaseApplicator):
                     applications.add(offer, result)
                     if result.is_final:
                         break
+
+                # Reset the _affected_quantity property on the basket back to 0 to that the next offer
+                # group can apply another layer of offers to the same lines affected by this offer group.
+                # We keep track of the affected quantities in a counter to reapply to the basket lines
+                # after all the groups have been applied.
                 for line in basket.all_lines():
                     affected_quantities[line.id] += line._affected_quantity
-                    # want affected lines per offer group, not globally
                     line._affected_quantity = 0
 
         for line in basket.all_lines():
             line._affected_quantity = min(line.quantity, affected_quantities[line.id])
 
-
-        # Store this list of discounts with the basket so it can be
-        # rendered in templates
-
+        # Store this list of discounts with the basket so it can be rendered in templates
         basket.offer_applications = applications
