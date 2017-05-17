@@ -43,10 +43,10 @@
                     <th>{% trans 'Contains Offers' %}</th>
                     <th>{% trans 'Actions' %}</th>
                 </tr>
-                {% for offergroup in object_list|dictsort:"priority" %}
+                {% for offergroup in object_list %}
                     <tr>
                         <td><a href="{% url 'dashboard:offergroup-update' pk=offergroup.pk %}">{{ offergroup.name|default:"-" }}</a></td>
-                        <td>{{ offergroup.priority|default:"0" }}</td>
+                        <td>{{ offergroup.priority }}</td>
                         <td>
                             <ol>
                                 {% for offer in offergroup.offers.all %}

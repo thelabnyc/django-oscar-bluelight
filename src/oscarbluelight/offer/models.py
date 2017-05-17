@@ -38,22 +38,22 @@ def _init_proxy_class(obj, Klass):
 
 
 class OfferGroup(models.Model):
-    '''
-    ordered group of Offers
-    '''
+    """
+    Ordered group of Offers
+    """
     name = models.CharField(max_length=64, null=False)
     priority = models.IntegerField(null=False, unique=True)
+
+    class Meta:
+        verbose_name = _('OfferGroup')
+        ordering = ('-priority', )
 
     def __str__(self):
         return 'name: {}, priority: {}'.format(self.name, self.priority)
 
-    class Meta:
-        verbose_name = _('OfferGroup')
-        ordering = ['-priority', ]
-
 
 class ConditionalOffer(AbstractConditionalOffer):
-    '''
+    """
     groups  -- user groups
     offer_group -- FK to OfferGroup
     offerGroupA => [ o1, v2, o3 ], priority 1
@@ -61,10 +61,12 @@ class ConditionalOffer(AbstractConditionalOffer):
     To consume offers, loop through offers in offer group based on priority
     to consume OfferGroup -> only move to next (greater priority val) when previous
     offerGroup is consumed
-    '''
+    """
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
     offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True)
+    apply_to_displayed_prices = models.BooleanField(default=False,
+        help_text=_("If enabled, cosmetic product prices displayed on product display pages will be discounted by this offer’s benefit."))
 
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
@@ -76,7 +78,7 @@ class ConditionalOffer(AbstractConditionalOffer):
         return restrictions
 
     class Meta:
-        ordering = ['priority', ]
+        ordering = ('-offer_group__priority', '-priority', 'pk')
 
 
 class Benefit(AbstractBenefit):

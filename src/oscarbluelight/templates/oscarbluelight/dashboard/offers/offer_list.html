@@ -31,11 +31,12 @@
                     <th>{% trans "Restrictions" %}</th>
                     <th>{% trans "Offer Group" %}</th>
                     <th>{% trans "Priority" %}</th>
+                    <th>{% trans "Affects Cosmetic Prices?" %}</th>
                     <th>{% anchor 'num_applications' _('Uses') %}</th>
                     <th>{% anchor 'total_discount' _('Cost') %}</th>
                     <th></th>
                 </tr>
-                
+
                 {% for offer in offers %}
                     <tr>
                         <td><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></td>
@@ -62,6 +63,13 @@
                         </td>
                         <td>{{ offer.offer_group.name }}</td>
                         <td>{{ offer.priority }}</td>
+                        <td>
+                            {% if offer.apply_to_displayed_prices %}
+                                <span class="label label-success">Yes</span>
+                            {% else %}
+                                <span class="label label-danger">No</span>
+                            {% endif %}
+                        </td>
                         <td>{{ offer.num_applications }}</td>
                         <td>{{ offer.total_discount|currency }}</td>
                         <td>

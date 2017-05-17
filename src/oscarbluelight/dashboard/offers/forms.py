@@ -26,8 +26,12 @@ class ConditionSearchForm(forms.Form):
 
 
 class MetaDataForm(BaseMetaDataForm):
+    apply_to_displayed_prices = forms.BooleanField(
+        label=_("Apply offer to displayed product prices, before the product is added to a basket"),
+        required=False)
+
     class Meta(BaseMetaDataForm.Meta):
-        fields = BaseMetaDataForm.Meta.fields + ('priority', )
+        fields = BaseMetaDataForm.Meta.fields + ('priority', 'apply_to_displayed_prices')
 
 
 class BenefitForm(forms.ModelForm):

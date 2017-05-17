@@ -27,19 +27,25 @@
             <tr>
                 <th>{% trans "Name" %}</th>
                 <td>{{ offer.name }}</td>
-                <td rowspan="3"><a id="edit_metadata" href="{% url 'dashboard:offer-metadata' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
+                <td rowspan="4"><a id="edit_metadata" href="{% url 'dashboard:offer-metadata' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
             </tr>
             <tr>
                 <th>{% trans "Description" %}</th>
                 <td>{{ offer.description|safe|default:"-" }}</td>
             </tr>
             <tr>
-                <th>{% trans "Offer Group" %}</th>
-                <td>{{ offer.offer_group.name }}</td>
-            </tr>
-            <tr>
                 <th>{% trans "Priority" %}</th>
                 <td>{{ offer.priority }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Affects Cosmetic Prices?" %}</th>
+                <td>
+                    {% if offer.apply_to_displayed_prices %}
+                        <span class="label label-success">Yes</span>
+                    {% else %}
+                        <span class="label label-danger">No</span>
+                    {% endif %}
+                </td>
             </tr>
             <tr>
                 <th>{% trans "Incentive" %}</th>
@@ -64,7 +70,11 @@
                         {% endif %}
                     {% endfor %}
                 </td>
-                <td><a href="{% url 'dashboard:offer-restrictions' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
+                <td rowspan="2"><a href="{% url 'dashboard:offer-restrictions' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Offer Group" %}</th>
+                <td>{{ offer.offer_group.name }}</td>
             </tr>
         </tbody>
     </table>
