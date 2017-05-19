@@ -488,10 +488,10 @@ class OfferGroupApplicatorTest(TestCase):
         # based offers can compound correctly when applied together in subsequent offer groups.
         # self.assertEqual(discount, D('94.14'))
         # self.assertEqual(self.basket.total_excl_tax, D('305.86'))
-        applied_offfers = list(self.basket.offer_applications.offers.values())
+        applied_offfers = self.basket.offer_applications.offers
         self.assertEqual(len(applied_offfers), 2)
-        self.assertEqual(applied_offfers[0], self.offer_stooges)
-        self.assertEqual(applied_offfers[1], self.offer)
+        self.assertEqual(applied_offfers[self.offer_stooges.pk], self.offer_stooges)
+        self.assertEqual(applied_offfers[self.offer.pk], self.offer)
 
         # There is 1 line in the basket with a quantity of 2. Both offers affected both lines, therefore
         # the affected quantity should be 2.
