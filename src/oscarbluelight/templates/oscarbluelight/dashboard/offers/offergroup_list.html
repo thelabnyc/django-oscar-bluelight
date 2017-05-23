@@ -20,7 +20,7 @@
 {% block header %}
     <div class="page-header">
         <p class="pull-right">
-            <a href="{% url 'dashboard:offergroup-create' %}" class="btn btn-primary"><i class="icon-plus"></i> {% trans "Create new Offer Group" %}</a>
+            <a href="{% url 'dashboard:offergroup-create' %}" class="btn btn-primary btn-lg"><i class="icon-plus"></i> {% trans "Create new Offer Group" %}</a>
         </p>
         <h1>{% trans "Offer Groups" %}</h1>
     </div>
@@ -50,7 +50,17 @@
                         <td>
                             <ol>
                                 {% for offer in offergroup.offers.all %}
-                                    <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
+                                    {% for voucher in offer.vouchers.all %}
+                                        <li>
+                                            <a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }} (priority {{ offer.priority }})</a>
+                                            <span class="label label-success">{% trans "Voucher" %}</span>
+                                        </li>
+                                    {% empty %}
+                                        <li>
+                                            <a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }} (priority {{ offer.priority }})</a>
+                                            <span class="label label-info">{% trans "Offer" %}</span>
+                                        </li>
+                                    {% endfor %}
                                 {% endfor %}
                             </ol>
                             <ol>

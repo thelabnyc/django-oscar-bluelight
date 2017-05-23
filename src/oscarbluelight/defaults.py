@@ -13,9 +13,10 @@ def insert_nav_item(after_name, label, url_name):
                 OSCAR_DASHBOARD_NAVIGATION[i]['children'].insert(j + 1, new_entry)
 
 
-insert_nav_item('dashboard:offer-list', _('Benefits'), 'dashboard:benefit-list')
+insert_nav_item('dashboard:offer-list', _('Offer Groups'), 'dashboard:offergroup-list')
+insert_nav_item('dashboard:offergroup-list', _('Benefits'), 'dashboard:benefit-list')
 insert_nav_item('dashboard:benefit-list', _('Conditions'), 'dashboard:condition-list')
-insert_nav_item('dashboard:benefit-list', _('Offer Groups'), 'dashboard:offergroup-list')
+
 
 
 
