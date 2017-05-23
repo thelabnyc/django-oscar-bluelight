@@ -77,6 +77,16 @@ Add Bluelight's template directory directly before Oscar's.::
         }
     ]
 
+Fork the basket application in your project and add ``BluelightBasketMixin`` as a parent class of the ``Line`` model.::
+
+    from oscar.apps.basket.abstract_models import AbstractLine
+    from oscarbluelight.mixins import BluelightBasketLineMixin
+
+    class Line(BluelightBasketLineMixin, AbstractLine):
+        pass
+
+    from oscar.apps.basket.models import *  # noqa
+
 
 Usage
 =====

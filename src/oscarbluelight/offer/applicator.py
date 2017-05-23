@@ -4,7 +4,6 @@ from itertools import groupby
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
-from collections import Counter
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
@@ -59,16 +58,21 @@ class Applicator(BaseApplicator):
         an item in a line is limited to being consumed by a single offer, but this limitation is
         reset for each group. This makes it possible to apply multiple offers to a single line item.
         """
-        affected_quantities = Counter()
         applications = results.OfferApplications()
 
         for group_id, group in group_offers(offers):
+            # Signal the lines that we're about to start applying an offer group
+            for line in basket.all_lines():
+                line.begin_offer_group_application()
+
+            # Apply each offer in the group
             for offer in group:
                 num_applications = 0
                 # Keep applying the offer until either
                 # (a) We reach the max number of applications for the offer.
                 # (b) The benefit can't be applied successfully.
-                while num_applications < offer.get_max_applications(basket.owner):
+                max_applications = offer.get_max_applications(basket.owner)
+                while num_applications < max_applications:
                     result = offer.apply_benefit(basket)
                     num_applications += 1
                     if not result.is_successful:
@@ -77,16 +81,13 @@ class Applicator(BaseApplicator):
                     if result.is_final:
                         break
 
-                # Reset the _affected_quantity property on the basket back to 0 to that the next offer
-                # group can apply another layer of offers to the same lines affected by this offer group.
-                # We keep track of the affected quantities in a counter to reapply to the basket lines
-                # after all the groups have been applied.
-                for line in basket.all_lines():
-                    affected_quantities[line.id] += line._affected_quantity
-                    line._affected_quantity = 0
+            # Signal the lines that we've finished applying an offer group
+            for line in basket.all_lines():
+                line.end_offer_group_application()
 
+        # Signal the lines that we've finished applying all offer groups
         for line in basket.all_lines():
-            line._affected_quantity = min(line.quantity, affected_quantities[line.id])
+            line.finalize_offer_group_applications()
 
         # Store this list of discounts with the basket so it can be rendered in templates
         basket.offer_applications = applications

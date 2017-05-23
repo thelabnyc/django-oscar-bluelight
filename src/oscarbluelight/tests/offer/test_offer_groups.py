@@ -16,6 +16,7 @@ ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Voucher = get_model('voucher', 'Voucher')
 
 Applicator = get_class('offer.applicator', 'Applicator')
+BasketDiscount = get_class('offer.results', 'BasketDiscount')
 OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
 
 
@@ -391,93 +392,461 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
 class OfferGroupApplicatorTest(TestCase):
     def setUp(self):
-        all_products = Range()
-        all_products.includes_all_products = True
-        all_products.save()
-
-        item_price = 200.00
-        item_quantity = 6
-
-        product = create_product()
-        create_stockrecord(product, item_price, num_in_stock=item_quantity * 2)
-
-        self.basket = create_basket(empty=True)
-        self.basket.add_product(product, quantity=2)
-
+        self.all_products = Range()
+        self.all_products.includes_all_products = True
+        self.all_products.save()
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
 
+
+    def test_apply_offers(self):
         condition1 = Condition()
         condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
-        condition1.range = all_products
+        condition1.range = self.all_products
         condition1.value = 5.32
         condition1.save()
 
         condition2 = Condition()
         condition2.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
-        condition2.range = all_products
+        condition2.range = self.all_products
         condition2.value = 6.32
         condition2.save()
 
         benefit1 = Benefit()
         benefit1.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
         benefit1.value = 10.02
-        benefit1.range = all_products
+        benefit1.range = self.all_products
         benefit1.save()
 
         benefit2 = Benefit()
         benefit2.proxy_class = 'oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit'
         benefit2.value = 15.02
-        benefit2.range = all_products
+        benefit2.range = self.all_products
         benefit2.save()
 
-        self.offer = ConditionalOffer(name='cond offer no offergroup')
-        self.offer.condition = condition1
-        self.offer.benefit = benefit1
-        self.offer.priority = 2
-        self.offer.save()
+        offer = ConditionalOffer(name='cond offer no offergroup')
+        offer.condition = condition1
+        offer.benefit = benefit1
+        offer.priority = 2
+        offer.save()
 
-        self.offer_stooges = ConditionalOffer(name='offer stooges')
-        self.offer_stooges.condition = condition2
-        self.offer_stooges.benefit = benefit2
-        self.offer_stooges.priority = 1
-        self.offer_stooges.save()
+        offer_stooges = ConditionalOffer(name='offer stooges')
+        offer_stooges.condition = condition2
+        offer_stooges.benefit = benefit2
+        offer_stooges.priority = 1
+        offer_stooges.save()
 
         offer_group_stooges = OfferGroup.objects.create(name='test offer group stooges', priority=1)
         offer_group_stooges.save()
-        offer_group_stooges.offers.add(self.offer_stooges)
+        offer_group_stooges.offers.add(offer_stooges)
 
+        product = create_product()
+        create_stockrecord(product, D('200.00'), num_in_stock=100)
 
-    def test_apply_offers(self):
+        basket = create_basket(empty=True)
+        basket.add_product(product, quantity=2)
+
         # Ensure nothing is discounted yet
-        line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 2)
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0].quantity, 2)
+        self.assertEqual(lines[0]._affected_quantity, 0)
+        self.assertEqual(lines[0].quantity_with_discount, 0)
+        self.assertEqual(lines[0].quantity_without_discount, 2)
 
         # Apply offers to the basket
-        qs = ConditionalOffer.objects.all()
-        offers = [offer for offer in qs]
-        Applicator().apply(self.basket, self.user, offers)
+        offers = ConditionalOffer.objects.all()
+        Applicator().apply(basket, self.user, list(offers))
 
         # Ensure discount affected both items in the line
-        line = self.basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 0)
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0].quantity, 2)
+        self.assertEqual(lines[0]._affected_quantity, 2)
+        self.assertEqual(lines[0].quantity_with_discount, 2)
+        self.assertEqual(lines[0].quantity_without_discount, 0)
 
-        # TODO: Offers are not compounding
-        # Currently percentage based benefits are always calculating their discount based on the
-        # original unit price, not on the discounted unit price. Need to fix that so that percentage
-        # based offers can compound correctly when applied together in subsequent offer groups.
-        # self.assertEqual(discount, D('94.14'))
-        # self.assertEqual(self.basket.total_excl_tax, D('305.86'))
-        applied_offfers = self.basket.offer_applications.offers
+        # Confirm basket price is correct
+        self.assertEqual(basket.total_discount, D('94.13'))
+        self.assertEqual(basket.total_excl_tax, D('305.87'))
+
+        # Test that both discounts resulted in the correct discount amount, thereby confirming application order
+        applied_offfers = basket.offer_applications.offers
         self.assertEqual(len(applied_offfers), 2)
-        self.assertEqual(applied_offfers[self.offer_stooges.pk], self.offer_stooges)
-        self.assertEqual(applied_offfers[self.offer.pk], self.offer)
+        self.assertEqual(applied_offfers[offer_stooges.pk], offer_stooges)
+        self.assertEqual(applied_offfers[offer.pk], offer)
 
-        # There is 1 line in the basket with a quantity of 2. Both offers affected both lines, therefore
-        # the affected quantity should be 2.
-        for line in self.basket.all_lines():
-            self.assertEqual(line._affected_quantity, 2)
+        # Test that offer_stooges was applied first and subtracted $60.08 from the line price, bringing
+        # the remaining line price to $339.92
+        application = basket.offer_applications.applications[offer_stooges.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('60.08'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'offer stooges')
+        self.assertEqual(application['offer'], offer_stooges)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('60.08'))
+        self.assertIsNone(application['voucher'])
+
+        # Test that offer was applied second and subtracted another $34.05 from the line price, bringing the
+        # remaining line price to $305.87.
+        application = basket.offer_applications.applications[offer.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('34.05'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'cond offer no offergroup')
+        self.assertEqual(application['offer'], offer)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('34.05'))
+        self.assertIsNone(application['voucher'])
+
+
+    def test_line_prices_never_become_negative(self):
+        condition_require_one_product = Condition()
+        condition_require_one_product.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_one_product.range = self.all_products
+        condition_require_one_product.value = 1
+        condition_require_one_product.save()
+
+        condition_require_two_products = Condition()
+        condition_require_two_products.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_two_products.range = self.all_products
+        condition_require_two_products.value = 2
+        condition_require_two_products.save()
+
+        benefit_one_product_free = Benefit()
+        benefit_one_product_free.proxy_class = 'oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit'
+        benefit_one_product_free.value = None
+        benefit_one_product_free.range = self.all_products
+        benefit_one_product_free.save()
+
+        benefit_300_dollars_off = Benefit()
+        benefit_300_dollars_off.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
+        benefit_300_dollars_off.value = 300
+        benefit_300_dollars_off.range = self.all_products
+        benefit_300_dollars_off.save()
+
+        offer_group1 = OfferGroup.objects.create(name='Offer Group 1', priority=1)
+        offer_group2 = OfferGroup.objects.create(name='Offer Group 2', priority=2)
+
+        offer_300_dollars_off = ConditionalOffer(name='Sitewide $300 Off!')
+        offer_300_dollars_off.condition = condition_require_one_product
+        offer_300_dollars_off.benefit = benefit_300_dollars_off
+        offer_300_dollars_off.offer_group = offer_group1
+        offer_300_dollars_off.priority = 1
+        offer_300_dollars_off.save()
+
+        offer_bogo = ConditionalOffer(name='Buy One Product, Get One Free')
+        offer_bogo.condition = condition_require_two_products
+        offer_bogo.benefit = benefit_one_product_free
+        offer_bogo.offer_group = offer_group2
+        offer_bogo.priority = 1
+        offer_bogo.save()
+
+        product = create_product()
+        create_stockrecord(product, D('100.00'), num_in_stock=100)
+
+        basket = create_basket(empty=True)
+        basket.add_product(product, quantity=2)
+
+        # Ensure nothing is discounted yet
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0].quantity, 2)
+        self.assertEqual(lines[0]._affected_quantity, 0)
+        self.assertEqual(lines[0].quantity_with_discount, 0)
+        self.assertEqual(lines[0].quantity_without_discount, 2)
+
+        # Basket price should be $200
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_excl_tax, D('200.00'))
+        self.assertEqual(basket.total_discount, D('0.00'))
+
+        # Apply offers to the basket
+        offers = ConditionalOffer.objects.all()
+        Applicator().apply(basket, self.user, list(offers))
+
+        # Ensure discount affected both items in the line
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0].quantity, 2)
+        self.assertEqual(lines[0]._affected_quantity, 2)
+        self.assertEqual(lines[0].quantity_with_discount, 2)
+        self.assertEqual(lines[0].quantity_without_discount, 0)
+
+        # Basket price should be $0
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_excl_tax, D('0.00'))
+        self.assertEqual(basket.total_discount, D('200.00'))
+
+        # Both offers should have been applied
+        applied_offfers = basket.offer_applications.offers
+        self.assertEqual(len(applied_offfers), 2)
+
+        # Test that offer_bogo was applied first and subtracted $100 from the line price, bringing
+        # the remaining line price to $100
+        application = basket.offer_applications.applications[offer_bogo.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('100.00'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'Buy One Product, Get One Free')
+        self.assertEqual(application['offer'], offer_bogo)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('100.00'))
+        self.assertIsNone(application['voucher'])
+
+        # Test that offer_300_dollars_off was applied second and subtracted another $100 from the
+        # line price, bringing the remaining line price to $0
+        application = basket.offer_applications.applications[offer_300_dollars_off.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('100.00'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'Sitewide $300 Off!')
+        self.assertEqual(application['offer'], offer_300_dollars_off)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('100.00'))
+        self.assertIsNone(application['voucher'])
+
+        # Set tax on the line
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        lines[0].purchase_info.price.tax = D('1.00')
+
+        # Ensure the price breakdown still returns tax, even though the rest of the line is free.
+        self.assertEqual(lines[0].quantity, 2)
+        price_breakdown = lines[0].get_price_breakdown()
+        self.assertEqual(len(price_breakdown), 1)
+        self.assertEqual(price_breakdown[0], (D('2.00'), D('0.00'), 2))
+
+
+    def test_price_breakdown_distributes_tax_evenly(self):
+        condition_require_two_products = Condition()
+        condition_require_two_products.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_two_products.range = self.all_products
+        condition_require_two_products.value = 2
+        condition_require_two_products.save()
+
+        benefit_one_product_free = Benefit()
+        benefit_one_product_free.proxy_class = 'oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit'
+        benefit_one_product_free.value = None
+        benefit_one_product_free.range = self.all_products
+        benefit_one_product_free.save()
+
+        offer_bogo = ConditionalOffer(name='Buy One Product, Get One Free')
+        offer_bogo.condition = condition_require_two_products
+        offer_bogo.benefit = benefit_one_product_free
+        offer_bogo.priority = 1
+        offer_bogo.save()
+
+        product = create_product()
+        create_stockrecord(product, D('100.00'), num_in_stock=100)
+
+        basket = create_basket(empty=True)
+        basket.add_product(product, quantity=2)
+
+        # Basket price should be $200
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_excl_tax, D('200.00'))
+        self.assertEqual(basket.total_discount, D('0.00'))
+
+        # Apply offers to the basket
+        offers = ConditionalOffer.objects.all()
+        Applicator().apply(basket, self.user, list(offers))
+
+        # Basket price should be $100
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_excl_tax, D('100.00'))
+        self.assertEqual(basket.total_discount, D('100.00'))
+
+        # Set tax on the line
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        lines[0].purchase_info.price.tax = D('1.00')
+
+        # Basket price should be $102
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_incl_tax_excl_discounts, D('202.00'))
+        self.assertEqual(basket.total_excl_tax, D('100.00'))
+        self.assertEqual(basket.total_incl_tax, D('102.00'))
+        self.assertEqual(basket.total_discount, D('100.00'))
+
+        # Ensure the price breakdown distributes tax evenly based on post-discount unit price ratios
+        self.assertEqual(lines[0].quantity, 2)
+        price_breakdown = lines[0].get_price_breakdown()
+        self.assertEqual(len(price_breakdown), 2)
+
+        # First entry in breakdown should be free item (due to the buy one get one free offer)
+        self.assertEqual(price_breakdown[0], (D('0.00'), D('0.00'), 1))
+
+        # Second entry in breakdown should be the other item at full price, plus all the tax
+        self.assertEqual(price_breakdown[1], (D('102.00'), D('100.00'), 1))
+
+
+    def test_offers_cannot_compound_within_a_group(self):
+        condition_require_one_product = Condition()
+        condition_require_one_product.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_one_product.range = self.all_products
+        condition_require_one_product.value = 1
+        condition_require_one_product.save()
+
+        condition_require_two_products = Condition()
+        condition_require_two_products.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_two_products.range = self.all_products
+        condition_require_two_products.value = 2
+        condition_require_two_products.save()
+
+        benefit_one_product_free = Benefit()
+        benefit_one_product_free.proxy_class = 'oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit'
+        benefit_one_product_free.value = None
+        benefit_one_product_free.range = self.all_products
+        benefit_one_product_free.save()
+
+        benefit_300_dollars_off = Benefit()
+        benefit_300_dollars_off.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
+        benefit_300_dollars_off.value = 300
+        benefit_300_dollars_off.range = self.all_products
+        benefit_300_dollars_off.save()
+
+        offer_group1 = OfferGroup.objects.create(name='Offer Group 1', priority=1)
+
+        offer_300_dollars_off = ConditionalOffer(name='Sitewide $300 Off!')
+        offer_300_dollars_off.condition = condition_require_one_product
+        offer_300_dollars_off.benefit = benefit_300_dollars_off
+        offer_300_dollars_off.offer_group = offer_group1
+        offer_300_dollars_off.priority = 1
+        offer_300_dollars_off.save()
+
+        offer_bogo = ConditionalOffer(name='Buy One Product, Get One Free')
+        offer_bogo.condition = condition_require_two_products
+        offer_bogo.benefit = benefit_one_product_free
+        offer_bogo.offer_group = offer_group1
+        offer_bogo.priority = 2
+        offer_bogo.save()
+
+        product = create_product()
+        create_stockrecord(product, D('100.00'), num_in_stock=100)
+
+        basket = create_basket(empty=True)
+        basket.add_product(product, quantity=2)
+
+        # Basket price should be $200
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_excl_tax, D('200.00'))
+        self.assertEqual(basket.total_discount, D('0.00'))
+
+        # Apply offers to the basket. The BOGO offer should apply first and consume both items, preventing the $300
+        # off discount from applying at all.
+        offers = ConditionalOffer.objects.all()
+        Applicator().apply(basket, self.user, list(offers))
+
+        # Basket price should be $100
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('200.00'))
+        self.assertEqual(basket.total_excl_tax, D('100.00'))
+        self.assertEqual(basket.total_discount, D('100.00'))
+
+        # Test that the BOGO Offer was applied
+        applied_offfers = basket.offer_applications.offers
+        self.assertEqual(len(applied_offfers), 1)
+
+        application = basket.offer_applications.applications[offer_bogo.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('100.00'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'Buy One Product, Get One Free')
+        self.assertEqual(application['offer'], offer_bogo)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('100.00'))
+        self.assertIsNone(application['voucher'])
+
+        # Test that $300 Off offer was not applied
+        self.assertTrue(offer_300_dollars_off.pk not in basket.offer_applications.applications)
+
+
+    def test_sibling_offers_can_coexist_within_a_group(self):
+        condition_require_one_product = Condition()
+        condition_require_one_product.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_one_product.range = self.all_products
+        condition_require_one_product.value = 1
+        condition_require_one_product.save()
+
+        condition_require_two_products = Condition()
+        condition_require_two_products.proxy_class = 'oscarbluelight.offer.conditions.BluelightCountCondition'
+        condition_require_two_products.range = self.all_products
+        condition_require_two_products.value = 2
+        condition_require_two_products.save()
+
+        benefit_one_product_free = Benefit()
+        benefit_one_product_free.proxy_class = 'oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit'
+        benefit_one_product_free.value = None
+        benefit_one_product_free.range = self.all_products
+        benefit_one_product_free.save()
+
+        benefit_300_dollars_off = Benefit()
+        benefit_300_dollars_off.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
+        benefit_300_dollars_off.value = 300
+        benefit_300_dollars_off.range = self.all_products
+        benefit_300_dollars_off.save()
+
+        offer_group1 = OfferGroup.objects.create(name='Offer Group 1', priority=1)
+
+        offer_300_dollars_off = ConditionalOffer(name='Sitewide $300 Off!')
+        offer_300_dollars_off.condition = condition_require_one_product
+        offer_300_dollars_off.benefit = benefit_300_dollars_off
+        offer_300_dollars_off.offer_group = offer_group1
+        offer_300_dollars_off.priority = 1
+        offer_300_dollars_off.save()
+
+        offer_bogo = ConditionalOffer(name='Buy One Product, Get One Free')
+        offer_bogo.condition = condition_require_two_products
+        offer_bogo.benefit = benefit_one_product_free
+        offer_bogo.offer_group = offer_group1
+        offer_bogo.priority = 2
+        offer_bogo.save()
+
+        product = create_product()
+        create_stockrecord(product, D('100.00'), num_in_stock=100)
+
+        basket = create_basket(empty=True)
+        basket.add_product(product, quantity=3)
+
+        # Basket price should be $300
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('300.00'))
+        self.assertEqual(basket.total_excl_tax, D('300.00'))
+        self.assertEqual(basket.total_discount, D('0.00'))
+
+        # Apply offers to the basket. The BOGO offer should apply first and consume the first two items. Then
+        # the $300 Off offer should apply and reduce the price of the 3rd line to $0.
+        offers = ConditionalOffer.objects.all()
+        Applicator().apply(basket, self.user, list(offers))
+
+        # Basket price should be $100
+        self.assertEqual(basket.total_excl_tax_excl_discounts, D('300.00'))
+        self.assertEqual(basket.total_excl_tax, D('100.00'))
+        self.assertEqual(basket.total_discount, D('200.00'))
+
+        # Test that the BOGO Offer was applied
+        applied_offfers = basket.offer_applications.offers
+        self.assertEqual(len(applied_offfers), 2)
+
+        application = basket.offer_applications.applications[offer_bogo.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('100.00'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'Buy One Product, Get One Free')
+        self.assertEqual(application['offer'], offer_bogo)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('100.00'))
+        self.assertIsNone(application['voucher'])
+
+        # Test that $300 Off offer was also applied
+        application = basket.offer_applications.applications[offer_300_dollars_off.pk]
+        self.assertIsNone(application['description'])
+        self.assertEqual(application['discount'], D('100.00'))
+        self.assertEqual(application['freq'], 1)
+        self.assertEqual(application['name'], 'Sitewide $300 Off!')
+        self.assertEqual(application['offer'], offer_300_dollars_off)
+        self.assertIsInstance(application['result'], BasketDiscount)
+        self.assertEqual(application['result'].discount, D('100.00'))
+        self.assertIsNone(application['voucher'])
 
 
 

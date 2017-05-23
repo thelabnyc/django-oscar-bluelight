@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'oscarbluelight.dashboard.vouchers',
     'oscarbluelight.offer',
     'oscarbluelight.voucher',
+    'sandbox.basket',
     'sandbox.partner',
 ])
 
