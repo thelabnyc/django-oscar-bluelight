@@ -50,7 +50,7 @@
                         <td>
                             <ol>
                                 {% for offer in offergroup.offers.all %}
-                                    {% for voucher in offer.vouchers.all %}
+                                    {% for voucher in offer.vouchers.exclude_children.all %}
                                         <li>
                                             <a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }} (priority {{ offer.priority }})</a>
                                             <span class="label label-success">{% trans "Voucher" %}</span>

@@ -29,7 +29,7 @@
             {% if voucher.is_active %}
                 <span class="label label-success">{% trans "Active" %}</span>
             {% else %}
-                <span class="label">{% trans "Inactive" %}</span>
+                <span class="label label-danger">{% trans "Inactive" %}</span>
             {% endif %}
         </td>
         <td> <!-- user groups -->
@@ -38,11 +38,11 @@
                     <span class="label label-info">{{ group.name }}</span>
                 {% endfor %}
             {% else %}
-                <span class="label label-danger">{% trans "No" %}</span>
+                <span class="label label-warning">{% trans "No" %}</span>
             {% endif %}
         </td>
-        <td>{{ voucher.children.count }}</td> <!-- num children -->
-        <td>{{ voucher.offer_group }}</td>
+        <td>{{ voucher.children.count | default:'-' }}</td> <!-- num children -->
+        <td>{{ voucher.offer_group | default:'-' }}</td>
         <td>{{ voucher.priority }}</td>
         <td>{{ voucher.num_basket_additions }}</td>
         <td>{{ voucher.num_orders }}</td>
