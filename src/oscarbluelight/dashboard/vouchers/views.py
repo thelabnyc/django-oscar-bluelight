@@ -57,6 +57,7 @@ class VoucherCreateView(DefaultVoucherCreateView):
                 offer_type=ConditionalOffer.VOUCHER,
                 benefit=benefit,
                 condition=condition,
+                offer_group=form.cleaned_data['offer_group'],
                 priority=form.cleaned_data['priority'],
                 max_global_applications=form.cleaned_data['max_global_applications'],
                 max_user_applications=form.cleaned_data['max_user_applications'],
@@ -102,7 +103,6 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         initial = {
             'name': voucher.name,
             'code': voucher.code,
-            'priority': voucher.priority,
             'start_datetime': voucher.start_datetime,
             'end_datetime': voucher.end_datetime,
             'usage': voucher.usage,
@@ -112,6 +112,8 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
 
         offer = voucher.offers.first()
         if offer:
+            initial['priority'] = offer.priority
+            initial['offer_group'] = offer.offer_group
             initial['max_global_applications'] = offer.max_global_applications
             initial['max_user_applications'] = offer.max_user_applications
             initial['max_basket_applications'] = offer.max_basket_applications
@@ -137,7 +139,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         benefit = form.cleaned_data['benefit']
         condition = form.cleaned_data['condition']
         if not condition:
-            condition = Condition.objects.create(
+            condition, _ = Condition.objects.get_or_create(
                 range=benefit.range,
                 proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
                 value=1)

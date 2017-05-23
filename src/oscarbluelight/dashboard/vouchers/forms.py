@@ -61,6 +61,10 @@ class VoucherForm(forms.Form):
         label=_('Incentive'),
         help_text=_("What benefit should be given to the customer as a result of this voucher code?"),
         queryset=Benefit.objects.get_queryset())
+    offer_group = forms.ModelChoiceField(
+        label=_('Offer Group'),
+        help_text=_("What group should this voucher belong to?"),
+        queryset=OfferGroup.objects.get_queryset())
     max_global_applications = forms.IntegerField(
         label=_("Max global applications"),
         min_value=0, required=False,

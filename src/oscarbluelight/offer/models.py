@@ -49,7 +49,7 @@ class OfferGroup(models.Model):
         ordering = ('-priority', )
 
     def __str__(self):
-        return 'name: {}, priority: {}'.format(self.name, self.priority)
+        return '{} (priority {})'.format(self.name, self.priority)
 
 
 class ConditionalOffer(AbstractConditionalOffer):

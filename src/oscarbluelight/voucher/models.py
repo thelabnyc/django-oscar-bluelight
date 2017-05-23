@@ -30,6 +30,15 @@ class Voucher(AbstractVoucher):
 
     objects = VoucherManager()
 
+    class Meta:
+        ordering = ('-offers__offer_group__priority', '-offers__priority', 'pk')
+
+
+    @property
+    def offer_group(self):
+        offer = self.offers.first()
+        return offer.offer_group if offer else None
+
 
     @property
     def priority(self):

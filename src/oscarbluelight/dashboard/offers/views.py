@@ -35,7 +35,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
         session_data = self.request.session.setdefault(self.wizard_name, {})
         # Adjust kwargs to avoid trying to save the instances
         form_data = form.cleaned_data.copy()
-        for prop in ('range', 'benefit', 'condition'):
+        for prop in ('range', 'benefit', 'condition', 'offer_group'):
             obj = form_data.get(prop, None)
             if obj is not None:
                 form_data[prop] = obj.id
@@ -64,7 +64,9 @@ class OfferWizardStepView(views.OfferWizardStepView):
         session_offer = self._fetch_session_offer()
         offer.name = session_offer.name
         offer.description = session_offer.description
+        offer.offer_group = session_offer.offer_group
         offer.priority = session_offer.priority
+        offer.apply_to_displayed_prices = session_offer.apply_to_displayed_prices
 
         # Save the related models and assign to the offer
         temp_offer = self._fetch_object('benefit')
@@ -156,9 +158,6 @@ class OfferRestrictionsView(OfferWizardStepView):
             offer.offer_type = ConditionalOffer.USER
         else:
             offer.offer_type = ConditionalOffer.SITE
-
-        # Update the offer group
-        offer.offer_group = form.cleaned_data['offer_group']
 
         # Save the offer
         super().save_offer(offer, form)
@@ -301,7 +300,7 @@ class ConditionUpdateView(UpdateView):
 
 class OfferGroupCreateView(CreateView):
     model = OfferGroup
-    template_name = 'dashboard/offers/offergroup_create.html'
+    template_name = 'dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
 
@@ -322,24 +321,3 @@ class OfferGroupUpdateView(UpdateView):
     template_name = 'dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        form = context.get('form')
-        obj = context.get('offergroup')
-        # add offers related to current offer_group to form's initial data
-        form.initial.update({'offers': obj.offers.all()})
-        return context
-
-    def save_data(self, offer_group, form):
-        offer_group.name = form.cleaned_data['name']
-        offer_group.priority = form.cleaned_data['priority']
-        offer_group.offers = form.cleaned_data['offers']
-        offer_group.save()
-
-        return HttpResponseRedirect(reverse(
-            'dashboard:offergroup-list'))
-
-    def form_valid(self, form):
-        offer_group = form.save(commit=False)
-        return self.save_data(offer_group, form)

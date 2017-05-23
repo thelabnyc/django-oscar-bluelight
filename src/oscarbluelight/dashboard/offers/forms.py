@@ -25,15 +25,6 @@ class ConditionSearchForm(forms.Form):
     range = forms.ModelChoiceField(required=False, queryset=Range.objects.order_by('name'))
 
 
-class MetaDataForm(BaseMetaDataForm):
-    apply_to_displayed_prices = forms.BooleanField(
-        label=_("Apply offer to displayed product prices, before the product is added to a basket"),
-        required=False)
-
-    class Meta(BaseMetaDataForm.Meta):
-        fields = BaseMetaDataForm.Meta.fields + ('priority', 'apply_to_displayed_prices')
-
-
 class BenefitForm(forms.ModelForm):
     _benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
     proxy_class = forms.ChoiceField(
@@ -62,7 +53,6 @@ class ConditionForm(forms.ModelForm):
 
 class CompoundConditionForm(forms.ModelForm):
     CPATH = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
-
     proxy_class = forms.ChoiceField(
         choices=(
             (CPATH, 'Compound Condition'),
@@ -75,6 +65,20 @@ class CompoundConditionForm(forms.ModelForm):
     class Meta:
         model = CompoundCondition
         fields = ['proxy_class', 'conjunction', 'subconditions']
+
+
+class MetaDataForm(BaseMetaDataForm):
+    offer_group = forms.ModelChoiceField(
+        label=_('Offer Group'),
+        queryset=OfferGroup.objects.get_queryset(),
+        help_text=_('Offer group to which this offer belongs'))
+
+    apply_to_displayed_prices = forms.BooleanField(
+        label=_("Apply offer to displayed product prices, before the product is added to a basket"),
+        required=False)
+
+    class Meta(BaseMetaDataForm.Meta):
+        fields = BaseMetaDataForm.Meta.fields + ('offer_group', 'priority', 'apply_to_displayed_prices')
 
 
 class BenefitSelectionForm(forms.ModelForm):
@@ -100,17 +104,10 @@ class RestrictionsForm(BaseRestrictionsForm):
         help_text=_("Which user groups will be able to apply this offer?"),
         required=False)
 
-    offer_group = forms.ModelChoiceField(
-        label=_('Offer Group'),
-        queryset=OfferGroup.objects.get_queryset(),
-        help_text=_('Offer group to which this offer belongs'),
-        required=False
-    )
-
     class Meta:
         model = ConditionalOffer
         fields = ('start_datetime', 'end_datetime',
-                  'limit_by_group', 'groups', 'offer_group',
+                  'limit_by_group', 'groups',
                   'max_basket_applications', 'max_user_applications',
                   'max_global_applications', 'max_discount')
 
@@ -132,3 +129,15 @@ class OfferGroupForm(forms.ModelForm):
     class Meta:
         model = OfferGroup
         fields = ('name', 'priority', 'offers', )
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.initial['offers'] = self.instance.offers.all()
+
+
+    def save(self, *args, **kwargs):
+        offer_group = super().save(*args, **kwargs)
+        offer_group.offers = self.cleaned_data['offers']
+        return offer_group

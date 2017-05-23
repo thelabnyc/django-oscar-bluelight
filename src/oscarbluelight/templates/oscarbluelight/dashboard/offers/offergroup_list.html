@@ -67,8 +67,12 @@
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right">
-                                        <li><a href="{% url 'dashboard:offergroup-update' pk=offergroup.pk %}">{% trans "Edit" %}</a></li>
-                                        <li><a href="{% url 'dashboard:offergroup-delete' pk=offergroup.pk %}">{% trans "Delete" %}</a></li>
+                                        <li>
+                                            <a href="{% url 'dashboard:offergroup-update' pk=offergroup.pk %}">{% trans "Edit" %}</a>
+                                        </li>
+                                        <li {% if offergroup.offers.exists %} class="disabled" title="Remove all offers from this group to delete it" {% endif %}>
+                                            <a href="{% url 'dashboard:offergroup-delete' pk=offergroup.pk %}">{% trans "Delete" %}</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
