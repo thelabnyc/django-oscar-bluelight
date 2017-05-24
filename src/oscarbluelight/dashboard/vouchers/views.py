@@ -150,6 +150,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer.description = form.cleaned_data['description']
         offer.condition = condition
         offer.benefit = benefit
+        offer.offer_group = form.cleaned_data['offer_group']
         offer.priority = form.cleaned_data['priority']
         offer.max_global_applications = form.cleaned_data['max_global_applications']
         offer.max_user_applications = form.cleaned_data['max_user_applications']
