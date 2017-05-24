@@ -196,7 +196,7 @@ class CompoundCondition(Condition):
     def children(self):
         if self.pk is None:
             return []
-        chil = [c for c in self.subconditions.all() if c.id != self.id]
+        chil = [c for c in self.subconditions.order_by('id').all() if c.id != self.id]
         return chil
 
     @property

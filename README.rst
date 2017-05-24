@@ -101,6 +101,7 @@ Changelog
 ------------------
 - Add concept of Offer groups.
     - This makes it possible to create promotions which overlap on line items.
+- Add API for determining why a line was discounted.
 
 0.5.4
 ------------------

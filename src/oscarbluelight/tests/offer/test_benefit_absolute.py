@@ -190,6 +190,49 @@ class TestAnAbsoluteDiscount(TestCase):
             self.assertEqual(line_discounts[i], v)
 
 
+    def test_records_reason_for_discount_no_voucher(self):
+        self.offer.name = "My Offer Name"
+        self.offer.description = "My Offer Description"
+        self.offer.get_voucher = mock.Mock()
+        self.offer.get_voucher.return_value = None
+
+        add_product(self.basket, D('5.00'))
+        self.benefit.apply(self.basket, self.condition, self.offer)
+
+        line = self.basket.all_lines()[0]
+        descrs = line.get_discount_descriptions()
+        self.assertEqual(len(descrs), 1)
+        self.assertEquals(descrs[0].amount, D('4.00'))
+        self.assertEquals(descrs[0].offer_name, 'My Offer Name')
+        self.assertEquals(descrs[0].offer_description, 'My Offer Description')
+        self.assertIsNone(descrs[0].voucher_name)
+        self.assertIsNone(descrs[0].voucher_code)
+
+
+    def test_records_reason_for_discount_with_voucher(self):
+        voucher = mock.Mock()
+        voucher.name = "My Voucher"
+        voucher.code = "SWEETDEAL"
+        self.offer.name = "Offer for Voucher"
+        self.offer.description = ""
+        self.offer.get_voucher = mock.Mock()
+        self.offer.get_voucher.return_value = voucher
+
+        add_product(self.basket, D('5.00'))
+        self.benefit.apply(self.basket, self.condition, self.offer)
+
+        line = self.basket.all_lines()[0]
+        descrs = line.get_discount_descriptions()
+        self.assertEqual(len(descrs), 1)
+        self.assertEquals(descrs[0].amount, D('4.00'))
+        self.assertEquals(descrs[0].offer_name, 'Offer for Voucher')
+        self.assertEquals(descrs[0].offer_description, '')
+        self.assertEquals(descrs[0].voucher_name, 'My Voucher')
+        self.assertEquals(descrs[0].voucher_code, 'SWEETDEAL')
+
+
+
+
 
 class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
     def setUp(self):

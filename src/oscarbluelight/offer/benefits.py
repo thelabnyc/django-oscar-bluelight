@@ -82,7 +82,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 line_discount = min(line_discount, discount_amount_available)
                 discount_amount_available -= line_discount
 
-            line.discount(line_discount, quantity_affected, incl_tax=False)
+            line.discount(line_discount, quantity_affected, incl_tax=False, source_offer=offer)
 
             affected_lines.append((line, line_discount, quantity_affected))
             affected_items += quantity_affected
@@ -177,7 +177,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
             else:
                 # Calculate a weighted discount for the line
                 line_discount = self.round(((price * qty) / affected_items_total) * discount)
-            line.discount(line_discount, qty, incl_tax=False)
+            line.discount(line_discount, qty, incl_tax=False, source_offer=offer)
             affected_lines.append((line, line_discount, qty))
             applied_discount += line_discount
 
@@ -258,7 +258,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
             else:
                 line_discount = self.round(
                     discount * (price * quantity) / value_affected)
-            line.discount(line_discount, quantity, incl_tax=False)
+            line.discount(line_discount, quantity, incl_tax=False, source_offer=offer)
             discount_applied += line_discount
         return results.BasketDiscount(discount)
 
@@ -306,7 +306,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
 
         # Cheapest line gives free product
         discount, line = line_tuples[0]
-        line.discount(discount, 1, incl_tax=False)
+        line.discount(discount, 1, incl_tax=False, source_offer=offer)
 
         affected_lines = [(line, discount, 1)]
         condition.consume_items(offer, basket, affected_lines)

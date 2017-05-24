@@ -9,19 +9,27 @@ PriceBreakdownStackEntry = namedtuple('PriceBreakdownStackEntry', (
     'discount_delta_unit',
 ))
 
+LineDiscountDescription = namedtuple('LineDiscountDescription', (
+    'amount',
+    'offer_name',
+    'offer_description',
+    'voucher_name',
+    'voucher_code',
+))
+
 
 
 class BluelightBasketLineMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # The built-in _affected_quantity property refers to affected quantity within an offer group.
-        # This property refers to the affected quantity global of OfferGroups
-        self._global_affected_quantity = 0
-
         # The built-in _affected_quantity property simply tracks how many items in the line aren't available
         # for use by offers. This property tracks what subset of that number was actually discounted (versus
         # just marked as unavailable for discount)
         self._discounted_quantity = 0
+
+        # The built-in _affected_quantity property refers to affected quantity within an offer group.
+        # This property refers to the affected quantity global of OfferGroups
+        self._global_affected_quantity = 0
 
         # Keep track of the discount amount at the start of offer group application, so that we can tell what
         # the current offer group has accomplished, versus previous offer groups.
@@ -30,6 +38,9 @@ class BluelightBasketLineMixin(object):
         # Used to record a "stack" of prices as the decrease via offer group application, used when calculating
         # the price breakdown.
         self._price_breakdown_stack = []
+
+        # Used to track descriptions of why discounts where applied to the line.
+        self._discount_descriptions = []
 
 
     @property
@@ -107,9 +118,12 @@ class BluelightBasketLineMixin(object):
         super().clear_discount()
         self._discounted_quantity = 0
         self._global_affected_quantity = 0
+        self._offer_group_starting_discount = Decimal('0.00')
+        self._price_breakdown_stack = []
+        self._discount_descriptions = []
 
 
-    def discount(self, discount_value, affected_quantity, incl_tax=True):
+    def discount(self, discount_value, affected_quantity, incl_tax=True, source_offer=None):
         """
         Apply a discount to this line.
 
@@ -124,10 +138,29 @@ class BluelightBasketLineMixin(object):
             raise RuntimeError(
                 "Attempting to discount the tax-exclusive price of a line "
                 "when tax-inclusive discounts are already applied")
+
+        # Increase the total line discount amount
         self._discount_excl_tax += discount_value
+
+        # Increment tracking counters
         self._affected_quantity += int(affected_quantity)
         self._discounted_quantity += int(affected_quantity)
         self._global_affected_quantity += int(affected_quantity)
+
+        # Push description of discount onto the stack
+        if source_offer:
+            voucher = source_offer.get_voucher()
+            descr = LineDiscountDescription(
+                amount=discount_value,
+                offer_name=source_offer.name,
+                offer_description=source_offer.description,
+                voucher_name=voucher.name if voucher else None,
+                voucher_code=voucher.code if voucher else None)
+            self._discount_descriptions.append(descr)
+
+
+    def get_discount_descriptions(self):
+        return self._discount_descriptions
 
 
     def consume(self, quantity):
