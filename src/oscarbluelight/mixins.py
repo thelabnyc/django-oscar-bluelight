@@ -170,6 +170,7 @@ class BluelightBasketLineMixin(object):
                 quantity_with_discount=self._discounted_quantity,
                 discount_delta_unit=delta_unit)
             self._price_breakdown_stack.append(item)
+            self._discounted_quantity = 0
 
 
     def finalize_offer_group_applications(self):
@@ -193,11 +194,17 @@ class BluelightBasketLineMixin(object):
         for i in range(self.quantity):
             item_prices.append(self.unit_price_excl_tax)
 
+        # Make sure _price_breakdown_stack adequately describes the total discount applied (in-case
+        # somehow we applied a benefit but didn't call ``end_offer_group_application``. If it was
+        # called, this is a no-op.
+        self.end_offer_group_application()
+
         # Based on the discounts and affected quantities recorded in the _price_breakdown_stack, decrease each
         # unit price in the line until the full discount amount is exhausted.
         for discount_group in self._price_breakdown_stack:
             remaining_qty_affected = discount_group.quantity_with_discount
-            while remaining_qty_affected > 0:
+            iterations = 0
+            while remaining_qty_affected > 0 and iterations <= self.quantity:
                 for i in range(self.quantity):
                     if item_prices[i] >= discount_group.discount_delta_unit:
                         item_prices[i] -= discount_group.discount_delta_unit
@@ -205,6 +212,7 @@ class BluelightBasketLineMixin(object):
 
                     if remaining_qty_affected <= 0:
                         break
+                iterations += 1
 
         # Remove the duplicate unit prices, resulting in a list of tuples containing a unit price and the quantity at that unit price
         price_qtys = []
