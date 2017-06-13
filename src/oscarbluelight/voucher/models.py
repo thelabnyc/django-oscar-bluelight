@@ -114,7 +114,7 @@ class Voucher(AbstractVoucher):
             # Delete the benefit and offer, since they're auto created
             condition = offer.condition
             offer.delete()
-            if condition.conditionaloffer_set.count() == 0:
+            if condition.offers.count() == 0:
                 condition.delete()
         return rc
 

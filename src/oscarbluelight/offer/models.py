@@ -92,6 +92,16 @@ class Benefit(AbstractBenefit):
             return _init_proxy_class(self, Klass)
         return super().proxy()
 
+    # TODO: Compatibility Hack. Remove once Oscar 1.5 is minimum supported version.
+    # In Oscar 1.5, they added a related name to this relationship. So what was
+    # ``conditionaloffer_set`` became ``offers``. This is a hack to make calls to ``offers``
+    # work in Oscar 1.3 and 1.4. In Oscar 1.5, Django's model metaclass overrides this so that
+    # it never gets called.
+    @property
+    def offers(self):
+        return self.conditionaloffer_set
+    # END TEMP
+
     @property
     def type_name(self):
         benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
@@ -99,12 +109,12 @@ class Benefit(AbstractBenefit):
         return names.get(self.proxy_class, self.proxy_class)
 
     @property
-    def offers(self):
-        return self.conditionaloffer_set.exclude(offer_type=ConditionalOffer.VOUCHER).all()
+    def non_voucher_offers(self):
+        return self.offers.exclude(offer_type=ConditionalOffer.VOUCHER).all()
 
     @property
     def vouchers(self):
-        for offer in self.conditionaloffer_set.filter(offer_type=ConditionalOffer.VOUCHER).all():
+        for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
                 yield voucher
 
@@ -136,6 +146,16 @@ class Condition(AbstractCondition):
             return _init_proxy_class(self, Klass)
         return super().proxy()
 
+    # TODO: Compatibility Hack. Remove once Oscar 1.5 is minimum supported version.
+    # In Oscar 1.5, they added a related name to this relationship. So what was
+    # ``conditionaloffer_set`` became ``offers``. This is a hack to make calls to ``offers``
+    # work in Oscar 1.3 and 1.4. In Oscar 1.5, Django's model metaclass overrides this so that
+    # it never gets called.
+    @property
+    def offers(self):
+        return self.conditionaloffer_set
+    # END TEMP
+
     @property
     def type_name(self):
         condition_classes = getattr(settings, 'BLUELIGHT_CONDITION_CLASSES', [])
@@ -144,12 +164,12 @@ class Condition(AbstractCondition):
         return names.get(self.proxy_class, self.proxy_class)
 
     @property
-    def offers(self):
-        return self.conditionaloffer_set.exclude(offer_type=ConditionalOffer.VOUCHER).all()
+    def non_voucher_offers(self):
+        return self.offers.exclude(offer_type=ConditionalOffer.VOUCHER).all()
 
     @property
     def vouchers(self):
-        for offer in self.conditionaloffer_set.filter(offer_type=ConditionalOffer.VOUCHER).all():
+        for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
                 yield voucher
 

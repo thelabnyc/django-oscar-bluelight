@@ -96,14 +96,14 @@
                 </div>
             </form>
         </div>
-        {% if object.conditionaloffer_set.count %}
+        {% if object.offers.count %}
             <div class="col-md-4">
                 <div class="table-header">
                     <h3>{% trans "Used by Offers" %}</h3>
                 </div>
                 <div class="well">
                     <ul>
-                        {% for offer in object.conditionaloffer_set.all %}
+                        {% for offer in object.offers.all %}
                             <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
                         {% endfor %}
                     </ul>

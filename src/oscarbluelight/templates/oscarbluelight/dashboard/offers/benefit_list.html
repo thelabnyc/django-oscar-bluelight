@@ -61,7 +61,7 @@
                         <td>{{ benefit.value|default:"-" }}</td>
                         <td>
                             <ul>
-                                {% for offer in benefit.offers %}
+                                {% for offer in benefit.non_voucher_offers %}
                                     <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</li>
                                 {% endfor %}
                             </ul>
