@@ -85,14 +85,16 @@ class VoucherCreateView(DefaultVoucherCreateView):
 
 
 class VoucherStatsView(DefaultVoucherStatsView):
+    MAX_DISPLAYED_ORDERS = 25
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
         ids = [self.object.id] + [c.id for c in self.object.children.all()]
         discounts = OrderDiscount.objects.filter(voucher_id__in=ids)
         discounts = discounts.order_by('-order__date_placed')
-        ctx['discounts'] = discounts
-        ctx['children'] = self.object.children.order_by('code').all()
+        ctx['discounts'] = discounts[:self.MAX_DISPLAYED_ORDERS]
+        ctx['children'] = self.object.children.order_by('code')
         return ctx
 
 
