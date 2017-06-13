@@ -9,6 +9,14 @@ class VoucherQuerySet(models.QuerySet):
     def exclude_children(self):
         return self.filter(parent=None)
 
+    def select_for_update(self):
+        """
+        To do a select_for_updarte, we have to reset the query ordering so that it doesn't try to do
+        outer joins to the ConditionalOffer and OfferGroup tables.
+        """
+        qs = self.order_by('pk')
+        return models.QuerySet.select_for_update(qs)
+
 
 class VoucherManager(models.Manager):
     def get_queryset(self):
@@ -31,6 +39,7 @@ class Voucher(AbstractVoucher):
     objects = VoucherManager()
 
     class Meta:
+        base_manager_name = 'objects'
         ordering = ('-offers__offer_group__priority', '-offers__priority', 'pk')
 
 
