@@ -114,9 +114,11 @@ class Benefit(AbstractBenefit):
 
     @property
     def vouchers(self):
+        vouchers = []
         for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
-                yield voucher
+                vouchers.append(voucher)
+        return vouchers
 
     def clean(self):
         if self.type:
@@ -169,9 +171,11 @@ class Condition(AbstractCondition):
 
     @property
     def vouchers(self):
+        vouchers = []
         for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
-                yield voucher
+                vouchers.append(voucher)
+        return vouchers
 
     def clean(self):
         if self.type:
