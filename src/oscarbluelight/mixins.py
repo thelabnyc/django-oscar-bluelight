@@ -257,7 +257,8 @@ class BluelightBasketLineMixin(object):
         # Return a list of (unit_price_incl_tax, unit_price_excl_tax, quantity)
         prices = []
         line_price_excl_tax_incl_discounts = self.line_price_excl_tax_incl_discounts
-        line_tax = self.line_tax
+        # TODO: Remove the ``or`` default once https://github.com/django-oscar/django-oscar/issues/2395 is resolved.
+        line_tax = self.line_tax or Decimal('0.00')
 
         # Avoid a divide by 0 error when the line is completely free, but still has tax applied to it.
         free = Decimal('0.00')
