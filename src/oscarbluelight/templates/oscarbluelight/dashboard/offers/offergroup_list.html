@@ -44,19 +44,19 @@
                     <th>{% trans 'Actions' %}</th>
                 </tr>
                 {% for offergroup in object_list %}
-                    <tr>
+                    <tr class="offergroup">
                         <td><a href="{% url 'dashboard:offergroup-update' pk=offergroup.pk %}">{{ offergroup.name|default:"-" }}</a></td>
                         <td>{{ offergroup.priority }}</td>
                         <td>
                             <ol>
                                 {% for offer in offergroup.offers.all %}
                                     {% for voucher in offer.vouchers.exclude_children.all %}
-                                        <li>
+                                        <li class="offergroup__voucher {% if not voucher.is_active or not offer.is_available %}offergroup__voucher--inactive{% endif %}">
                                             <a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }} (priority {{ offer.priority }})</a>
                                             <span class="label label-success">{% trans "Voucher" %}</span>
                                         </li>
                                     {% empty %}
-                                        <li>
+                                        <li class="offergroup__offer {% if not offer.is_available %}offergroup__offer--inactive{% endif %}">
                                             <a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }} (priority {{ offer.priority }})</a>
                                             <span class="label label-info">{% trans "Offer" %}</span>
                                         </li>
@@ -96,4 +96,10 @@
         </table>
         {% include "dashboard/partials/pagination.html" %}
     </form>
+    <style type="text/css">
+        .offergroup .offergroup__voucher--inactive,
+        .offergroup .offergroup__offer--inactive {
+            opacity: 0.3;
+        }
+    </style>
 {% endblock dashboard_content %}
