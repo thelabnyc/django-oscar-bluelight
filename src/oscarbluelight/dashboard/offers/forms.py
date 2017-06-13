@@ -78,7 +78,7 @@ class MetaDataForm(BaseMetaDataForm):
         required=False)
 
     class Meta(BaseMetaDataForm.Meta):
-        fields = BaseMetaDataForm.Meta.fields + ('offer_group', 'priority', 'apply_to_displayed_prices')
+        fields = ('name', 'short_name', 'description', 'offer_group', 'priority', 'apply_to_displayed_prices')
 
 
 class BenefitSelectionForm(forms.ModelForm):

@@ -62,6 +62,10 @@ class ConditionalOffer(AbstractConditionalOffer):
     to consume OfferGroup -> only move to next (greater priority val) when previous
     offerGroup is consumed
     """
+    short_name = models.CharField(
+        _("Short Name"), max_length=50,
+        help_text=_("Abbreviated version of offer name"))
+
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
     offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True)

@@ -53,6 +53,7 @@ class VoucherCreateView(DefaultVoucherCreateView):
             name = form.cleaned_data['name']
             offer = ConditionalOffer.objects.create(
                 name=_("Offer for voucher '%s'") % name,
+                short_name=form.cleaned_data['code'],
                 description=form.cleaned_data['description'],
                 offer_type=ConditionalOffer.VOUCHER,
                 benefit=benefit,
@@ -147,6 +148,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer = voucher.offers.first()
         if not offer:
             offer = ConditionalOffer(name=_("Offer for voucher '%s'") % voucher.name, offer_type=ConditionalOffer.VOUCHER)
+        offer.short_name = form.cleaned_data['code']
         offer.description = form.cleaned_data['description']
         offer.condition = condition
         offer.benefit = benefit

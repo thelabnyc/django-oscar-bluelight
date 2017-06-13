@@ -22,12 +22,13 @@
             </caption>
             {% if offers %}
                 <tr>
-                    <th>{% anchor 'name' _('Offer name') %}</th>
-                    <th>{% anchor 'start_date' _('Start date') %}</th>
-                    <th>{% anchor 'end_date' _('End date') %}</th>
+                    <th>{% anchor 'name' _('Name') %}</th>
+                    <th>{% trans "Short Name" %}</th>
+                    <th>{% anchor 'start_date' _('Start Date') %}</th>
+                    <th>{% anchor 'end_date' _('End Date') %}</th>
                     <th>{% trans "Incentive" %}</th>
                     <th>{% trans "Condition" %}</th>
-                    <th>{% trans "Is available?" %}</th>
+                    <th>{% trans "Is Available?" %}</th>
                     <th>{% trans "Restrictions" %}</th>
                     <th>{% trans "Offer Group" %}</th>
                     <th>{% trans "Priority" %}</th>
@@ -40,6 +41,7 @@
                 {% for offer in offers %}
                     <tr>
                         <td><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></td>
+                        <td>{{ offer.short_name }}</td>
                         <td>{{ offer.start_date|default:"-" }}</td>
                         <td>{{ offer.end_date|default:"-" }}</td>
                         <td>{{ offer.benefit.description|safe }}</td>

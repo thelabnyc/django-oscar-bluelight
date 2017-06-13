@@ -27,7 +27,11 @@
             <tr>
                 <th>{% trans "Name" %}</th>
                 <td>{{ offer.name }}</td>
-                <td rowspan="5"><a id="edit_metadata" href="{% url 'dashboard:offer-metadata' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
+                <td rowspan="6"><a id="edit_metadata" href="{% url 'dashboard:offer-metadata' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Short Name" %}</th>
+                <td>{{ offer.short_name }}</td>
             </tr>
             <tr>
                 <th>{% trans "Description" %}</th>
