@@ -1,7 +1,7 @@
 version.txt
-tmp/*
-!tmp/static/.empty
-!tmp/media/.empty
+server/sandbox/tmp/*
+!server/sandbox/tmp/static/.empty
+!server/sandbox/tmp/media/.empty
 
 
 # Created by https://www.gitignore.io/api/osx,node,linux,python,sublimetext
