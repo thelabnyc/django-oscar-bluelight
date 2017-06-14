@@ -1,0 +1,7 @@
+.offergroup__empty {
+  font-style: italic; }
+
+.offergroup__voucher--inactive, .offergroup__offer--inactive {
+  opacity: 0.3; }
+
+/*# sourceMappingURL=offergroups.css.map*/

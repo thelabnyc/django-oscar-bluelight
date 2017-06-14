@@ -1,0 +1,9 @@
+.offergroup {
+    &__empty {
+        font-style: italic;
+    }
+    &__voucher--inactive,
+    &__offer--inactive {
+        opacity: 0.3;
+    }
+}
