@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
     'widget_tweaks',
+    'rest_framework',
+    'oscarbluelight',
 ] + get_core_apps([
     'oscarbluelight.dashboard.offers',
     'oscarbluelight.dashboard.vouchers',
