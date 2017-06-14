@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "declaration": false,
+        "outDir": "../server/src/oscarbluelight/static/oscarbluelight/",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "target": "es6",
+        "jsx": "react",
+        "allowJs": false,
+        "noImplicitAny": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}
