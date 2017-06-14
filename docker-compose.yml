@@ -8,6 +8,8 @@ services:
       context: .
       dockerfile: client.dockerfile
     command: webpack --watch
+    environment:
+      NODE_ENV: 'production'
     volumes:
       - ./client/:/oscarbluelight/client/
       - ./server/:/oscarbluelight/server/
