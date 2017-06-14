@@ -1,0 +1,5 @@
+server/src/oscarbluelight/static/oscarbluelight/*.css      -diff merge=ours
+server/src/oscarbluelight/static/oscarbluelight/*.css.map  -diff merge=ours
+server/src/oscarbluelight/static/oscarbluelight/*.js       -diff merge=ours
+server/src/oscarbluelight/static/oscarbluelight/*.js.map   -diff merge=ours
+server/src/oscarbluelight/static/oscarbluelight/*.json     -diff merge=ours
