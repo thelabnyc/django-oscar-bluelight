@@ -1,6 +1,8 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
+from rest_framework import routers
 from oscar.apps.dashboard.offers.app import OffersDashboardApplication as Application
 from oscar.core.loading import get_class
+from .api_views import OfferGroupViewSet
 
 
 class OffersDashboardApplication(Application):
@@ -22,8 +24,15 @@ class OffersDashboardApplication(Application):
 
     def get_urls(self):
         base_urls = super().get_urls()
+
+        router = routers.DefaultRouter()
+        router.register(r'offergroups', OfferGroupViewSet, base_name='api-offergroup')
+
         custom_urls = [
-            # Conditions
+            # API
+            url(r'^api/', include(router.urls)),
+
+            # Benefits
             url(r'^benefits/$', self.benefit_list_view.as_view(), name='benefit-list'),
             url(r'^benefits/new/$', self.benefit_create_view.as_view(), name='benefit-create'),
             url(r'^benefits/(?P<pk>[0-9]+)/$', self.benefit_update_view.as_view(), name='benefit-update'),
@@ -36,7 +45,7 @@ class OffersDashboardApplication(Application):
             url(r'^conditions/(?P<pk>[0-9]+)/$', self.condition_update_view.as_view(), name='condition-update'),
             url(r'^conditions/(?P<pk>[0-9]+)/delete/$', self.condition_delete_view.as_view(), name='condition-delete'),
 
-            # offer group
+            # Offer Groups
             url(r'^offer_group/$', self.offergroup_list_view.as_view(), name='offergroup-list'),
             url(r'^offer_group/new/$', self.offergroup_create_view.as_view(), name='offergroup-create'),
             url(r'^offer_group/(?P<pk>[0-9]+)/$', self.offergroup_update_view.as_view(), name='offergroup-update'),

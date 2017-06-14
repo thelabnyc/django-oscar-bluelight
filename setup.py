@@ -14,6 +14,7 @@ packages = find_packages('src')
 install_requires = [
     'celery>=3.1.23',
     'django-oscar>=1.4.0',
+    'djangorestframework>=3.5',
 ]
 
 extras_require = {
