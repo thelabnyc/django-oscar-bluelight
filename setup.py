@@ -13,7 +13,7 @@ packages = find_packages('src')
 
 install_requires = [
     'celery>=3.1.23',
-    'django-oscar>=1.3.0',
+    'django-oscar>=1.4.0',
 ]
 
 extras_require = {
@@ -46,8 +46,8 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.9',
         'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: ISC License (ISCL)',
         'Operating System :: Unix',
