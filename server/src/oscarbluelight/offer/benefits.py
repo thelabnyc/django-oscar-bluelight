@@ -58,6 +58,8 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
 
 
     def apply(self, basket, condition, offer, discount_percent=None, max_total_discount=None):
+        self._clean()
+
         if discount_percent is None:
             discount_percent = self.value
 
@@ -136,6 +138,8 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
 
 
     def apply(self, basket, condition, offer, discount_amount=None, max_total_discount=None):
+        self._clean()
+
         if discount_amount is None:
             discount_amount = self.value
 
@@ -223,6 +227,8 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
 
 
     def apply(self, basket, condition, offer):
+        self._clean()
+
         # Fetch basket lines that are in the range and available to be used in an offer.
         line_tuples = self.get_applicable_lines(offer, basket)
         if not line_tuples:
@@ -300,6 +306,8 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
 
 
     def apply(self, basket, condition, offer):
+        self._clean()
+
         line_tuples = self.get_applicable_lines(offer, basket)
         if not line_tuples:
             return results.ZERO_DISCOUNT
@@ -351,6 +359,10 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
                 _("Shipping discounts don't require a 'max affected items' "
                   "attribute"))
 
+    def apply(self, basket, condition, offer):
+        self._clean()
+        return super().apply(self, basket, condition, offer)
+
 
 
 class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
@@ -378,6 +390,10 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
             raise exceptions.ValidationError(
                 _("Shipping discounts don't require a 'max affected items' "
                   "attribute"))
+
+    def apply(self, basket, condition, offer):
+        self._clean()
+        return super().apply(self, basket, condition, offer)
 
 
 
@@ -409,6 +425,10 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
             raise exceptions.ValidationError(
                 _("Shipping discounts don't require a 'max affected items' "
                   "attribute"))
+
+    def apply(self, basket, condition, offer):
+        self._clean()
+        return super().apply(self, basket, condition, offer)
 
 
 

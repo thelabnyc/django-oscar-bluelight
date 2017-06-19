@@ -23,8 +23,7 @@ class TestAMultibuyDiscountAppliedWithCountCondition(TestCase):
             value=3)
         self.benefit = BluelightMultibuyDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.MULTIBUY,
-            value=1)
+            type=Benefit.MULTIBUY)
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
 
@@ -105,8 +104,7 @@ class TestAMultibuyDiscountAppliedWithAValueCondition(TestCase):
             value=D('10.00'))
         self.benefit = BluelightMultibuyDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.MULTIBUY,
-            value=1)
+            type=Benefit.MULTIBUY)
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
 
