@@ -13,6 +13,7 @@ services:
 cache:
   key: "$CI_PROJECT_NAME"
   paths:
+    - node_modules
     - $HOME/.cache/pip
 
 lint_python:
