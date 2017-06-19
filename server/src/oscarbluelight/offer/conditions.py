@@ -47,15 +47,20 @@ class BluelightCountCondition(CountCondition):
         Same as CountCondition.consume_items, except that it returns a list of consumed items. This
         is needed for CompoundCondition to be able to correctly consume items.
         """
+        applicable_lines = self.get_applicable_lines(offer, basket, most_expensive_first=True)
+        applicable_line_ids = set(line.id for __, line in applicable_lines)
+
         num_consumed = 0
         affected_lines = list(affected_lines)
         for line, __, quantity in affected_lines:
-            num_consumed += quantity
+            if line.id in applicable_line_ids:
+                num_consumed += quantity
+
         to_consume = max(0, self.value - num_consumed)
         if to_consume == 0:
             return affected_lines
 
-        for __, line in self.get_applicable_lines(offer, basket, most_expensive_first=True):
+        for __, line in applicable_lines:
             quantity_to_consume = min(line.quantity_without_discount, to_consume)
             line.consume(quantity_to_consume)
             affected_lines.append((line, 0, quantity_to_consume))
@@ -94,10 +99,14 @@ class BluelightCoverageCondition(CoverageCondition):
         Same as CoverageCondition.consume_items, except that it returns a list of consumed items. This
         is needed for CompoundCondition to be able to correctly consume items.
         """
+        applicable_lines = self.get_applicable_lines(offer, basket, most_expensive_first=True)
+        applicable_line_ids = set(line.id for __, line in applicable_lines)
+
         consumed_products = []
         affected_lines = list(affected_lines)
         for line, __, quantity in affected_lines:
-            consumed_products.append(line.product)
+            if line.id in applicable_line_ids:
+                consumed_products.append(line.product)
 
         to_consume = max(0, self.value - len(consumed_products))
         if to_consume == 0:
@@ -150,17 +159,21 @@ class BluelightValueCondition(ValueCondition):
         Same as ValueCondition.consume_items, except that it returns a list of consumed items. This
         is needed for CompoundCondition to be able to correctly consume items.
         """
+        applicable_lines = self.get_applicable_lines(offer, basket, most_expensive_first=True)
+        applicable_line_ids = set(line.id for __, line in applicable_lines)
+
         value_consumed = D('0.00')
         affected_lines = list(affected_lines)
         for line, __, qty in affected_lines:
-            price = utils.unit_price(offer, line)
-            value_consumed += price * qty
+            if line.id in applicable_line_ids:
+                price = utils.unit_price(offer, line)
+                value_consumed += price * qty
 
         to_consume = max(0, self.value - value_consumed)
         if to_consume == 0:
             return affected_lines
 
-        for price, line in self.get_applicable_lines(offer, basket, most_expensive_first=True):
+        for price, line in applicable_lines:
             quantity_to_consume = (to_consume / price).quantize(D(1), ROUND_UP)
             quantity_to_consume = min(line.quantity_without_discount, quantity_to_consume)
             line.consume(quantity_to_consume)
