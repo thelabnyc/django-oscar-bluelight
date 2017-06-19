@@ -19,6 +19,9 @@ from oscar.apps.offer.results import (
 )
 from oscar.apps.offer.utils import load_proxy
 import copy
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _init_proxy_class(obj, Klass):
@@ -72,6 +75,9 @@ class ConditionalOffer(AbstractConditionalOffer):
     apply_to_displayed_prices = models.BooleanField(default=False,
         help_text=_("If enabled, cosmetic product prices displayed on product display pages will be discounted by this offer’s benefit."))
 
+    class Meta:
+        ordering = ('-offer_group__priority', '-priority', 'pk')
+
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
         if self.offer_type == self.USER:
@@ -81,8 +87,12 @@ class ConditionalOffer(AbstractConditionalOffer):
             })
         return restrictions
 
-    class Meta:
-        ordering = ('-offer_group__priority', '-priority', 'pk')
+    def apply_benefit(self, basket):
+        try:
+            return super().apply_benefit(basket)
+        except exceptions.ValidationError as e:
+            logger.exception(e)
+            return ZERO_DISCOUNT
 
 
 class Benefit(AbstractBenefit):
