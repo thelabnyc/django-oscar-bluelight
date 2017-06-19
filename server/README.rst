@@ -97,6 +97,28 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.7.0
+------------------
+- Fix bug related to conditions consuming basket lines when the condition range differed from the benefit range.
+- Run model validation before applying benefits to a basket. Results in better error reporting of invalid but difficult to enforce data.
+- Start to rebuild OfferGroup dashboard view as a React application.
+    - Currently just recreates existing functionality using React and an API endpoint.
+    - Next release will include drag-and-drop priority sorting of offers, vouchers, and offer groups.
+
+0.6.1
+------------------
+- Drop Django 1.9 support.
+- In offer group list, dim inactive offers and vouchers.
+- List related vouchers on benefit and condition edit pages.
+- Limit orders displayed on voucher stats.
+- Start testing against Django 1.11 and Oscar 1.5rc1:
+    - Fix issue with Voucher ordering when doing a select_for_update.
+    - Fix Oscar 1.5 issue with conditionaloffer_set vs offers related name.
+    - Fix Oscar 1.5 issue with basket.Line.line_tax.
+    - Upgrade sandbox to Oscar 1.5.
+- Add new field to ConditionalOffer: short_name
+- Make OfferApplications ordered
+
 0.6.0
 ------------------
 - Add concept of Offer groups.
