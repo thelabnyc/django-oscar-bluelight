@@ -1,0 +1,42 @@
+{% extends 'dashboard/layout.html' %}
+{% load currency_filters %}
+{% load sorting_tags %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block title %}
+    {% trans "Offer Groups" %} | {{ block.super }}
+{% endblock %}
+
+{% block extrastyles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "oscarbluelight/offergroups.css" %}" />
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{{ homepage_url }}">{% trans "Dashboard" %}</a>
+        </li>
+        <li class="active">{% trans "Offer Groups" %}</li>
+    </ul>
+{% endblock %}
+
+{% block header %}
+    <div class="page-header">
+        <p class="pull-right">
+            <a href="{% url 'dashboard:offergroup-create' %}" class="btn btn-primary btn-lg"><i class="icon-plus"></i> {% trans "Create new Offer Group" %}</a>
+        </p>
+        <h1>{% trans "Offer Groups" %}</h1>
+    </div>
+{% endblock header %}
+
+{% block dashboard_content %}
+    <div id="offergroup-table"></div>
+{% endblock dashboard_content %}
+
+{% block extrascripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'oscarbluelight/vendor.js' %}"></script>
+    <script type="text/javascript" src="{% static 'oscarbluelight/offergroups.js' %}"></script>
+{% endblock %}

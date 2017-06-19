@@ -1,12 +1,28 @@
-postgres:
-  image: postgres:9.4
+version: '2'
+services:
+  postgres:
+    image: postgres:9.4
 
-test:
-  build: .
-  command: python sandbox/manage.py runserver 0.0.0.0:8000
-  ports:
-    - '8000:8000'
-  links:
-    - postgres
-  volumes:
-    - .:/code
+  node:
+    build:
+      context: .
+      dockerfile: client.dockerfile
+    command: webpack --watch
+    environment:
+      NODE_ENV: 'production'
+    volumes:
+      - ./client/:/oscarbluelight/client/
+      - ./server/:/oscarbluelight/server/
+
+  test:
+    build:
+      context: .
+      dockerfile: server.dockerfile
+    command: python sandbox/manage.py runserver 0.0.0.0:8000
+    ports:
+      - '8000:8000'
+    depends_on:
+      - postgres
+    volumes:
+      - ./client/:/oscarbluelight/client/
+      - ./server/:/oscarbluelight/server/

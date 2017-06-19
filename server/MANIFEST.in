@@ -1,0 +1,2 @@
+include *.txt *.md *.rst
+recursive-include src *.html *.css *.css.map *.js *.js.map *.json

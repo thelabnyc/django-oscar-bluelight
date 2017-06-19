@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Check for built files, and yell at user if not
+
+# Find source files that are marked as modified
+sources=`git status -s | grep 'M.*client\/src\/.*'`
+
+# Find built files that have changed (we don't use M because they could be deleted, etc)
+built=`git status -s | grep 'server\/oscarbluelight\/static\/oscarbluelight\/'`
+
+# If source files have changed, but not built files, block the commit
+if [ -n "$sources" ] &&  [ -z "$built" ]; then
+    echo "Please compile static files before committing."
+    exit 1
+fi
