@@ -28,6 +28,7 @@ lint_typescript:
   image: node:8
   script:
     - cd client/
+    - yarn
     - yarn run lint
 
 test_python34:
