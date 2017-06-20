@@ -4,7 +4,7 @@ if [[ $1 = "rebase" ]]; then
     echo "\nRebuiling compiled files post $1..."
 
     pushd ./client &> /dev/null
-    node_modules/.bin/webpack
+    NODE_ENV=production node_modules/.bin/webpack
     popd &> /dev/null
 
     echo "Adding built files to the last commit"

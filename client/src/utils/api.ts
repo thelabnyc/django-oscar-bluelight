@@ -1,9 +1,9 @@
 import request = require('superagent');
 
 
-export const listOfferGroups = function(callback?: (err: any, resp: request.Response) => void) {
+export const listOfferGroups = function(endpoint = '/dashboard/offers/api/offergroups/', callback?: (err: any, resp: request.Response) => void) {
     return request
-        .get('/dashboard/offers/api/offergroups/')
+        .get(endpoint)
         .set('Accept', 'application/json')
         .end(callback);
 };

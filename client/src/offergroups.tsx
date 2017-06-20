@@ -6,7 +6,7 @@ import OfferGroupTable from './offergroups/OfferGroupTable';
 const main = function() {
     const elem = document.querySelector('#offergroup-table') as HTMLDivElement;
     const component = (
-        <OfferGroupTable />
+        <OfferGroupTable endpoint={elem.dataset.offergroupApi} />
     );
     render(component, elem);
 };

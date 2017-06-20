@@ -7,6 +7,7 @@ import './OfferGroupTable.scss';
 
 
 export interface IProps {
+    endpoint: string;
 }
 
 
@@ -25,9 +26,11 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
 
     componentDidMount () {
-        listOfferGroups((err, resp) => {
+        listOfferGroups(this.props.endpoint, (err, resp) => {
             if (err) {
                 console.log(err);
+                console.log(resp);
+                return;
             }
 
             const groups = resp.body as IOfferGroup[];

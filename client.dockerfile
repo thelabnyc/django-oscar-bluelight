@@ -11,6 +11,7 @@ VOLUME /oscarbluelight/client/node_modules
 
 # Include NPM's .bin directory in the sys path
 ENV PATH /oscarbluelight/client/node_modules/.bin:$PATH
+ENV NODE_ENV production
 
 # Add source
 ADD client/ /oscarbluelight/client/

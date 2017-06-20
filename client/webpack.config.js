@@ -62,11 +62,9 @@ let plugins = [
     }),
     new ExtractTextPlugin('[name].css'),
     new webpack.optimize.UglifyJsPlugin({
-        compress: {
-            warnings: false,
-        },
-        mangle: true,
-        beautify: false,
+        compress: IS_PROD ? { warnings: false } : false,
+        mangle: IS_PROD,
+        beautify: !IS_PROD,
         sourceMap: true,
     })
 ];

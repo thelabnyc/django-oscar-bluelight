@@ -32,7 +32,7 @@
 {% endblock header %}
 
 {% block dashboard_content %}
-    <div id="offergroup-table"></div>
+    <div id="offergroup-table" data-offergroup-api="{% url 'dashboard:api-offergroup-list' %}"></div>
 {% endblock dashboard_content %}
 
 {% block extrascripts %}

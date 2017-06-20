@@ -5,7 +5,7 @@
 sources=`git status -s | grep 'M.*client\/src\/.*'`
 
 # Find built files that have changed (we don't use M because they could be deleted, etc)
-built=`git status -s | grep 'server\/oscarbluelight\/static\/oscarbluelight\/'`
+built=`git status -s | grep 'server\/src\/oscarbluelight\/static\/oscarbluelight\/'`
 
 # If source files have changed, but not built files, block the commit
 if [ -n "$sources" ] &&  [ -z "$built" ]; then
