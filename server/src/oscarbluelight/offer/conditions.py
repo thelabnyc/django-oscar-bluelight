@@ -205,6 +205,11 @@ class CompoundCondition(Condition):
         verbose_name = _("Compound condition")
         verbose_name_plural = _("Compound conditions")
 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.proxy_class = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
+
     @property
     def children(self):
         if self.pk is None:

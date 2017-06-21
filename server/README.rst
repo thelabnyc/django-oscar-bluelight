@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.7.1
+------------------
+- Fix exception in dashboard when adding compound conditions
+
 0.7.0
 ------------------
 - Fix bug related to conditions consuming basket lines when the condition range differed from the benefit range.
