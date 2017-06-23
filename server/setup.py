@@ -24,6 +24,7 @@ extras_require = {
         'sphinx>=1.5.2',
         'tox>=2.6.0',
         'versiontag>=1.2.0',
+        'splinter>=0.7.5',
     ],
 }
 
