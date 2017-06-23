@@ -3,6 +3,9 @@ services:
   postgres:
     image: postgres:9.4
 
+  selenium:
+    image: selenium/standalone-chrome-debug:3.4
+
   node:
     build:
       context: .
@@ -23,6 +26,7 @@ services:
       - '8000:8000'
     depends_on:
       - postgres
+      - selenium
     volumes:
       - ./client/:/oscarbluelight/client/
       - ./server/:/oscarbluelight/server/

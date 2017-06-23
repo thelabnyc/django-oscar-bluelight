@@ -20,8 +20,12 @@
 {% block header %}
     <div class="page-header">
         <p class="pull-right">
-            <a href="{% url 'dashboard:condition-create' %}" class="btn btn-primary btn-lg"><i class="icon-plus"></i> {% trans "Create new condition" %}</a>
-            <a href="{% url 'dashboard:condition-create-compound' %}" class="btn btn-primary btn-lg"><i class="icon-plus"></i> {% trans "Create new compound condition" %}</a>
+            <a id='condition-create-standard' href="{% url 'dashboard:condition-create' %}" class="btn btn-primary btn-lg">
+                <i class="icon-plus"></i> {% trans "Create new condition" %}
+            </a>
+            <a id='condition-create-compound' href="{% url 'dashboard:condition-create-compound' %}" class="btn btn-primary btn-lg">
+                <i class="icon-plus"></i> {% trans "Create new compound condition" %}
+            </a>
         </p>
         <h1>{% trans "Conditions" %}</h1>
     </div>
