@@ -69,7 +69,6 @@
 
                     <p>{% trans "Fields marked with * are mandatory." %}</p>
 
-
                     {% block form_fields %}
                         {% include 'dashboard/partials/form_field.html' with field=form.name %}
                         {% include 'dashboard/partials/form_field.html' with field=form.priority %}
@@ -83,7 +82,7 @@
                             <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button>
                         </div>
                         <a class="btn btn-default" href="{% url 'dashboard:offergroup-list' %}">{% trans "Cancel" %}</a>
-                        {% if offergroup.pk %}
+                        {% if offergroup.pk and not offergroup.is_system_group and not offergroup.offers.exists %}
                             <a class="btn btn-danger" href="{% url 'dashboard:offergroup-delete' pk=offergroup.pk %}">{% trans "Delete" %}</a></li>
                         {% endif %}
                     </div>

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core import exceptions
 from django.db import models, IntegrityError
 from django.utils.translation import ugettext_lazy as _
+from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
     AbstractCondition,
@@ -45,7 +46,9 @@ class OfferGroup(models.Model):
     Ordered group of Offers
     """
     name = models.CharField(max_length=64, null=False)
+    slug = AutoSlugField(populate_from='name', unique=True)
     priority = models.IntegerField(null=False, unique=True)
+    is_system_group = models.BooleanField(default=False, editable=False)
 
     class Meta:
         verbose_name = _('OfferGroup')

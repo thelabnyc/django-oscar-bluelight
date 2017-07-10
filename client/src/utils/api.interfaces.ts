@@ -20,7 +20,9 @@ export interface IOffer {
 export interface IOfferGroup {
     id: number;
     name: string;
+    slug: string;
     priority: number;
+    is_system_group: boolean;
     offers: IOffer[];
     update_link: string;
     delete_link: string;

@@ -315,6 +315,26 @@ class OfferGroupDeleteView(DeleteView):
     template_name = 'dashboard/offers/offergroup_delete.html'
     success_url = reverse_lazy('dashboard:offergroup-list')
 
+    def get(self, request, *args, **kwargs):
+        if not self._is_validate_delete(request):
+            return HttpResponseRedirect(self.success_url)
+        return super().get(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        if not self._is_validate_delete(request):
+            return HttpResponseRedirect(self.success_url)
+        return super().delete(request, *args, **kwargs)
+
+    def _is_validate_delete(self, request):
+        group = self.get_object()
+        if group.is_system_group:
+            messages.error(request, _("System Offer Groups Can Not Be Deleted"))
+            return False
+        if group.offers.count() > 0:
+            messages.error(request, _("Offer Groups That Still Contain Offers Can Not Be Deleted"))
+            return False
+        return True
+
 
 class OfferGroupUpdateView(UpdateView):
     model = OfferGroup

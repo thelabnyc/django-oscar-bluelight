@@ -4,6 +4,7 @@ from itertools import groupby
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
+from .signals import pre_offers_apply, post_offers_apply, pre_offer_group_apply, post_offer_group_apply
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
 OfferGroup = get_model('offer', 'OfferGroup')
@@ -53,20 +54,26 @@ class Applicator(BaseApplicator):
         """
         Apply offers to the basket in priority order
 
-        Group the given flat list of offers into groups based on their offer_group_id. Then, apply
+        Group the given flat list of offers into groups based on their offer group. Then, apply
         the offers in order of (1) offer group priority and (2) offer priority. Within each group,
         an item in a line is limited to being consumed by a single offer, but this limitation is
         reset for each group. This makes it possible to apply multiple offers to a single line item.
         """
+        pre_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
         applications = results.OfferApplications()
 
-        for group_id, group in group_offers(offers):
+        for group_priority, offers_in_group in group_offers(offers):
+            # Get the OfferGroup object from the list of offers
+            offers_in_group = list(offers_in_group)
+            group = offers_in_group[0].offer_group if len(offers_in_group) > 0 else None
+
             # Signal the lines that we're about to start applying an offer group
+            pre_offer_group_apply.send(sender=self.__class__, basket=basket, group=group, offers=offers_in_group)
             for line in basket.all_lines():
                 line.begin_offer_group_application()
 
             # Apply each offer in the group
-            for offer in group:
+            for offer in offers_in_group:
                 num_applications = 0
                 # Keep applying the offer until either
                 # (a) We reach the max number of applications for the offer.
@@ -84,6 +91,7 @@ class Applicator(BaseApplicator):
             # Signal the lines that we've finished applying an offer group
             for line in basket.all_lines():
                 line.end_offer_group_application()
+            post_offer_group_apply.send(sender=self.__class__, basket=basket, group=group, offers=offers_in_group)
 
         # Signal the lines that we've finished applying all offer groups
         for line in basket.all_lines():
@@ -91,11 +99,12 @@ class Applicator(BaseApplicator):
 
         # Store this list of discounts with the basket so it can be rendered in templates
         basket.offer_applications = applications
+        post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
 
     def get_cosmetic_price(self, product, price_excl_tax):
         offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True).all()
-        for group_id, group in group_offers(offers):
+        for group_priority, group in group_offers(offers):
             for offer in group:
                 benefit = offer.benefit.proxy()
                 rng = benefit.range

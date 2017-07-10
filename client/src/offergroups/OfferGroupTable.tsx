@@ -42,8 +42,22 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
 
     buildGroupActions (group: IOfferGroup) {
-        const deleteClass = group.offers.length > 0 ? 'disabled' : '';
-        const deleteTitle = group.offers.length > 0 ? 'Remove all offers from this group to delete it' : `Delete the ${group.name} offer group`;
+        const hasOffers = group.offers.length > 0;
+        const isSystemGroup = group.is_system_group;
+
+        const deleteClass = (hasOffers || isSystemGroup) ? 'disabled' : '';
+
+        let deleteTitle: string;
+        let deleteLink: string;
+        if (isSystemGroup) {
+            deleteTitle = 'System groups can not be deleted.';
+        } else if (hasOffers) {
+            deleteTitle = 'Remove all offers from this group to delete it.';
+        } else {
+            deleteTitle = `Delete the ${group.name} offer group`;
+            deleteLink = group.delete_link;
+        }
+
         return (
             <div className="btn-toolbar">
                 <div className="btn-group">
@@ -55,7 +69,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                             <a href={group.update_link} title={`Edit the details of the ${group.name} offer group`}>Edit</a>
                         </li>
                         <li className={deleteClass} title={deleteTitle}>
-                            <a href={group.delete_link}>Delete</a>
+                            <a href={deleteLink}>Delete</a>
                         </li>
                     </ul>
                 </div>
@@ -106,6 +120,19 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     }
 
 
+    buildSystemGroupLabel (group: IOfferGroup) {
+        if (group.is_system_group) {
+            return (
+                <span className="label label-success">Yes</span>
+            );
+        }
+
+        return (
+            <span className="label label-default">No</span>
+        );
+    }
+
+
     buildGroupRows () {
         const self = this;
 
@@ -119,8 +146,9 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
         return this.state.groups.map((group) => {
             return (
-                <tr key={group.id}>
+                <tr key={group.id} data-group-slug={group.slug}>
                     <td>{group.name}</td>
+                    <td>{this.buildSystemGroupLabel(group)}</td>
                     <td>{group.priority}</td>
                     <td>{self.buildOfferList(group)}</td>
                     <td>{self.buildGroupActions(group)}</td>
@@ -139,6 +167,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                 <tbody>
                     <tr>
                         <th>Name</th>
+                        <th>Is System Group?</th>
                         <th>Priority</th>
                         <th>Contains Offers</th>
                         <th>Actions</th>

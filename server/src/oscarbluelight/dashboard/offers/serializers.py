@@ -46,7 +46,9 @@ class OfferGroupSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+            'slug',
             'priority',
+            'is_system_group',
             'offers',
             'update_link',
             'delete_link',

@@ -6,6 +6,7 @@ from django.test import Client
 from django.core.urlresolvers import reverse
 from oscar.core.loading import get_model, get_class
 from oscar.test.factories import create_basket, create_product, create_stockrecord
+from unittest import mock
 
 OfferGroup = get_model('offer', 'OfferGroup')
 Benefit = get_model('offer', 'Benefit')
@@ -398,7 +399,11 @@ class OfferGroupApplicatorTest(TestCase):
         self.user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
 
 
-    def test_apply_offers(self):
+    @mock.patch('oscarbluelight.offer.applicator.pre_offers_apply.send')
+    @mock.patch('oscarbluelight.offer.applicator.post_offers_apply.send')
+    @mock.patch('oscarbluelight.offer.applicator.pre_offer_group_apply.send')
+    @mock.patch('oscarbluelight.offer.applicator.post_offer_group_apply.send')
+    def test_apply_offers(self, post_offer_group_apply, pre_offer_group_apply, post_offers_apply, pre_offers_apply):
         condition1 = Condition()
         condition1.proxy_class = 'oscarbluelight.offer.conditions.BluelightValueCondition'
         condition1.range = self.all_products
@@ -453,9 +458,27 @@ class OfferGroupApplicatorTest(TestCase):
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
 
+        # Make sure applicator signals haven't been called yet
+        pre_offers_apply.assert_not_called()
+        post_offers_apply.assert_not_called()
+        pre_offer_group_apply.assert_not_called()
+        post_offer_group_apply.assert_not_called()
+
         # Apply offers to the basket
-        offers = ConditionalOffer.objects.all()
+        offers = list(ConditionalOffer.objects.all())
         Applicator().apply(basket, self.user, list(offers))
+
+        # Ensure applicator called signals correctly
+        pre_offers_apply.assert_called_once_with(sender=Applicator, basket=basket, offers=offers)
+        post_offers_apply.assert_called_once_with(sender=Applicator, basket=basket, offers=offers)
+        pre_offer_group_apply.assert_has_calls([
+            mock.call(sender=Applicator, basket=basket, group=offer_group_stooges, offers=[offer_stooges]),
+            mock.call(sender=Applicator, basket=basket, group=None, offers=[offer]),
+        ])
+        post_offer_group_apply.assert_has_calls([
+            mock.call(sender=Applicator, basket=basket, group=offer_group_stooges, offers=[offer_stooges]),
+            mock.call(sender=Applicator, basket=basket, group=None, offers=[offer]),
+        ])
 
         # Ensure discount affected both items in the line
         lines = basket.all_lines()
@@ -1024,10 +1047,20 @@ class OfferGroupViewTest(TestCase):
 
     def test_delete(self):
         self.client.login(username='john', password='johnpassword')
+
+        # Delete shouldn't work since offer group still contains offer
         response = self.client.post(reverse('dashboard:offergroup-delete', args=[self.offer_group.pk]))
         self.assertEqual(response.status_code, 302)
-        qs = OfferGroup.objects.filter(name='someName')
-        self.assertEqual(qs.count(), 0)
+        self.assertEqual(OfferGroup.objects.filter(name='someName').count(), 1)
+
+        # Remove the offer
+        self.offer_group.offers.remove(self.offer)
+
+        # Delete should now work
+        response = self.client.post(reverse('dashboard:offergroup-delete', args=[self.offer_group.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(OfferGroup.objects.filter(name='someName').count(), 0)
+
 
 
     def test_update(self):
