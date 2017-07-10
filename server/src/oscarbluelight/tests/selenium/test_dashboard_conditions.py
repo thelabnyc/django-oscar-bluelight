@@ -43,7 +43,7 @@ class ConditionDashboardTest(SplinterSeleniumTestCase):
         self._take_screenshot('condition-create-normal-1')
 
         self._select_fancy('range', 'All Products')
-        self._select_fancy('proxy_class', 'Depends on value of items in cart')
+        self._select_fancy('proxy_class', 'Depends on tax-exclusive value of items')
         self.browser.fill('value', '100')
         self._take_screenshot('condition-create-normal-2')
 

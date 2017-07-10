@@ -131,7 +131,8 @@ class BluelightCoverageCondition(CoverageCondition):
 
 
 class BluelightValueCondition(ValueCondition):
-    _description = _("Basket includes %(amount)s from %(range)s")
+    _description = _("Basket includes %(amount)s (%(tax)s) from %(range)s")
+    _tax_inclusive = False
 
     class Meta:
         app_label = 'offer'
@@ -143,16 +144,48 @@ class BluelightValueCondition(ValueCondition):
     def name(self):
         return self._description % {
             'amount': currency(self.value),
+            'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
             'range': six.text_type(self.range).lower() if self.range else 'product range'}
 
     @property
     def description(self):
         return self._description % {
             'amount': currency(self.value),
+            'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
             'range': utils.range_anchor(self.range) if self.range else 'product range'}
 
     def _clean(self):
         return _default_clean(self)
+
+    def is_satisfied(self, offer, basket):
+        """
+        Determine whether a given basket meets this condition
+        """
+        value_of_matches = D('0.00')
+        for line in basket.all_lines():
+            if (self.can_apply_condition(line) and line.quantity_without_discount > 0):
+                price = self._get_unit_price(offer, line)
+                value_of_matches += price * int(line.quantity_without_discount)
+            if value_of_matches >= self.value:
+                return True
+        return False
+
+    def _get_value_of_matches(self, offer, basket):
+        if hasattr(self, '_value_of_matches'):
+            return getattr(self, '_value_of_matches')
+        value_of_matches = D('0.00')
+        for line in basket.all_lines():
+            if (self.can_apply_condition(line) and line.quantity_without_discount > 0):
+                price = self._get_unit_price(offer, line)
+                value_of_matches += price * int(line.quantity_without_discount)
+        self._value_of_matches = value_of_matches
+        return value_of_matches
+
+    def _get_unit_price(self, offer, line):
+        price = utils.unit_price(offer, line)
+        if self._tax_inclusive and line.is_tax_known:
+            price += line.unit_tax
+        return price
 
     def consume_items(self, offer, basket, affected_lines):
         """
@@ -166,7 +199,7 @@ class BluelightValueCondition(ValueCondition):
         affected_lines = list(affected_lines)
         for line, __, qty in affected_lines:
             if line.id in applicable_line_ids:
-                price = utils.unit_price(offer, line)
+                price = self._get_unit_price(offer, line)
                 value_consumed += price * qty
 
         to_consume = max(0, self.value - value_consumed)
@@ -182,6 +215,16 @@ class BluelightValueCondition(ValueCondition):
             if to_consume <= 0:
                 break
         return affected_lines
+
+
+class BluelightTaxInclusiveValueCondition(BluelightValueCondition):
+    _tax_inclusive = True
+
+    class Meta:
+        app_label = 'offer'
+        proxy = True
+        verbose_name = _("Tax-Inclusive Value Condition")
+        verbose_name_plural = _("Tax-Inclusive Value Conditions")
 
 
 class CompoundCondition(Condition):

@@ -79,7 +79,7 @@ def _offer_group_receiver(signal, offer_group, **decorator_kwargs):
         def _receiver(sender, **kwargs):
             if not offer_group.is_system_group:
                 logger.warning('You should not attach listens to non-system offer groups. There is no guarantee the group will continue to exist.')
-            if 'group' in kwargs and kwargs['group'].pk == offer_group.pk:
+            if kwargs.get('group') and kwargs['group'].pk == offer_group.pk:
                 return func(sender, **kwargs)
             return None
 
