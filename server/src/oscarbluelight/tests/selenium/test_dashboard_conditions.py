@@ -1,10 +1,13 @@
+from unittest import skipIf
 from oscar.core.loading import get_model
 from .base import SplinterSeleniumTestCase
+from . import SKIP_SELENIUM_TESTS
 
 Range = get_model('offer', 'Range')
 Condition = get_model('offer', 'Condition')
 
 
+@skipIf(SKIP_SELENIUM_TESTS, "Skipping Selenium Tests")
 class ConditionDashboardTest(SplinterSeleniumTestCase):
     def setUp(self):
         super().setUp()
