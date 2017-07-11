@@ -97,6 +97,12 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.0
+------------------
+- Add Concept of System Offer Groups.
+    - System Offer Groups are standard offer groups, but are automatically created and are ensured to always exist. They can not, therefore, be created or deleted via the dashboard UI. They are lazy-created by referencing them in code using the ``oscarbluelight.offer.groups.register_system_offer_group(slug='foo')`` function.
+    - Along with this functionality comes the addition of offer and group related signals which can be used to perform actions at specific points in time during offer group application. For example you could create a system offer group for offers which should be applied only after taxes have been calculated. Then you could use the ``pre_offer_group_apply`` signal to perform tax calculation on a basket directly before the offer group is applied.
+
 0.7.1
 ------------------
 - Fix exception in dashboard when adding compound conditions
