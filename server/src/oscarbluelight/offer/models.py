@@ -46,7 +46,7 @@ class OfferGroup(models.Model):
     Ordered group of Offers
     """
     name = models.CharField(max_length=64, null=False)
-    slug = AutoSlugField(populate_from='name', unique=True)
+    slug = AutoSlugField(populate_from='name', unique=True, null=True, default=None)
     priority = models.IntegerField(null=False, unique=True)
     is_system_group = models.BooleanField(default=False, editable=False)
 

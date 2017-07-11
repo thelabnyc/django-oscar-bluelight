@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='offergroup',
             name='slug',
-            field=oscar.models.fields.autoslugfield.AutoSlugField(blank=True, editable=False, populate_from='name', unique=True),
+            field=oscar.models.fields.autoslugfield.AutoSlugField(blank=True, default=None, editable=False, null=True, populate_from='name', unique=True),
         ),
         migrations.AlterField(
             model_name='conditionaloffer',
@@ -33,5 +33,16 @@ class Migration(migrations.Migration):
             model_name='conditionaloffer',
             name='condition',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='offers', to='offer.Condition', verbose_name='Condition'),
+        ),
+        migrations.CreateModel(
+            name='BluelightTaxInclusiveValueCondition',
+            fields=[
+            ],
+            options={
+                'verbose_name': 'Tax-Inclusive Value Condition',
+                'verbose_name_plural': 'Tax-Inclusive Value Conditions',
+                'proxy': True,
+            },
+            bases=('offer.bluelightvaluecondition',),
         ),
     ]
