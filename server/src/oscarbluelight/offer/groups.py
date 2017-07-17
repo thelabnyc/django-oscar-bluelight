@@ -17,7 +17,7 @@ def insupd_system_offer_group(slug, default_name=None):
     """
     from .models import OfferGroup
     max_priority = OfferGroup.objects.all().aggregate(Max('priority')).get('priority__max')
-    max_priority = max_priority or 0
+    max_priority = max_priority or 999
     default_priority = max_priority + 1
     defaults = {
         'name': default_name or slug,
@@ -52,33 +52,40 @@ def ensure_all_system_groups_exist():
             group._setup()
 
 
-def pre_offer_group_apply_receiver(offer_group, **decorator_kwargs):
+def pre_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
     """
     Decorator used to connect a signal receive to the pre_offer_group_apply signal *for a specific system offer group.*
     Handler will only be called when ``pre_offer_group_apply`` is sent with an offer_group object matching the
     group provided as a parameter. You should only use signals with system offer groups.
     """
-    return _offer_group_receiver(pre_offer_group_apply, offer_group, **decorator_kwargs)
+    return _offer_group_receiver(pre_offer_group_apply, offer_group_slug, **decorator_kwargs)
 
 
-def post_offer_group_apply_receiver(offer_group, **decorator_kwargs):
+def post_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
     """
     Decorator used to connect a signal receive to the post_offer_group_apply signal *for a specific system offer group.*
     Handler will only be called when ``post_offer_group_apply`` is sent with an offer_group object matching the
     group provided as a parameter. You should only use signals with system offer groups.
     """
-    return _offer_group_receiver(post_offer_group_apply, offer_group, **decorator_kwargs)
+    return _offer_group_receiver(post_offer_group_apply, offer_group_slug, **decorator_kwargs)
 
 
-def _offer_group_receiver(signal, offer_group, **decorator_kwargs):
+def _offer_group_receiver(signal, offer_group_slug, **decorator_kwargs):
     """
     Private function used to implement the pre_offer_group_apply_receiver and post_offer_group_apply_receiver decorators.
     """
     def _decorator(func):
+        from .models import OfferGroup
+
         # Build an interim lambda function to filter signal events down to just the group instance we're looking for
         def _receiver(sender, **kwargs):
+            ensure_all_system_groups_exist()
+            offer_group = OfferGroup.objects.filter(slug=offer_group_slug).first()
+            if not offer_group:
+                logger.error('Listener is attached to offer group {}, but no such offer group exists!'.format(offer_group_slug))
+                return
             if not offer_group.is_system_group:
-                logger.warning('You should not attach listens to non-system offer groups. There is no guarantee the group will continue to exist.')
+                logger.warning('You should not attach listens to non-system offer group {}.'.format(offer_group_slug))
             if kwargs.get('group') and kwargs['group'].pk == offer_group.pk:
                 return func(sender, **kwargs)
             return None

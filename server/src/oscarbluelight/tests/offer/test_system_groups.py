@@ -24,7 +24,7 @@ class OfferGroupModelTest(TestCase):
         # Access some model properties, triggering lazy-evaluation
         self.assertEqual(my_system_group.name, 'My System Group')
         self.assertEqual(my_system_group.slug, 'my-system-group')
-        self.assertEqual(my_system_group.priority, 1)
+        self.assertEqual(my_system_group.priority, 1001)
         self.assertEqual(my_system_group.is_system_group, True)
 
         # System group should exist now
@@ -38,10 +38,10 @@ class OfferGroupModelTest(TestCase):
             priority=25)
         OfferGroup.objects.create(
             name='Medium Priority Offers',
-            priority=50)
+            priority=500)
         OfferGroup.objects.create(
             name='High Priority Offers',
-            priority=75)
+            priority=1500)
 
         # Register a system group
         my_system_group = register_system_offer_group('my-system-group', default_name='My System Group')
@@ -49,7 +49,7 @@ class OfferGroupModelTest(TestCase):
         # System group should have automatically gotten priority 1 higher than any pre-existing group
         self.assertEqual(my_system_group.name, 'My System Group')
         self.assertEqual(my_system_group.slug, 'my-system-group')
-        self.assertEqual(my_system_group.priority, 76)
+        self.assertEqual(my_system_group.priority, 1501)
         self.assertEqual(my_system_group.is_system_group, True)
 
         # System group should exist now
@@ -57,14 +57,14 @@ class OfferGroupModelTest(TestCase):
 
         # Registering the same system group again should change it's priority
         my_system_group = register_system_offer_group('my-system-group', default_name='My System Group')
-        self.assertEqual(my_system_group.priority, 76)
+        self.assertEqual(my_system_group.priority, 1501)
         self.assertEqual(OfferGroup.objects.filter(slug='my-system-group').count(), 1)
 
 
     def test_receivers(self):
         # Build some offer groups
-        group1 = OfferGroup.objects.create(name='Group 1', priority=1, is_system_group=True)
-        group2 = OfferGroup.objects.create(name='Group 2', priority=2, is_system_group=True)
+        group1 = OfferGroup.objects.create(slug='group-1', name='Group 1', priority=1, is_system_group=True)
+        group2 = OfferGroup.objects.create(slug='group-2', name='Group 2', priority=2, is_system_group=True)
 
         # Build some mock signal listeners
         handler1_pre = mock.MagicMock()
@@ -73,10 +73,10 @@ class OfferGroupModelTest(TestCase):
         handler2_post = mock.MagicMock()
 
         # Connect the listeners to the signals
-        pre_offer_group_apply_receiver(group1)(handler1_pre)
-        post_offer_group_apply_receiver(group1)(handler1_post)
-        pre_offer_group_apply_receiver(group2)(handler2_pre)
-        post_offer_group_apply_receiver(group2)(handler2_post)
+        pre_offer_group_apply_receiver('group-1')(handler1_pre)
+        post_offer_group_apply_receiver('group-1')(handler1_post)
+        pre_offer_group_apply_receiver('group-2')(handler2_pre)
+        post_offer_group_apply_receiver('group-2')(handler2_post)
 
         # Make sure nothing has gotten called yet
         handler1_pre.assert_not_called()

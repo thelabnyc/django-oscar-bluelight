@@ -13,7 +13,7 @@ class Line(BluelightBasketLineMixin, AbstractLine):
 offer_group_post_tax_offers = register_system_offer_group('post-tax-offers')
 
 
-@pre_offer_group_apply_receiver(offer_group_post_tax_offers, dispatch_uid='calculate_basket_taxes')
+@pre_offer_group_apply_receiver('post-tax-offers', dispatch_uid='calculate_basket_taxes')
 def calculate_basket_taxes(sender, basket, group, **kwargs):
     """
     Do some fake tax calculation here.

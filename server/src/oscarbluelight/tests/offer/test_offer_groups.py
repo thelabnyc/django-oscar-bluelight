@@ -264,13 +264,13 @@ class ConsumeOfferGroupOfferTest(TestCase):
         qs = ConditionalOffer.objects.filter(offer_group=self.offer_group_elvis)
         self.assertIn(self.offer_elvis, qs)
         self.assertIn(self.offer_memphis, qs)
-        qs = OfferGroup.objects.all()
+        qs = OfferGroup.objects.filter(is_system_group=False).all()
         self.assertIn(self.offer_elvis, qs[0].offers.all())
         self.assertIn(self.offer_memphis, qs[0].offers.all())
 
 
     def test_apply_offer_group(self):
-        qs = OfferGroup.objects.all()
+        qs = OfferGroup.objects.filter(is_system_group=False).all()
 
         # Make sure group ordering is correct
         self.assertEqual(qs[0], self.offer_group_elvis)
@@ -350,7 +350,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
         self.offer_group_stones.offers.add(offer)
 
-        qs = OfferGroup.objects.all()
+        qs = OfferGroup.objects.filter(is_system_group=False).all()
         self.assertEqual(qs.first(), self.offer_group_elvis)
 
         qs = qs.last().offers.all().order_by('priority')
@@ -1024,8 +1024,8 @@ class OfferGroupViewTest(TestCase):
         self.client.login(username='john', password='johnpassword')
         response = self.client.get(reverse('dashboard:offergroup-list'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context_data.get('offergroup_list')[0].name, 'someName')
-        self.assertEqual(response.context_data.get('offergroup_list')[0].priority, 5)
+        self.assertEqual(response.context_data.get('offergroup_list')[1].name, 'someName')
+        self.assertEqual(response.context_data.get('offergroup_list')[1].priority, 5)
 
 
     def test_create(self):
