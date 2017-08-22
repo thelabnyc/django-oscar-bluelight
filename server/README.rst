@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.1
+------------------
+- Adds support for Django 1.11 and Oscar 1.5
+
 0.8.0
 ------------------
 - Add Concept of System Offer Groups.
