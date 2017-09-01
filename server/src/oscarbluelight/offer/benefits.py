@@ -361,7 +361,7 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
 
     def apply(self, basket, condition, offer):
         self._clean()
-        return super().apply(self, basket, condition, offer)
+        return super().apply(basket, condition, offer)
 
 
 
@@ -393,7 +393,7 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
 
     def apply(self, basket, condition, offer):
         self._clean()
-        return super().apply(self, basket, condition, offer)
+        return super().apply(basket, condition, offer)
 
 
 
@@ -428,7 +428,7 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
 
     def apply(self, basket, condition, offer):
         self._clean()
-        return super().apply(self, basket, condition, offer)
+        return super().apply(basket, condition, offer)
 
 
 
