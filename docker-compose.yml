@@ -4,7 +4,10 @@ services:
     image: postgres:9.4
 
   selenium:
-    image: selenium/standalone-chrome-debug:3.4
+    image: selenium/standalone-chrome-debug:3.5.3
+    environment:
+      SCREEN_WIDTH: '1920'
+      SCREEN_HEIGHT: '1480'
 
   node:
     build:

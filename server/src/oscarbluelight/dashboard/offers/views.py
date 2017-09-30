@@ -63,6 +63,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
         # We update the offer with the name/description from step 1
         session_offer = self._fetch_session_offer()
         offer.name = session_offer.name
+        offer.short_name = session_offer.short_name
         offer.description = session_offer.description
         offer.offer_group = session_offer.offer_group
         offer.priority = session_offer.priority
