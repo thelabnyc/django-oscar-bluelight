@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.3
+------------------
+- Fix bug preventing saving an Offer's short name in the dashboard.
+
 0.8.2
 ------------------
 - Fix method signature bug in several shipping benefits.
