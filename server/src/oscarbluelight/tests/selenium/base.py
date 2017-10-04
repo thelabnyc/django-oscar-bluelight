@@ -7,6 +7,10 @@ import os
 
 
 class SplinterSeleniumTestCase(StaticLiveServerTestCase):
+
+    # Need this to rstore the database to initial state after each test
+    serialized_rollback = True
+
     @classmethod
     def setUpClass(cls):
         # For Django >=1.11, set the server host
@@ -46,6 +50,11 @@ class SplinterSeleniumTestCase(StaticLiveServerTestCase):
 
     def _visit(self, name):
         url = self._build_url(name)
+        self.browser.visit(url)
+
+
+    def _visit_raw(self, name):
+        url = '{}{}'.format(self.live_server_url, name)
         self.browser.visit(url)
 
 
