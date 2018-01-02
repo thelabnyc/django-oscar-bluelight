@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.4
+------------------
+- Fix Django 2.0 Deprecation warnings.
+
 0.8.3
 ------------------
 - Fix bug preventing saving an Offer's short name in the dashboard.
