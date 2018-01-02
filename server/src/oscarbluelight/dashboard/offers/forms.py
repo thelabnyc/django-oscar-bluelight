@@ -139,5 +139,5 @@ class OfferGroupForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         offer_group = super().save(*args, **kwargs)
-        offer_group.offers = self.cleaned_data['offers']
+        offer_group.offers.set(self.cleaned_data['offers'])
         return offer_group

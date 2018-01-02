@@ -46,7 +46,7 @@ class UserGroupWhitelistTest(TestCase):
         is_available, message = voucher.is_available_to_user(user)
         self.assertTrue(is_available)
 
-        voucher.groups = [csrs]
+        voucher.groups.set([csrs])
         voucher.save()
 
         is_available, message = voucher.is_available_to_user(user)
@@ -59,14 +59,14 @@ class UserGroupWhitelistTest(TestCase):
         self.assertFalse(is_available)
         self.assertEqual(message, "This voucher is only available to selected users")
 
-        user.groups = [customer]
+        user.groups.set([customer])
         user.save()
 
         is_available, message = voucher.is_available_to_user(user)
         self.assertFalse(is_available)
         self.assertEqual(message, "This voucher is only available to selected users")
 
-        user.groups = [csrs]
+        user.groups.set([csrs])
         user.save()
 
         is_available, message = voucher.is_available_to_user(user)

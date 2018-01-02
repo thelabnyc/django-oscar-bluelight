@@ -130,7 +130,7 @@ class Voucher(AbstractVoucher):
 
     def record_usage(self, order, user, *args, **kwargs):
         if self.parent:
-            if user.is_authenticated():
+            if user.is_authenticated:
                 self.parent.applications.create(voucher=self.parent, order=order, user=user)
             else:
                 self.parent.applications.create(voucher=self.parent, order=order)
@@ -166,8 +166,8 @@ class Voucher(AbstractVoucher):
             setattr(child, field, getattr(self, field))
         # TODO: Might be useful to use django-dirtyfields here to prevent unnecessary DB writes.
         child.save(update_children=False)
-        child.offers = list( self.offers.all() )
-        child.groups = list( self.groups.all() )
+        child.offers.set(list(self.offers.all()))
+        child.groups.set(list(self.groups.all()))
         child.save(update_children=False)
 
 

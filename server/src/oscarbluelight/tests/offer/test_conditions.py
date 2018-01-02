@@ -290,7 +290,7 @@ class CompoundConditionTest(BaseTest):
         condition.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
         condition.conjunction = conjunction
         condition.save()
-        condition.subconditions = [cond_a, cond_b]
+        condition.subconditions.set([cond_a, cond_b])
         condition.save()
 
         benefit = Benefit()
@@ -505,7 +505,7 @@ class CompoundConditionTest(BaseTest):
         cond_has_main_and_accessory.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
         cond_has_main_and_accessory.conjunction = CompoundCondition.AND
         cond_has_main_and_accessory.save()
-        cond_has_main_and_accessory.subconditions = [cond_has_main, cond_has_accessory]
+        cond_has_main_and_accessory.subconditions.set([cond_has_main, cond_has_accessory])
 
         benefit_5off_addon = Benefit()
         benefit_5off_addon.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'
@@ -569,7 +569,7 @@ class CompoundConditionTest(BaseTest):
         cond_has_main_and_over_7000.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
         cond_has_main_and_over_7000.conjunction = CompoundCondition.AND
         cond_has_main_and_over_7000.save()
-        cond_has_main_and_over_7000.subconditions = [cond_has_main, cond_over_7000]
+        cond_has_main_and_over_7000.subconditions.set([cond_has_main, cond_over_7000])
 
         benefit_50off_addon = Benefit()
         benefit_50off_addon.proxy_class = 'oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit'

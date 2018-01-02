@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='voucher',
             name='parent',
-            field=models.ForeignKey(verbose_name='Parent Voucher', to='voucher.Voucher', null=True, blank=True, related_name='children'),
+            field=models.ForeignKey(verbose_name='Parent Voucher', to='voucher.Voucher', null=True, blank=True, related_name='children', on_delete=models.CASCADE),
         ),
     ]

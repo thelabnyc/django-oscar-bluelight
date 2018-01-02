@@ -30,7 +30,7 @@ test_python34:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py34-django110-oscar{14,15},py34-django111-oscar15'
+    - tox -e 'py34-django111-oscar15'
 
 test_python35:
   stage: test
@@ -38,7 +38,7 @@ test_python35:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py35-django110-oscar{14,15},py35-django111-oscar15'
+    - tox -e 'py35-django111-oscar15'
 
 test_python36:
   stage: test
@@ -46,4 +46,4 @@ test_python36:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py36-django110-oscar{14,15},py36-django111-oscar15'
+    - tox -e 'py36-django111-oscar15'

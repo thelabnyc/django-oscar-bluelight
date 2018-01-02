@@ -98,9 +98,9 @@ class TestAFixedPriceDiscountAppliedWithCountCondition(TestCase):
         line = self.basket.all_lines()[0]
         descrs = line.get_discount_descriptions()
         self.assertEqual(len(descrs), 1)
-        self.assertEquals(descrs[0].amount, D('5.00'))
-        self.assertEquals(descrs[0].offer_name, 'My Offer Name')
-        self.assertEquals(descrs[0].offer_description, 'My Offer Description')
+        self.assertEqual(descrs[0].amount, D('5.00'))
+        self.assertEqual(descrs[0].offer_name, 'My Offer Name')
+        self.assertEqual(descrs[0].offer_description, 'My Offer Description')
         self.assertIsNone(descrs[0].voucher_name)
         self.assertIsNone(descrs[0].voucher_code)
 
@@ -120,11 +120,11 @@ class TestAFixedPriceDiscountAppliedWithCountCondition(TestCase):
         line = self.basket.all_lines()[0]
         descrs = line.get_discount_descriptions()
         self.assertEqual(len(descrs), 1)
-        self.assertEquals(descrs[0].amount, D('5.00'))
-        self.assertEquals(descrs[0].offer_name, 'Offer for Voucher')
-        self.assertEquals(descrs[0].offer_description, '')
-        self.assertEquals(descrs[0].voucher_name, 'My Voucher')
-        self.assertEquals(descrs[0].voucher_code, 'SWEETDEAL')
+        self.assertEqual(descrs[0].amount, D('5.00'))
+        self.assertEqual(descrs[0].offer_name, 'Offer for Voucher')
+        self.assertEqual(descrs[0].offer_description, '')
+        self.assertEqual(descrs[0].voucher_name, 'My Voucher')
+        self.assertEqual(descrs[0].voucher_code, 'SWEETDEAL')
 
 
 
@@ -153,7 +153,7 @@ class FixedPriceBenefitCompoundConditionTest(BaseTest):
         condition.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
         condition.conjunction = CompoundCondition.OR
         condition.save()
-        condition.subconditions = [cond_a, cond_b]
+        condition.subconditions.set([cond_a, cond_b])
         condition.save()
 
         benefit = Benefit()

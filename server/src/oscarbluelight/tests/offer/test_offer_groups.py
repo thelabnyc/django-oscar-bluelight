@@ -331,7 +331,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         condition.proxy_class = 'oscarbluelight.offer.conditions.CompoundCondition'
         condition.conjunction = CompoundCondition.OR
         condition.save()
-        condition.subconditions = [cond_a, cond_b]
+        condition.subconditions.set([cond_a, cond_b])
         condition.save()
 
         benefit = Benefit()
