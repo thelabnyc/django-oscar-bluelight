@@ -5,7 +5,6 @@ variables:
   POSTGRES_PASSWORD: ""
 
 stages:
-  - lint
   - test
 
 services:
@@ -17,16 +16,8 @@ cache:
     - node_modules
     - $HOME/.cache/pip
 
-lint_python:
-  stage: lint
-  image: python:3.6
-  script:
-    - cd server/
-    - pip install tox
-    - tox -e lint
-
 lint_typescript:
-  stage: lint
+  stage: test
   image: node:8
   script:
     - cd client/
