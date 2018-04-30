@@ -1,7 +1,7 @@
 version: '2'
 services:
   postgres:
-    image: postgres:9.4
+    image: postgres:latest
 
   selenium:
     image: selenium/standalone-chrome-debug:3.5.3

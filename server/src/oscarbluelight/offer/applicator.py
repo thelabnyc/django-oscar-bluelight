@@ -103,7 +103,9 @@ class Applicator(BaseApplicator):
 
 
     def get_cosmetic_price(self, product, price_excl_tax):
-        offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True).all()
+        offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True)\
+                                        .select_related('offer_group', 'benefit', 'benefit__range', 'condition', 'condition__range')\
+                                        .all()
         for group_priority, group in group_offers(offers):
             for offer in group:
                 benefit = offer.benefit.proxy()
