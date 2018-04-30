@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.5
+------------------
+- Improve performance of cosmetic price application by using ``select_related``.
+
 0.8.4
 ------------------
 - Fix Django 2.0 Deprecation warnings.
