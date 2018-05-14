@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.core import exceptions
+from django.core.cache import cache
 from django.db import models, IntegrityError
+from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
@@ -211,11 +213,37 @@ class Condition(AbstractCondition):
 
 
 class Range(AbstractRange):
+    cache_version = models.PositiveIntegerField("Cache Version", editable=False, default=1)
+
     def delete(self, *args, **kwargs):
         # Disallow deleting a range with any dependents
         if self.benefit_set.exists() or self.condition_set.exists():
             raise IntegrityError('Can not delete range with a dependent benefit or condition.')
         return super().delete(*args, **kwargs)
+
+    @property
+    def _cache_ttl(self):
+        return getattr(settings, 'BLUELIGHT_RANGE_CACHE_TTL', 86400)
+
+    def contains_product(self, product):
+        _super = super()
+
+        def _inner():
+            return _super.contains_product(product)
+        key = 'oscarbluelight.models.Range.{}-{}.contains_product.{}'.format(self.pk, self.cache_version, product.pk)
+        return cache.get_or_set(key, _inner, self._cache_ttl)
+
+    # Shorter alias for contains_product
+    contains = contains_product
+
+    def increment_cache_version(self):
+        self.__class__.objects.filter(pk=self.pk).update(cache_version=(F('cache_version') + 1))
+
+    def save(self, *args, **kwargs):
+        # Increment the cache_version number so that memoized functions (like contains_product) are automatically invalidated.
+        if self.pk:
+            self.cache_version = F('cache_version') + 1
+        return super().save(*args, **kwargs)
 
 
 class RangeProduct(AbstractRangeProduct):

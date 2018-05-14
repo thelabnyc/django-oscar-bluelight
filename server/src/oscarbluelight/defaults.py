@@ -18,7 +18,7 @@ insert_nav_item('dashboard:offergroup-list', _('Benefits'), 'dashboard:benefit-l
 insert_nav_item('dashboard:benefit-list', _('Conditions'), 'dashboard:condition-list')
 
 
-
+BLUELIGHT_RANGE_CACHE_TTL = 86400
 
 BLUELIGHT_BENEFIT_CLASSES = [
     ('oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit', _("Discount is a percentage off of the product's value")),

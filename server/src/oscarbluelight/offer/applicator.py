@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.utils.timezone import now
-from itertools import groupby
+from itertools import groupby, chain
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
@@ -28,8 +28,31 @@ def group_offers(offers):
     return groupby(offers, key=get_offer_group_priority)
 
 
-
 class Applicator(BaseApplicator):
+    _offer_select_related_fields = ['offer_group', 'benefit', 'benefit__range', 'condition', 'condition__range']
+
+    def get_site_offers(self):
+        qs = ConditionalOffer.active.filter(offer_type=ConditionalOffer.SITE)
+        return qs.select_related(*self._offer_select_related_fields)
+
+
+    def get_basket_offers(self, basket, user):
+        offers = []
+        if not basket.id or not user:
+            return offers
+
+        for voucher in basket.vouchers.all():
+            available_to_user, __ = voucher.is_available_to_user(user=user)
+            if voucher.is_active() and available_to_user:
+                basket_offers = voucher.offers\
+                                       .select_related(*self._offer_select_related_fields)\
+                                       .all()
+                for offer in basket_offers:
+                    offer.set_voucher(voucher)
+                offers = list(chain(offers, basket_offers))
+        return offers
+
+
     def get_user_offers(self, user):
         """
         Return user offers that are available to current user
@@ -47,7 +70,11 @@ class Applicator(BaseApplicator):
             offer_type=ConditionalOffer.USER,
             groups__in=groups,
             status=ConditionalOffer.OPEN)
-        return qs.select_related('condition', 'benefit')
+        return qs.select_related(*self._offer_select_related_fields)
+
+
+    def get_session_offers(self, request):
+        return []
 
 
     def apply_offers(self, basket, offers):
@@ -104,7 +131,7 @@ class Applicator(BaseApplicator):
 
     def get_cosmetic_price(self, product, price_excl_tax):
         offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True)\
-                                        .select_related('offer_group', 'benefit', 'benefit__range', 'condition', 'condition__range')\
+                                        .select_related(*self._offer_select_related_fields)\
                                         .all()
         for group_priority, group in group_offers(offers):
             for offer in group:
