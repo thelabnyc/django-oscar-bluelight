@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.6
+------------------
+- Improve performance of offer application by caching the results of ``Range.contains_product`` and ``Range.contains``.
+
 0.8.5
 ------------------
 - Improve performance of cosmetic price application by using ``select_related``.
