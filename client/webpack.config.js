@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const BundleTracker = require('webpack-bundle-tracker');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const BUILD_DIR = path.resolve(__dirname, '../server/src/oscarbluelight/static/oscarbluelight/');
 const APP_DIR = path.resolve(__dirname, './src/');
@@ -31,16 +31,35 @@ const rules = [
     },
     {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract({
-            use: ['css-loader', 'postcss-loader', 'sass-loader'],
-        }),
         include: APP_DIR,
+        use: [
+            MiniCssExtractPlugin.loader,
+            {
+                loader: 'css-loader',
+                options: {
+                    minimize: true,
+                },
+            },
+            {
+                loader: 'postcss-loader',
+            },
+            {
+                loader: 'sass-loader',
+            },
+        ],
     },
     {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract({
-            use: ['css-loader'],
-        }),
+        include: APP_DIR,
+        use: [
+            MiniCssExtractPlugin.loader,
+            {
+                loader: 'css-loader',
+                options: {
+                    minimize: true,
+                },
+            },
+        ],
     },
 ];
 
@@ -51,41 +70,26 @@ let plugins = [
         path: BUILD_DIR,
         filename: 'webpack-stats.json'
     }),
-    new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        minChunks: Infinity
-    }),
     new webpack.DefinePlugin({
         'process.env':{
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
         }
     }),
-    new ExtractTextPlugin('[name].css'),
-    new webpack.optimize.UglifyJsPlugin({
-        compress: IS_PROD ? { warnings: false } : false,
-        mangle: IS_PROD,
-        beautify: !IS_PROD,
-        sourceMap: true,
-    })
-];
-
-
-// Vendor Bundle
-const vendorPackages = [
-    'react-dom',
-    'react',
-    'superagent',
+    new MiniCssExtractPlugin({
+        filename: "[name].css",
+        chunkFilename: "[id].css"
+    }),
 ];
 
 
 const config = {
+    mode: IS_PROD ? 'production' : 'development',
     devtool: "source-map",
     resolve: {
         modules: ['node_modules'],
         extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     },
     entry: {
-        vendor: vendorPackages,
         offergroups: path.join(APP_DIR, 'offergroups.tsx'),
     },
     output: {
@@ -95,6 +99,17 @@ const config = {
     plugins: plugins,
     module: {
         rules: rules
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: "vendor",
+                    chunks: "all",
+                },
+            },
+        },
     },
 };
 
