@@ -142,10 +142,10 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         benefit = form.cleaned_data['benefit']
         condition = form.cleaned_data['condition']
         if not condition:
-            condition, _ = Condition.objects.get_or_create(
+            condition = Condition.objects.get_or_create(
                 range=benefit.range,
                 proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
-                value=1)
+                value=1)[0]
 
         offer = voucher.offers.first()
         if not offer:
