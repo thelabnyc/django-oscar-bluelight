@@ -23,7 +23,7 @@ lint_typescript:
     - cd client/
     - NODE_ENV=dev yarn
     - yarn run lint
-    - NODE_ENV=production webpack
+    - NODE_ENV=production node_modules/.bin/webpack
 
 test_python34:
   stage: test
