@@ -6,9 +6,6 @@ from oscar.core.loading import get_model
 from oscar.apps.offer import results
 from .signals import pre_offers_apply, post_offers_apply, pre_offer_group_apply, post_offer_group_apply
 
-ConditionalOffer = get_model('offer', 'ConditionalOffer')
-OfferGroup = get_model('offer', 'OfferGroup')
-
 
 
 def group_offers(offers):
@@ -32,6 +29,7 @@ class Applicator(BaseApplicator):
     _offer_select_related_fields = ['offer_group', 'benefit', 'benefit__range', 'condition', 'condition__range']
 
     def get_site_offers(self):
+        ConditionalOffer = get_model('offer', 'ConditionalOffer')
         qs = ConditionalOffer.active.filter(offer_type=ConditionalOffer.SITE)
         return qs.select_related(*self._offer_select_related_fields)
 
@@ -57,6 +55,7 @@ class Applicator(BaseApplicator):
         """
         Return user offers that are available to current user
         """
+        ConditionalOffer = get_model('offer', 'ConditionalOffer')
         cutoff = now()
         date_based = Q(
             Q(start_datetime__lte=cutoff),
@@ -130,6 +129,7 @@ class Applicator(BaseApplicator):
 
 
     def get_cosmetic_price(self, product, price_excl_tax):
+        ConditionalOffer = get_model('offer', 'ConditionalOffer')
         offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True)\
                                         .select_related(*self._offer_select_related_fields)\
                                         .all()

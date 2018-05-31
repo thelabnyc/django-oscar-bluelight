@@ -21,8 +21,9 @@ lint_typescript:
   image: node:8
   script:
     - cd client/
-    - yarn
+    - NODE_ENV=dev yarn
     - yarn run lint
+    - NODE_ENV=production webpack
 
 test_python34:
   stage: test
@@ -30,7 +31,7 @@ test_python34:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py34-django111-oscar15'
+    - tox --skip-missing-interpreters
 
 test_python35:
   stage: test
@@ -38,7 +39,7 @@ test_python35:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py35-django111-oscar15'
+    - tox --skip-missing-interpreters
 
 test_python36:
   stage: test
@@ -46,7 +47,7 @@ test_python36:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py36-django111-oscar15'
+    - tox --skip-missing-interpreters
 
 test_pypy35:
   stage: test
@@ -54,4 +55,4 @@ test_pypy35:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'pypy3-django111-oscar15'
+    - tox --skip-missing-interpreters
