@@ -97,6 +97,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.8.7
+------------------
+- Fix exception thrown when editing a voucher
+- Fix broken Webpack build
+
 0.8.6
 ------------------
 - Improve performance of offer application by caching the results of ``Range.contains_product`` and ``Range.contains``.
