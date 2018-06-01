@@ -97,6 +97,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.9.0
+------------------
+- Add support for Oscar 1.6 and Django 2.0.
+    - Due to the write of the offer's system in Oscar 1.6, this release drops support for Oscar 1.5.
+
 0.8.7
 ------------------
 - Fix exception thrown when editing a voucher
