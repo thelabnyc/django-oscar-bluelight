@@ -1,11 +1,7 @@
 FROM python:3.6
-ENV PYTHONUNBUFFERED 0
 
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/server
-
-ADD server/requirements.txt /oscarbluelight/server/
-RUN pip install -r requirements.txt
 
 ADD server/ /oscarbluelight/server/
 RUN pip install -e .[development]

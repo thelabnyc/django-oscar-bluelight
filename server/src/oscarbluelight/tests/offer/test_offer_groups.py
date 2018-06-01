@@ -3,7 +3,7 @@ from decimal import Decimal as D
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from oscar.core.loading import get_model, get_class
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 from unittest import mock
@@ -454,7 +454,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0]._affected_quantity, 0)
+        self.assertEqual(lines[0].consumer.consumed(), 0)
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
 
@@ -484,7 +484,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0]._affected_quantity, 2)
+        self.assertEqual(lines[0].consumer.consumed(), 2)
         self.assertEqual(lines[0].quantity_with_discount, 2)
         self.assertEqual(lines[0].quantity_without_discount, 0)
 
@@ -575,7 +575,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0]._affected_quantity, 0)
+        self.assertEqual(lines[0].consumer.consumed(), 0)
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
 
@@ -592,7 +592,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0]._affected_quantity, 2)
+        self.assertEqual(lines[0].consumer.consumed(), 2)
         self.assertEqual(lines[0].quantity_with_discount, 2)
         self.assertEqual(lines[0].quantity_without_discount, 0)
 

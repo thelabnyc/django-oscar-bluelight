@@ -3,7 +3,6 @@ from decimal import Decimal
 import itertools
 
 
-
 PriceBreakdownStackEntry = namedtuple('PriceBreakdownStackEntry', (
     'quantity_with_discount',
     'discount_delta_unit',
@@ -22,21 +21,12 @@ LineDiscountDescription = namedtuple('LineDiscountDescription', (
 class BluelightBasketLineMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # The built-in _affected_quantity property simply tracks how many items in the line aren't available
-        # for use by offers. This property tracks what subset of that number was actually discounted (versus
-        # just marked as unavailable for discount)
-        self._discounted_quantity = 0
-
-        # The built-in _affected_quantity property refers to affected quantity within an offer group.
-        # This property refers to the affected quantity global of OfferGroups
-        self._global_affected_quantity = 0
 
         # Keep track of the discount amount at the start of offer group application, so that we can tell what
         # the current offer group has accomplished, versus previous offer groups.
         self._offer_group_starting_discount = Decimal('0.00')
 
-        # Used to record a "stack" of prices as the decrease via offer group application, used when calculating
-        # the price breakdown.
+        # Used to record a "stack" of prices as they decrease via offer group application, used when calculating the price breakdown.
         self._price_breakdown_stack = []
 
         # Used to track descriptions of why discounts where applied to the line.
@@ -54,7 +44,7 @@ class BluelightBasketLineMixin(object):
         Description of logic:
 
         During offer application, because of the existence of OfferGroup, discount may be > 0 even
-        when  ``_affected_quantity`` is 0. This is because Applicator resets ``_affected_quantity``
+        when ``self.consumer.consumed`` is 0. This is because Applicator resets the affected quantity
         to 0 when progressing onto the next OfferGroup, so that the it may affect the same lines that
         the previous OfferGroup just did, e.g. compounding offers. However, since by default Offers
         all calculate their discounts using the full unit price excluding discounts, this has the
@@ -69,28 +59,28 @@ class BluelightBasketLineMixin(object):
         ==  ========  ==========  ===========
 
         1. Applicator applies Offer Group 1:
-            1. A MultibuyDiscountBenefit makes one item free. Total is now $100 and _affected_quantity of
+            1. A MultibuyDiscountBenefit makes one item free. Total is now $100 and affected quantity of
                line 1 is 1.
-            2. Applicator resets _affected_quantity of line 1 to 0
+            2. Applicator resets affected quantity of line 1 to 0
         2. Applicator applies Offer Group 2:
             1. A $300 AbsoluteDiscountBenefit subtracts $200 from the line. Total is now -$100 and
-               _affected_quantity of line 1 is 2.
-            2. Applicator resets _affected_quantity of line 1 to 0.
-        3. Applicator sets _affected_quantity of line 1 to 2 (min of the *line 1's quantity* and the *internal
+               affected quantity of line 1 is 2.
+            2. Applicator resets affected quantity of line 1 to 0.
+        3. Applicator sets affected quantity of line 1 to 2 (min of the *line 1's quantity* and the *internal
            line 1 affected counter*).
 
         Point 2.1 occurs because this method, unit_effective_price, always returns the full item price, $100.
         The correct functionality is:
 
         1. Applicator applies Offer Group 1:
-            1. A MultibuyDiscountBenefit makes one item free. Total is now $100 and _affected_quantity of
+            1. A MultibuyDiscountBenefit makes one item free. Total is now $100 and affected quantity of
                line 1 is 1.
-            2. Applicator resets _affected_quantity of line 1 to 0
+            2. Applicator resets affected quantity of line 1 to 0
         2. Applicator applies Offer Group 2:
             1. A $300 AbsoluteDiscountBenefit subtracts $100 from the line. Total is now $0 and
-               _affected_quantity of line 1 is 2.
-            2. Applicator resets _affected_quantity of line 1 to 0.
-        3. Applicator sets _affected_quantity of line 1 to 2 (min of the *line 1's quantity* and the *internal
+               affected quantity of line 1 is 2.
+            2. Applicator resets affected quantity of line 1 to 0.
+        3. Applicator sets affected quantity of line 1 to 2 (min of the *line 1's quantity* and the *internal
            line 1 affected counter*).
 
         In order for point 2.1 to work that way and subtract $100 instead of $200, it must start with the already
@@ -116,14 +106,12 @@ class BluelightBasketLineMixin(object):
         Remove any discounts from this line.
         """
         super().clear_discount()
-        self._discounted_quantity = 0
-        self._global_affected_quantity = 0
         self._offer_group_starting_discount = Decimal('0.00')
         self._price_breakdown_stack = []
         self._discount_descriptions = []
 
 
-    def discount(self, discount_value, affected_quantity, incl_tax=True, source_offer=None):
+    def discount(self, discount_value, affected_quantity, incl_tax=True, offer=None):
         """
         Apply a discount to this line.
 
@@ -143,17 +131,16 @@ class BluelightBasketLineMixin(object):
         self._discount_excl_tax += discount_value
 
         # Increment tracking counters
-        self._affected_quantity += int(affected_quantity)
-        self._discounted_quantity += int(affected_quantity)
-        self._global_affected_quantity += int(affected_quantity)
+        self.consume(affected_quantity, offer=offer)
+        self.consumer.discount(affected_quantity)
 
         # Push description of discount onto the stack
-        if source_offer:
-            voucher = source_offer.get_voucher()
+        if offer:
+            voucher = offer.get_voucher()
             descr = LineDiscountDescription(
                 amount=discount_value,
-                offer_name=source_offer.name,
-                offer_description=source_offer.description,
+                offer_name=offer.name,
+                offer_description=offer.description,
                 voucher_name=voucher.name if voucher else None,
                 voucher_code=voucher.code if voucher else None)
             self._discount_descriptions.append(descr)
@@ -161,21 +148,6 @@ class BluelightBasketLineMixin(object):
 
     def get_discount_descriptions(self):
         return self._discount_descriptions
-
-
-    def consume(self, quantity):
-        """
-        Mark all or part of the line as 'consumed' within an offer group
-
-        Consumed items are no longer available to be used in offers within the same offer group. They
-        can be consumed again by offers in other offer groups.
-        """
-        super().consume(quantity)
-        if quantity > self.quantity - self._global_affected_quantity:
-            inc = self.quantity - self._global_affected_quantity
-        else:
-            inc = quantity
-        self._global_affected_quantity += int(inc)
 
 
     def begin_offer_group_application(self):
@@ -187,8 +159,7 @@ class BluelightBasketLineMixin(object):
         This allows offers to re-consume lines already consumed by previous offer groups while
         still calculating their discount amounts correctly.
         """
-        self._affected_quantity = 0
-        self._discounted_quantity = 0
+        self.consumer.begin_offer_group_application()
         self._offer_group_starting_discount = self.discount_value
 
 
@@ -196,21 +167,22 @@ class BluelightBasketLineMixin(object):
         """
         Signal that the Applicator has finished applying a group of offers.
         """
-        if self._discounted_quantity > 0:
+        discounted_quantity = self.consumer.discounted()
+        if discounted_quantity > 0:
             delta_line = self.discount_value - self._offer_group_starting_discount
-            delta_unit = delta_line / self._discounted_quantity
+            delta_unit = delta_line / discounted_quantity
             item = PriceBreakdownStackEntry(
-                quantity_with_discount=self._discounted_quantity,
+                quantity_with_discount=discounted_quantity,
                 discount_delta_unit=delta_unit)
             self._price_breakdown_stack.append(item)
-            self._discounted_quantity = 0
+            self.consumer.end_offer_group_application()
 
 
     def finalize_offer_group_applications(self):
         """
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
-        self._affected_quantity = min(self.quantity, self._global_affected_quantity)
+        self.consumer.finalize_offer_group_applications()
 
 
     def get_price_breakdown(self):
