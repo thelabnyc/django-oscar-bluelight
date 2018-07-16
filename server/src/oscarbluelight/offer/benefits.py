@@ -1,7 +1,8 @@
 from decimal import Decimal as D
 from django.core import exceptions
 from django.utils.translation import ugettext_lazy as _
-from oscar.apps.offer import results, utils
+from oscar.core.loading import get_class
+from oscar.apps.offer import utils
 from oscar.apps.offer.benefits import (
     PercentageDiscountBenefit,
     AbsoluteDiscountBenefit,
@@ -13,6 +14,9 @@ from oscar.apps.offer.benefits import (
     ShippingPercentageDiscountBenefit,
 )
 from oscar.templatetags.currency_filters import currency
+
+BasketDiscount = get_class('offer.results', 'BasketDiscount')
+ZERO_DISCOUNT = get_class('offer.results', 'ZERO_DISCOUNT')
 
 
 
@@ -92,7 +96,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
 
         if discount > 0:
             condition.consume_items(offer, basket, affected_lines)
-        return results.BasketDiscount(discount)
+        return BasketDiscount(discount)
 
 
 
@@ -167,7 +171,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
             discount = min(discount, max_total_discount)
 
         if discount == 0:
-            return results.ZERO_DISCOUNT
+            return ZERO_DISCOUNT
 
         # Apply discount equally amongst them
         affected_lines = []
@@ -187,7 +191,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
 
         condition.consume_items(offer, basket, affected_lines)
 
-        return results.BasketDiscount(discount)
+        return BasketDiscount(discount)
 
 
 
@@ -232,7 +236,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         # Fetch basket lines that are in the range and available to be used in an offer.
         line_tuples = self.get_applicable_lines(offer, basket)
         if not line_tuples:
-            return results.ZERO_DISCOUNT
+            return ZERO_DISCOUNT
 
         # Sort from most-expensive to least-expensive
         line_tuples = line_tuples[::-1]
@@ -251,7 +255,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 break
         discount = max(value_affected - self.value, D('0.00'))
         if not discount:
-            return results.ZERO_DISCOUNT
+            return ZERO_DISCOUNT
 
         # Apply discount to the affected lines
         discount_applied = D('0.00')
@@ -266,7 +270,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                     discount * (price * quantity) / value_affected)
             line.discount(line_discount, quantity, incl_tax=False, offer=offer)
             discount_applied += line_discount
-        return results.BasketDiscount(discount)
+        return BasketDiscount(discount)
 
 
 
@@ -310,7 +314,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
 
         line_tuples = self.get_applicable_lines(offer, basket)
         if not line_tuples:
-            return results.ZERO_DISCOUNT
+            return ZERO_DISCOUNT
 
         # Cheapest line gives free product
         discount, line = line_tuples[0]
@@ -319,7 +323,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         affected_lines = [(line, discount, 1)]
         condition.consume_items(offer, basket, affected_lines)
 
-        return results.BasketDiscount(discount)
+        return BasketDiscount(discount)
 
 
 

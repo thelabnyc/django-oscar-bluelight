@@ -1,7 +1,11 @@
 from decimal import Decimal
-from oscar.apps.basket.abstract_models import AbstractLine
-from oscarbluelight.mixins import BluelightBasketLineMixin
+from oscar.apps.basket.abstract_models import AbstractBasket, AbstractLine
+from oscarbluelight.mixins import BluelightBasketMixin, BluelightBasketLineMixin
 from oscarbluelight.offer.groups import register_system_offer_group, pre_offer_group_apply_receiver
+
+
+class Basket(BluelightBasketMixin, AbstractBasket):
+    pass
 
 
 class Line(BluelightBasketLineMixin, AbstractLine):
