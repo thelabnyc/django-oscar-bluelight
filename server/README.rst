@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.10.0
+------------------
+- Add flag to offer result objects to allow flagging a result as hidden in the UI. Doesn't functionally affect anything other than adding the boolean flag property.
+
 0.9.0
 ------------------
 - Add support for Oscar 1.6 and Django 2.0.
