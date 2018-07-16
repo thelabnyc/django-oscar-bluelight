@@ -18,6 +18,23 @@ LineDiscountDescription = namedtuple('LineDiscountDescription', (
 
 
 
+class BluelightBasketMixin(object):
+    @property
+    def offer_post_order_actions(self):
+        """
+        Return post order actions from offers
+        """
+        return self.offer_applications.offer_post_order_actions
+
+    @property
+    def voucher_post_order_actions(self):
+        """
+        Return post order actions from offers
+        """
+        return self.offer_applications.voucher_post_order_actions
+
+
+
 class BluelightBasketLineMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
