@@ -238,11 +238,13 @@ class Range(AbstractRange):
 
     def increment_cache_version(self):
         self.__class__.objects.filter(pk=self.pk).update(cache_version=(F('cache_version') + 1))
+        self.invalidate_cached_ids()
 
     def save(self, *args, **kwargs):
         # Increment the cache_version number so that memoized functions (like contains_product) are automatically invalidated.
         if self.pk:
             self.cache_version = F('cache_version') + 1
+            self.invalidate_cached_ids()
         return super().save(*args, **kwargs)
 
 
