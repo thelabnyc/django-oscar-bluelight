@@ -100,6 +100,7 @@ Changelog
 0.10.0
 ------------------
 - Add flag to offer result objects to allow flagging a result as hidden in the UI. Doesn't functionally affect anything other than adding the boolean flag property.
+- Bugfix for clearing products from range cache
 
 0.9.0
 ------------------
