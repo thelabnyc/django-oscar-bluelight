@@ -28,6 +28,8 @@ class OfferSerializer(serializers.ModelSerializer):
             'name',
             'priority',
             'is_available',
+            'desktop_image',
+            'mobile_image',
             'vouchers',
             'details_link',
         )
