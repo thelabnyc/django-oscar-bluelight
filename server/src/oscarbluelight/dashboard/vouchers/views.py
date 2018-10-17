@@ -40,11 +40,19 @@ class VoucherListView(DefaultVoucherListView):
 class VoucherCreateView(DefaultVoucherCreateView):
     form_class = VoucherForm
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = _('Create voucher')
+        print(ctx)
+        return ctx
+
     def form_valid(self, form):
         with transaction.atomic():
             # Create offer and benefit
             benefit = form.cleaned_data['benefit']
             condition = form.cleaned_data['condition']
+            desktop_image = form.cleaned_data['desktop_image']
+            mobile_image = form.cleaned_data['mobile_image']
             if not condition:
                 condition = Condition.objects.create(
                     range=benefit.range,
@@ -58,6 +66,8 @@ class VoucherCreateView(DefaultVoucherCreateView):
                 offer_type=ConditionalOffer.VOUCHER,
                 benefit=benefit,
                 condition=condition,
+                mobile_image=mobile_image,
+                desktop_image=desktop_image,
                 offer_group=form.cleaned_data['offer_group'],
                 priority=form.cleaned_data['priority'],
                 max_global_applications=form.cleaned_data['max_global_applications'],

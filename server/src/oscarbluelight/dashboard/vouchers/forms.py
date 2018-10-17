@@ -59,10 +59,12 @@ class VoucherForm(forms.Form):
         required=False)
     desktop_image = forms.ImageField(
         label=_('Desktop Image'),
-        help_text=_("Desktop image used for promo display."))
+        help_text=_("Desktop image used for promo display."),
+        required=False)
     mobile_image = forms.ImageField(
         label=_('Mobile Image'),
-        help_text=_("Mobile image used for promo display."))
+        help_text=_("Mobile image used for promo display."),
+        required=False)
     benefit = forms.ModelChoiceField(
         label=_('Incentive'),
         help_text=_("What benefit should be given to the customer as a result of this voucher code?"),
