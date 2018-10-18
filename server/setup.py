@@ -8,7 +8,6 @@ Distribution().fetch_build_eggs('versiontag>=1.2.0')
 
 from versiontag import get_version, cache_git_tag  # NOQA
 
-
 packages = find_packages('src')
 
 install_requires = [

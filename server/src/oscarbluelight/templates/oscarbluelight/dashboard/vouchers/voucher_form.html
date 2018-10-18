@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block dashboard_content %}
-    <form action="." method="post" class="form-stacked wysiwyg fixed-actions">
+    <form action="." method="post" enctype="multipart/form-data" class="form-stacked wysiwyg fixed-actions">
         {% csrf_token %}
 
         <div class="row">

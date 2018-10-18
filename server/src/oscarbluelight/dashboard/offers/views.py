@@ -65,12 +65,6 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.name = session_offer.name
         offer.short_name = session_offer.short_name
         offer.description = session_offer.description
-        print(form.data)
-        if 'desktop_image' in form.data:
-            print(form.data['desktop_image'][0])
-            offer.desktop_image = form.data['desktop_image'][0]
-        if 'mobile_image' in form.data:
-            offer.mobile_image = form.data['mobile_image'][0]
         offer.offer_group = session_offer.offer_group
         offer.priority = session_offer.priority
         offer.apply_to_displayed_prices = session_offer.apply_to_displayed_prices

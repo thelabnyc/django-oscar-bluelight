@@ -40,19 +40,19 @@ class VoucherListView(DefaultVoucherListView):
 class VoucherCreateView(DefaultVoucherCreateView):
     form_class = VoucherForm
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['title'] = _('Create voucher')
-        print(ctx)
-        return ctx
-
     def form_valid(self, form):
         with transaction.atomic():
+            print('form')
+            print(form)
             # Create offer and benefit
             benefit = form.cleaned_data['benefit']
             condition = form.cleaned_data['condition']
             desktop_image = form.cleaned_data['desktop_image']
+            print('desktop_image')
+            print(desktop_image)
             mobile_image = form.cleaned_data['mobile_image']
+            print('mobile_image')
+            print(mobile_image)
             if not condition:
                 condition = Condition.objects.create(
                     range=benefit.range,
@@ -131,6 +131,8 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
             initial['max_user_applications'] = offer.max_user_applications
             initial['max_basket_applications'] = offer.max_basket_applications
             initial['max_discount'] = offer.max_discount
+            initial['desktop_image'] = offer.desktop_image
+            initial['mobile_image'] = offer.mobile_image
             initial['condition'] = offer.condition
             initial['benefit'] = offer.benefit
             initial['description'] = offer.description
@@ -160,6 +162,12 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer = voucher.offers.first()
         if not offer:
             offer = ConditionalOffer(name=_("Offer for voucher '%s'") % voucher.name, offer_type=ConditionalOffer.VOUCHER)
+        desktop_image = form.cleaned_data['desktop_image']
+        print('desktop_image')
+        print(desktop_image)
+        mobile_image = form.cleaned_data['mobile_image']
+        print('mobile_image')
+        print(mobile_image)
         offer.short_name = form.cleaned_data['code']
         offer.description = form.cleaned_data['description']
         offer.condition = condition
