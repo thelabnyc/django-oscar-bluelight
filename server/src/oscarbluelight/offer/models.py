@@ -73,10 +73,10 @@ class ConditionalOffer(AbstractConditionalOffer):
     short_name = models.CharField(
         _("Short Name"), max_length=50,
         help_text=_("Abbreviated version of offer name"))
-    desktop_image = models.ImageField(null=True, blank=True, 
-        upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'), 
+    desktop_image = models.ImageField(null=True, blank=True,
+        upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'),
         help_text="Desktop image used for promo display.")
-    mobile_image = models.ImageField(null=True, blank=True, 
+    mobile_image = models.ImageField(null=True, blank=True,
         upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'),
         help_text="Mobile image used for promo display.")
     # When offer_type == "User", we use groups to determine which users get the offer

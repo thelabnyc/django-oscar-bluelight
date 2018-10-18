@@ -1,4 +1,3 @@
-from django.conf import settings
 from django import forms
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
@@ -107,10 +106,6 @@ class VoucherForm(forms.Form):
         if qs.count() > 0:
             raise forms.ValidationError(_("The name '%s' is already in use") % name)
         return name
-
-    # def clean_desktop_image(self):
-    #     desktop_image = self.cleaned_data['desktop_image']
-
 
     def clean_code(self):
         code = self.cleaned_data['code'].strip().upper()

@@ -16,7 +16,6 @@ class VoucherSerializer(serializers.ModelSerializer):
             'code',
             'is_active',
             'details_link',
-
         )
 
     def get_desktop_image(self, obj):
