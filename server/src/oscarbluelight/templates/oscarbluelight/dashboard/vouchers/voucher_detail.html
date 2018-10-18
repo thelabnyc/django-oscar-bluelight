@@ -60,7 +60,20 @@
             </tr>
             <tr>
                 <th>{% trans "Desktop Image" %}</th>
-                <td>{% include 'oscar/dashboard/catalogue/product_row_image.html' with record=voucher.offers.first.desktop_image %}</td>
+                <td>
+                    {% if voucher.offers.first %}
+                        {% include "dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.desktop_image %}
+                    {% endif %}
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>{% trans "Mobile Image" %}</th>
+                <td>
+                    {% if voucher.offers.first %}
+                        {% include "dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.mobile_image %}
+                    {% endif %}
+                </td>
                 <td></td>
             </tr>
             <tr>
@@ -105,16 +118,6 @@
                     <td>{{ voucher.offer_group.name|default:"-" }}</td>
                 <td></td>
             </tr>
-        </tbody>
-    </table>
-
-    <div class="table-header">
-        <h2>{% trans "Coupon Display" %}</h2>
-    </div>
-    <table class="table table-striped table-bordered table-hover">
-        <tbody>
-            <tr><th>{% trans "Desktop Image" %}</th><td>{% include 'oscar/dashboard/catalogue/product_row_image.html' with record=voucher.offers.first.desktop_image %}</td></tr>
-            <tr><th>{% trans "Mobile Image" %}</th><td>{% include 'oscar/dashboard/catalogue/product_row_image.html' with record=voucher.offers.first.mobile_image %}</td></tr>
         </tbody>
     </table>
 

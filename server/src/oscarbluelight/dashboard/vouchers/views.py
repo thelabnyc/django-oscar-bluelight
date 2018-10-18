@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
@@ -29,6 +30,7 @@ OrderDiscount = get_model('order', 'OrderDiscount')
 
 AddChildCodesForm = get_class('dashboard.vouchers.forms', 'AddChildCodesForm')
 VoucherForm = get_class('dashboard.vouchers.forms', 'VoucherForm')
+BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER')
 
 
 class VoucherListView(DefaultVoucherListView):
@@ -42,17 +44,10 @@ class VoucherCreateView(DefaultVoucherCreateView):
 
     def form_valid(self, form):
         with transaction.atomic():
-            print('form')
-            print(form)
             # Create offer and benefit
             benefit = form.cleaned_data['benefit']
             condition = form.cleaned_data['condition']
-            desktop_image = form.cleaned_data['desktop_image']
-            print('desktop_image')
-            print(desktop_image)
-            mobile_image = form.cleaned_data['mobile_image']
-            print('mobile_image')
-            print(mobile_image)
+
             if not condition:
                 condition = Condition.objects.create(
                     range=benefit.range,
@@ -66,8 +61,8 @@ class VoucherCreateView(DefaultVoucherCreateView):
                 offer_type=ConditionalOffer.VOUCHER,
                 benefit=benefit,
                 condition=condition,
-                mobile_image=mobile_image,
-                desktop_image=desktop_image,
+                mobile_image=form.cleaned_data['mobile_image'],
+                desktop_image=form.cleaned_data['desktop_image'],
                 offer_group=form.cleaned_data['offer_group'],
                 priority=form.cleaned_data['priority'],
                 max_global_applications=form.cleaned_data['max_global_applications'],
@@ -162,12 +157,9 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         offer = voucher.offers.first()
         if not offer:
             offer = ConditionalOffer(name=_("Offer for voucher '%s'") % voucher.name, offer_type=ConditionalOffer.VOUCHER)
-        desktop_image = form.cleaned_data['desktop_image']
-        print('desktop_image')
-        print(desktop_image)
-        mobile_image = form.cleaned_data['mobile_image']
-        print('mobile_image')
-        print(mobile_image)
+
+        offer.desktop_image = form.cleaned_data['desktop_image']
+        offer.mobile_image = form.cleaned_data['mobile_image']
         offer.short_name = form.cleaned_data['code']
         offer.description = form.cleaned_data['description']
         offer.condition = condition

@@ -1,0 +1,10 @@
+{% load thumbnail %}
+{% if record %}
+    {% with image=record %}
+        {% thumbnail image "70x70" upscale=False as thumb %}
+            <img src="{{ thumb.url }}" alt="{{ image.url }}" height="{{ thumb.height }}" width="{{ thumb.width }}">
+        {% endthumbnail %}
+    {% endwith %}
+{% else %}
+    —
+{% endif %}

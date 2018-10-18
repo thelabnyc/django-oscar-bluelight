@@ -5,6 +5,8 @@ from oscarbluelight.voucher.models import Voucher
 
 class VoucherSerializer(serializers.ModelSerializer):
     details_link = serializers.HyperlinkedIdentityField(view_name='dashboard:voucher-stats')
+    desktop_image = serializers.SerializerMethodField()
+    mobile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Voucher
@@ -14,11 +16,26 @@ class VoucherSerializer(serializers.ModelSerializer):
             'code',
             'is_active',
             'details_link',
+
         )
+
+    def get_desktop_image(self, obj):
+        offer = obj.offers.first()
+        if offer:
+            return offer.desktop_image.url if offer.desktop_image else ''
+        return ''
+
+    def get_mobile_image(self, obj):
+        offer = obj.offers.first()
+        if offer:
+            return offer.mobile_image.url if offer.mobile_image else ''
+        return ''
 
 
 class OfferSerializer(serializers.ModelSerializer):
     vouchers = serializers.SerializerMethodField()
+    desktop_image = serializers.SerializerMethodField()
+    mobile_image = serializers.SerializerMethodField()
     details_link = serializers.HyperlinkedIdentityField(view_name='dashboard:offer-detail')
 
     class Meta:
@@ -28,14 +45,18 @@ class OfferSerializer(serializers.ModelSerializer):
             'name',
             'priority',
             'is_available',
-            'desktop_image',
-            'mobile_image',
             'vouchers',
             'details_link',
         )
 
     def get_vouchers(self, obj):
         return VoucherSerializer(many=True, context=self.context).to_representation(obj.vouchers.exclude_children().all())
+
+    def get_desktop_image(self, obj):
+        return obj.url if obj else ''
+
+    def get_mobile_image(self, obj):
+        return obj.url if obj else ''
 
 
 class OfferGroupSerializer(serializers.ModelSerializer):
