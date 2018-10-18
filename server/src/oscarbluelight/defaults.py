@@ -17,6 +17,8 @@ insert_nav_item('dashboard:offer-list', _('Offer Groups'), 'dashboard:offergroup
 insert_nav_item('dashboard:offergroup-list', _('Benefits'), 'dashboard:benefit-list')
 insert_nav_item('dashboard:benefit-list', _('Conditions'), 'dashboard:condition-list')
 
+# Media file path for offer images
+BLUELIGHT_OFFER_IMAGE_FOLDER = 'images/offers/'
 
 BLUELIGHT_RANGE_CACHE_TTL = 86400
 

@@ -59,6 +59,24 @@
                 <td></td>
             </tr>
             <tr>
+                <th>{% trans "Desktop Image" %}</th>
+                <td>
+                    {% if voucher.offers.first %}
+                        {% include "dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.desktop_image %}
+                    {% endif %}
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>{% trans "Mobile Image" %}</th>
+                <td>
+                    {% if voucher.offers.first %}
+                        {% include "dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.mobile_image %}
+                    {% endif %}
+                </td>
+                <td></td>
+            </tr>
+            <tr>
                 <th>{% trans "Usage" %}</th>
                 <td>{{ voucher.get_usage_display }}</td>
                 <td></td>
