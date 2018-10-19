@@ -52,10 +52,10 @@ class OfferSerializer(serializers.ModelSerializer):
         return VoucherSerializer(many=True, context=self.context).to_representation(obj.vouchers.exclude_children().all())
 
     def get_desktop_image(self, obj):
-        return obj.url if obj else ''
+        return obj.desktop_image.url if obj.desktop_image else ''
 
     def get_mobile_image(self, obj):
-        return obj.url if obj else ''
+        return obj.mobile_image.url if obj.mobile_image else ''
 
 
 class OfferGroupSerializer(serializers.ModelSerializer):
