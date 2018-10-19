@@ -9,6 +9,8 @@
         <th>{% trans "Code" %}</th>
         <th>{% trans "Status" %}</th>
         <th>{% trans "Usage is Limited to User Groups" %}</th>
+        <th>{% trans "Desktop Image" %}</th>
+        <th>{% trans "Mobile Image" %}</th>
         <th>{% trans "Num child codes" %}</th>
         <th>{% trans "Offer Group" %}</th>
         <th>{% trans "Priority" %}</th>
@@ -39,6 +41,16 @@
                 {% endfor %}
             {% else %}
                 <span class="label label-warning">{% trans "No" %}</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if voucher.offers.first %}
+                {% include "dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.desktop_image %}
+            {% endif %}
+        </td>
+        <td>
+            {% if voucher.offers.first %}
+                {% include "dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.mobile_image %}
             {% endif %}
         </td>
         <td>{{ voucher.children.count | default:'-' }}</td> <!-- num children -->
