@@ -16,6 +16,8 @@ class VoucherSerializer(serializers.ModelSerializer):
             'code',
             'is_active',
             'details_link',
+            'desktop_image',
+            'mobile_image',
         )
 
     def get_desktop_image(self, obj):
@@ -46,6 +48,8 @@ class OfferSerializer(serializers.ModelSerializer):
             'is_available',
             'vouchers',
             'details_link',
+            'desktop_image',
+            'mobile_image',
         )
 
     def get_vouchers(self, obj):
