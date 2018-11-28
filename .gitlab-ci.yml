@@ -47,7 +47,7 @@ test_python37:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py37-django111-oscar{15,16},py37-django{200,210}-oscar16'
+    - tox -e 'py37-django{200,210}-oscar16'
 
 test_pypy35:
   stage: test
