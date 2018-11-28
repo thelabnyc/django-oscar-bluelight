@@ -25,14 +25,6 @@ lint_typescript:
     - yarn run lint
     - NODE_ENV=production node_modules/.bin/webpack
 
-test_python34:
-  stage: test
-  image: python:3.4
-  script:
-    - cd server/
-    - pip install tox
-    - tox -e 'py34-django111-oscar{15,16},py34-django{200,210}-oscar16'
-
 test_python35:
   stage: test
   image: python:3.5
@@ -48,6 +40,14 @@ test_python36:
     - cd server/
     - pip install tox
     - tox -e 'py36-django111-oscar{15,16},py36-django{200,210}-oscar16'
+
+test_python37:
+  stage: test
+  image: python:3.7
+  script:
+    - cd server/
+    - pip install tox
+    - tox -e 'py37-django111-oscar{15,16},py37-django{200,210}-oscar16'
 
 test_pypy35:
   stage: test
