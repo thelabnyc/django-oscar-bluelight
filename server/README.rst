@@ -97,6 +97,12 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.11.0
+------------------
+- Add support for adding images to Offers and Vouchers.
+- Add support for Python 3.7.
+- Add support for Django 2.1.
+
 0.10.0
 ------------------
 - Add flag to offer result objects to allow flagging a result as hidden in the UI. Doesn't functionally affect anything other than adding the boolean flag property.
