@@ -110,6 +110,10 @@ class BluelightBasketLineMixin(object):
         if self.quantity == 0:
             return Decimal('0.00')
 
+        # Cannot compare None with Decimal below, so return None
+        if self.purchase_info.price.effective_price is None:
+            return None
+
         # Figure out the per-unit discount by taking the discount at the start of offer group application and
         # dividing it by the line quantity.
         per_unit_discount = self._offer_group_starting_discount / self.quantity
