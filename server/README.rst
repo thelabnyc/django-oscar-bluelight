@@ -97,6 +97,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.11.1
+------------------
+- Fix bug with effective price.
+
 0.11.0
 ------------------
 - Add support for adding images to Offers and Vouchers.
