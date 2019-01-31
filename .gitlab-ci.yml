@@ -18,6 +18,8 @@ cache:
 
 lint_typescript:
   stage: test
+  tags:
+    - django-oscar
   image: node:8
   script:
     - cd client/
@@ -27,6 +29,8 @@ lint_typescript:
 
 test_python35:
   stage: test
+  tags:
+    - django-oscar
   image: python:3.5
   script:
     - cd server/
@@ -35,6 +39,8 @@ test_python35:
 
 test_python36:
   stage: test
+  tags:
+    - django-oscar
   image: python:3.6
   script:
     - cd server/
@@ -43,6 +49,8 @@ test_python36:
 
 test_python37:
   stage: test
+  tags:
+    - django-oscar
   image: python:3.7
   script:
     - cd server/
@@ -51,6 +59,8 @@ test_python37:
 
 test_pypy35:
   stage: test
+  tags:
+    - django-oscar
   image: pypy:3-5
   script:
     - cd server/
