@@ -1,0 +1,15 @@
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": {
+                "browsers": [
+                    "defaults",
+                    "last 2 versions",
+                    "IE 11",
+                    "last 5 ios_saf versions"
+                ]
+            }
+        }],
+        "@babel/preset-react"
+    ]
+}

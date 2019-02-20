@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
+const fs = require('fs');
 const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
@@ -24,9 +25,11 @@ const rules = [
     {
         test: /\.[tj]sx?/,
         include: APP_DIR,
-        loader: 'babel-loader',
-        query: {
-            presets: ['es2015']
+        use: {
+            loader: 'babel-loader',
+            options: Object.assign({}, JSON.parse(fs.readFileSync('.babelrc', 'utf8')), {
+                cacheDirectory: true,
+            }),
         }
     },
     {
@@ -36,9 +39,6 @@ const rules = [
             MiniCssExtractPlugin.loader,
             {
                 loader: 'css-loader',
-                options: {
-                    minimize: true,
-                },
             },
             {
                 loader: 'postcss-loader',
@@ -55,9 +55,6 @@ const rules = [
             MiniCssExtractPlugin.loader,
             {
                 loader: 'css-loader',
-                options: {
-                    minimize: true,
-                },
             },
         ],
     },
