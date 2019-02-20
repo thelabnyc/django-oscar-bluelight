@@ -7,7 +7,7 @@
   "license": "ISC",
   "private": true,
   "scripts": {
-    "lint": "tslint --project tsconfig.json --type-check src/**/*.ts src/**/*.tsx"
+    "lint": "tslint --project tsconfig.json"
   },
   "devDependencies": {
     "@babel/core": "^7.3.3",

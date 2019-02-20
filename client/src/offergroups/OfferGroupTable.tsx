@@ -12,6 +12,7 @@ export interface IProps {
 
 
 export interface IState {
+    isLoading: boolean;
     groups: IOfferGroup[];
 }
 
@@ -20,6 +21,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     constructor (props: IProps) {
         super(props);
         this.state = {
+            isLoading: true,
             groups: [],
         };
     }
@@ -35,13 +37,14 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
             const groups = resp.body as IOfferGroup[];
             this.setState({
+                isLoading: false,
                 groups: groups,
             });
         });
     }
 
 
-    buildGroupActions (group: IOfferGroup) {
+    private buildGroupActions (group: IOfferGroup) {
         const hasOffers = group.offers.length > 0;
         const isSystemGroup = group.is_system_group;
 
@@ -78,79 +81,130 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     }
 
 
-    buildOfferListItem (offer: IOffer) {
-        if (!offer.vouchers.length) {
-            const itemClasses = classNames({
-                'offergroup__offer': true,
-                'offergroup__offer--inactive': !offer.is_available,
-            });
+    private buildBooleanLabel (truthy: boolean, dangerousNo = false) {
+        if (truthy) {
             return (
-                <li key={`offer-${offer.id}`} className={itemClasses}>
-                    <a href={offer.details_link}>{offer.name} (priority {offer.priority})</a>
-                    <span className="label label-info">Offer</span>
-                </li>
+                <span className="label label-success">Yes</span>
             );
         }
+        const intent = dangerousNo ? 'label-danger' : 'label-default';
+        return (
+            <span className={`label ${intent}`}>No</span>
+        );
+    }
 
-        return offer.vouchers.map((voucher) => {
+
+    private buildOfferRow (index: number, offer: IOffer) {
+        const itemClasses = classNames({
+            'offergroup__offer': true,
+            'offergroup__offer--inactive': !offer.is_available,
+        });
+        return (
+            <tr key={`offer-${offer.id}`} className={itemClasses}>
+                <td className="offergroup__offer__index">
+                    <a href={offer.details_link}>{index}</a>
+                </td>
+                <td className="offergroup__offer__name">
+                    <a href={offer.details_link}>{offer.name}</a>
+                </td>
+                <td className="offergroup__offer__priority">
+                    {offer.priority}
+                </td>
+                <td className="offergroup__offer__type">
+                    <span className="label label-info">Offer</span>
+                </td>
+                <td className="offergroup__offer__cosmetic">
+                    {this.buildBooleanLabel(offer.apply_to_displayed_prices, true)}
+                </td>
+            </tr>
+        );
+    }
+
+
+    private buildVoucherRow (index: number, offer: IOffer) {
+        const elems = offer.vouchers.map((voucher) => {
             const itemClasses = classNames({
                 'offergroup__voucher': true,
                 'offergroup__voucher--inactive': !voucher.is_active,
             });
             return (
-                <li key={`voucher-${voucher.id}`} className={itemClasses}>
-                    <a href={voucher.details_link}>{voucher.name} (priority {offer.priority})</a>
-                    <span className="label label-success">Voucher</span>
-                </li>
+                <tr key={`voucher-${voucher.id}`} className={itemClasses}>
+                    <td className="offergroup__voucher__index">
+                        <a href={voucher.details_link}>{index}</a>
+                    </td>
+                    <td className="offergroup__voucher__name">
+                        <a href={voucher.details_link}>{voucher.name}</a>
+                    </td>
+                    <td className="offergroup__voucher__priority">
+                        {offer.priority}
+                    </td>
+                    <td className="offergroup__voucher__type">
+                        <span className="label label-success">Voucher</span>
+                    </td>
+                    <td className="offergroup__voucher__cosmetic">
+                        {this.buildBooleanLabel(offer.apply_to_displayed_prices, true)}
+                    </td>
+                </tr>
             );
         });
+        return elems;
     }
 
 
-    buildOfferList (group: IOfferGroup) {
+    private buildOfferList (group: IOfferGroup) {
         const self = this;
-
-        const rows = group.offers.map((offer) => {
-            return self.buildOfferListItem(offer);
+        const rows = group.offers.map((offer, i) => {
+            const index = (i + 1);
+            return (offer.vouchers.length > 0)
+                ? self.buildVoucherRow(index, offer)
+                : self.buildOfferRow(index, offer);
         });
-
         return (
-           <ol>{rows}</ol>
+            <table className="table table-bordered table-striped offergroup-subtable">
+                <caption>{group.name}</caption>
+                <thead>
+                    <tr>
+                        <th className="offergroup__offer__index">#</th>
+                        <th className="offergroup__offer__name">Name</th>
+                        <th className="offergroup__offer__priority">Priority</th>
+                        <th className="offergroup__offer__type">Type</th>
+                        <th className="offergroup__offer__cosmetic">Cosmetic?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                   {rows}
+                </tbody>
+            </table>
         );
     }
 
 
-    buildSystemGroupLabel (group: IOfferGroup) {
-        if (group.is_system_group) {
-            return (
-                <span className="label label-success">Yes</span>
-            );
-        }
-
-        return (
-            <span className="label label-default">No</span>
-        );
-    }
-
-
-    buildGroupRows () {
+    private buildGroupRows () {
         const self = this;
-
-        if (this.state.groups.length <= 0) {
+        const numCols = 5;
+        if (this.state.isLoading) {
             return (
                 <tr>
-                    <td colSpan={4} className="offergroup__empty">No Offer Groups found.</td>
+                    <td colSpan={numCols} className="offergroup__empty">Loading…</td>
                 </tr>
             );
         }
-
+        if (this.state.groups.length <= 0) {
+            return (
+                <tr>
+                    <td colSpan={numCols} className="offergroup__empty">No Offer Groups found.</td>
+                </tr>
+            );
+        }
         return this.state.groups.map((group) => {
             return (
                 <tr key={group.id} data-group-slug={group.slug}>
                     <td>{group.name}</td>
-                    <td>{this.buildSystemGroupLabel(group)}</td>
+                    <td>{this.buildBooleanLabel(group.is_system_group)}</td>
                     <td>{group.priority}</td>
-                    <td>{self.buildOfferList(group)}</td>
+                    <td className="subtable-container">
+                        {self.buildOfferList(group)}
+                    </td>
                     <td>{self.buildGroupActions(group)}</td>
                 </tr>
             );
@@ -160,7 +214,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
     render () {
         return (
-            <table className="table table-striped table-bordered">
+            <table className="table table-bordered">
                 <caption>
                     <i className="icon-gift icon-large"></i>
                 </caption>
@@ -169,7 +223,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                         <th>Name</th>
                         <th>Is System Group?</th>
                         <th>Priority</th>
-                        <th>Contains Offers</th>
+                        <th>Group Contents</th>
                         <th>Actions</th>
                     </tr>
                     {this.buildGroupRows()}

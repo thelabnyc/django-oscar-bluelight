@@ -2,8 +2,82 @@
     &__empty {
         font-style: italic;
     }
-    &__voucher--inactive,
-    &__offer--inactive {
-        opacity: 0.3;
+    &__voucher,
+    &__offer {
+        &--inactive {
+            opacity: 0.3;
+        }
+        &__index {
+            width: 40px;
+        }
+        &__priority {
+            width: 60px;
+        }
+        &__type,
+        &__cosmetic {
+            width: 100px;
+        }
+    }
+}
+
+table.table {
+    &.table-bordered {
+        tbody {
+            tr {
+                td.subtable-container {
+                    padding: 0;
+                }
+            }
+        }
+    }
+}
+
+table.offergroup-subtable {
+    margin: 0;
+    border: none;
+    caption {
+        border-radius: 0;
+    }
+    // Alter outer border, top
+    caption:first-child {
+        border-top: none;
+    }
+    thead:first-child,
+    tbody:first-child {
+        tr:first-child {
+            th {
+                border-top: none;
+            }
+        }
+    }
+    // Remove outer borders, left & right
+    caption {
+        border-left: none;
+        border-right: none;
+    }
+    thead,
+    tbody {
+        tr {
+            td:first-child,
+            th:first-child {
+                border-left: none;
+            }
+            td:last-child,
+            th:last-child {
+                border-right: none;
+            }
+        }
+    }
+    // Remove outer border, bottom
+    caption:last-child {
+        border-bottom: none;
+    }
+    thead:last-child,
+    tbody:last-child {
+        tr:last-child {
+            td {
+                border-bottom: none;
+            }
+        }
     }
 }
