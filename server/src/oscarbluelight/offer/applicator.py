@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.core.cache import cache
+from django.db import transaction
 from django.db.models import Q
 from django.utils.timezone import now
 from itertools import groupby, chain
@@ -55,6 +58,8 @@ class Applicator(BaseApplicator):
         """
         Return user offers that are available to current user
         """
+        if not user or user.is_anonymous:
+            return []
         ConditionalOffer = get_model('offer', 'ConditionalOffer')
         cutoff = now()
         date_based = Q(
@@ -128,20 +133,40 @@ class Applicator(BaseApplicator):
         post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
 
-    def get_cosmetic_price(self, product, price_excl_tax):
-        ConditionalOffer = get_model('offer', 'ConditionalOffer')
-        offers = ConditionalOffer.active.filter(apply_to_displayed_prices=True)\
-                                        .select_related(*self._offer_select_related_fields)\
-                                        .all()
-        for group_priority, group in group_offers(offers):
-            for offer in group:
-                benefit = offer.benefit.proxy()
-                rng = benefit.range
-                if not rng:
-                    continue
-                if not rng.contains_product(product):
-                    continue
-                if not hasattr(benefit, 'apply_cosmetic_discount'):
-                    continue
-                price_excl_tax = benefit.apply_cosmetic_discount(price_excl_tax)
-        return price_excl_tax
+    def get_cosmetic_price_cache_key(self, product, quantity):
+        return 'oscarbluelight.applicator.get_cosmetic_price.{}-{}'.format(product.pk, quantity)
+
+
+    def get_cosmetic_price_cache_ttl(self):
+        return getattr(settings, 'BLUELIGHT_COSMETIC_PRICE_CACHE_TTL', 900)
+
+
+    def get_cosmetic_price(self, strategy, product, quantity=1):
+        cache_key = self.get_cosmetic_price_cache_key(product, quantity)
+
+        def _inner():
+            Basket = get_model('basket', 'Basket')
+            # Calculate the price by simulating adding the product to the basket and comparing
+            # the basket's total price before and after the new line item
+            total_excl_tax_before = None
+            total_excl_tax_after = None
+            try:
+                with transaction.atomic():
+                    basket = Basket()
+                    basket.strategy = strategy
+                    # Capture the total_excl_tax before altering the basket line
+                    total_excl_tax_before = basket.total_excl_tax
+                    # Add the product to the basket and re-apply offers and coupons.
+                    line, _ = basket.add_product(product, quantity=quantity)
+                    self.apply(basket)
+                    # Get the price difference
+                    total_excl_tax_after = basket.total_excl_tax
+                    # Intentionally rollback the transaction to that the line item isn't actually saved
+                    raise RuntimeError('rollback')
+            except RuntimeError:
+                pass
+            # Use the before/after price difference to calculate the unit price for the product
+            unit_cosmetic_excl_tax = (total_excl_tax_after - total_excl_tax_before) / quantity
+            return unit_cosmetic_excl_tax
+
+        return cache.get_or_set(cache_key, _inner, self.get_cosmetic_price_cache_ttl())
