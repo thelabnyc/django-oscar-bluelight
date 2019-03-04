@@ -8,7 +8,14 @@ from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
 from .signals import pre_offers_apply, post_offers_apply, pre_offer_group_apply, post_offer_group_apply
+from ..caching import CacheNamespace, FluentCache
 
+
+pricing_cache_ns = CacheNamespace(cache, 'oscarbluelight.pricing')
+cosmetic_price_cache = FluentCache(cache, 'oscarbluelight.applicator.cosmetic_price')\
+    .timeout(getattr(settings, 'BLUELIGHT_COSMETIC_PRICE_CACHE_TTL', 86400))\
+    .namespaces(pricing_cache_ns)\
+    .key_parts('product', 'quantity')
 
 
 def group_offers(offers):
@@ -133,16 +140,8 @@ class Applicator(BaseApplicator):
         post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
 
-    def get_cosmetic_price_cache_key(self, product, quantity):
-        return 'oscarbluelight.applicator.get_cosmetic_price.{}-{}'.format(product.pk, quantity)
-
-
-    def get_cosmetic_price_cache_ttl(self):
-        return getattr(settings, 'BLUELIGHT_COSMETIC_PRICE_CACHE_TTL', 900)
-
-
     def get_cosmetic_price(self, strategy, product, quantity=1):
-        cache_key = self.get_cosmetic_price_cache_key(product, quantity)
+        price_cache = cosmetic_price_cache.concrete(product=product.pk, quantity=quantity)
 
         def _inner():
             Basket = get_model('basket', 'Basket')
@@ -169,4 +168,4 @@ class Applicator(BaseApplicator):
             unit_cosmetic_excl_tax = (total_excl_tax_after - total_excl_tax_before) / quantity
             return unit_cosmetic_excl_tax
 
-        return cache.get_or_set(cache_key, _inner, self.get_cosmetic_price_cache_ttl())
+        return price_cache.get_or_set(_inner)
