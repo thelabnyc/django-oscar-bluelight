@@ -49,14 +49,14 @@ class CacheNamespace(object):
 
     @property
     def value(self):
-        return self.cache.get_or_set(self.key, 1)
+        return self.cache.get_or_set(self.key, 1, timeout=None)
 
     def invalidate(self):
         key = self.key
         try:
-            self.cache.incr(key)
+            self.cache.incr(key, delta=1)
         except ValueError:
-            self.cache.set(key, 1)
+            self.cache.set(key, 1, timeout=None)
 
 
 

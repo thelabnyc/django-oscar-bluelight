@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models.signals import post_migrate, m2m_changed, post_save
 from oscar.core.loading import get_model
 from .groups import ensure_all_system_groups_exist
@@ -24,7 +25,7 @@ def increment_range_cache_version(sender, instance, **kwargs):
 
 
 def invalidate_pricing_cache_ns(sender, instance, **kwargs):
-    pricing_cache_ns.invalidate()
+    transaction.on_commit(lambda: pricing_cache_ns.invalidate())
 
 
 # Invalidate range cache when it's data changes
