@@ -104,6 +104,14 @@ class ConditionalOffer(AbstractConditionalOffer):
             logger.exception(e)
             return ZERO_DISCOUNT
 
+    def record_usage(self, discount):
+        ConditionalOffer.objects\
+                        .filter(pk=self.pk)\
+                        .update(num_applications=(F('num_applications') + discount['freq']),
+                                total_discount=(F('total_discount') + discount['discount']),
+                                num_orders=(F('num_orders') + 1))
+    record_usage.alters_data = True
+
 
 class Benefit(AbstractBenefit):
     def proxy(self):
