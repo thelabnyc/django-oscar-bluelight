@@ -97,6 +97,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.12.0
+------------------
+- Improve UI of the offer group dashboard view
+- Improve checkout performance by tuning the update query in Offer.record_usage
+
 0.11.1
 ------------------
 - Fix bug with effective price.
