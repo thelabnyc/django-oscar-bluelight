@@ -16,6 +16,10 @@ cache:
     - node_modules
     - $HOME/.cache/pip
 
+include:
+  - project: thelabnyc/gitlab-ci-templates
+    file: /ci/sast.gitlab-ci.yml
+
 lint_typescript:
   stage: test
   tags:
