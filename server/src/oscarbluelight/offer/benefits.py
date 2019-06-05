@@ -275,7 +275,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
 
 
 class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
-    _description = _("Cheapest product from %(range)s is free")
+    _description = _("Second most expensive product from %(range)s is free")
 
     class Meta:
         app_label = 'offer'
@@ -316,8 +316,33 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         if not line_tuples:
             return ZERO_DISCOUNT
 
-        # Cheapest line gives free product
-        discount, line = line_tuples[0]
+        # Goal is to give the second most expensive line for free
+        # We check for quantity_without_discount > 1 instead of quantity_without_discount > 0 because
+        # this is designed to be used on buy-one-get-one offers.
+        #
+        # E.g. The following rules shall be observed:
+        #
+        # 1. If two products in cart, highest product consumer pays for and the
+        #       lowest price item is given for free
+        # 2. If three products in cart, highest product consumer pays for, second
+        #       highest should be free, third the consumer should pay for
+        # 3. If four products are in the cart, consumer should pay full price for
+        #       the highest price, then the second highest item should be free.
+        #       Then the third highest consumer pays for, then the fourth item
+        #       would be free.
+
+        discount, line = None, None
+        _more_expensive_items_without_discount = 0
+        for _discount, _line in reversed(line_tuples):
+            _more_expensive_items_without_discount += _line.quantity_without_discount
+            if _more_expensive_items_without_discount > 1:
+                discount, line = _discount, _line
+                break
+
+        # This must be a single line basket; use the cheapest line as a fallback.
+        if not line:
+            discount, line = line_tuples[0]
+
         line.discount(discount, 1, incl_tax=False, offer=offer)
 
         affected_lines = [(line, discount, 1)]
