@@ -47,11 +47,6 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
             'range': utils.range_anchor(self.range) if self.range else 'product range'}
 
 
-    def apply_cosmetic_discount(self, price_excl_tax):
-        discount = (self.value / 100) * price_excl_tax
-        return price_excl_tax - discount
-
-
     def _clean(self):
         if not self.range:
             raise exceptions.ValidationError(
@@ -126,10 +121,6 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         return self._description % {
             'value': currency(self.value),
             'range': utils.range_anchor(self.range) if self.range else 'product range'}
-
-
-    def apply_cosmetic_discount(self, price_excl_tax):
-        return price_excl_tax - self.value
 
 
     def _clean(self):
@@ -224,10 +215,6 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         if not self.range:
             raise exceptions.ValidationError(
                 _("Fixed price benefits require a product range."))
-
-
-    def apply_cosmetic_discount(self, price_excl_tax):
-        return self.value
 
 
     def apply(self, basket, condition, offer):

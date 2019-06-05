@@ -14,7 +14,6 @@ export interface IOffer {
     is_available: boolean;
     vouchers: IVoucher[];
     details_link: string;
-    apply_to_displayed_prices: boolean;
 }
 
 
