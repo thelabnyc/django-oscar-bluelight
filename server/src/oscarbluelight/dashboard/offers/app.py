@@ -26,7 +26,7 @@ class OffersDashboardApplication(Application):
         base_urls = super().get_urls()
 
         router = routers.DefaultRouter()
-        router.register(r'offergroups', OfferGroupViewSet, base_name='api-offergroup')
+        router.register(r'offergroups', OfferGroupViewSet, basename='api-offergroup')
 
         custom_urls = [
             # API

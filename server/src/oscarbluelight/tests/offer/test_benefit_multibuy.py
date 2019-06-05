@@ -47,7 +47,7 @@ class TestAMultibuyDiscountAppliedWithCountCondition(TestCase):
         add_products(self.basket, [
             (D('4.00'), 4), (D('2.00'), 4)])
         result = self.benefit.apply(self.basket, self.condition, self.offer)
-        self.assertEqual(D('2.00'), result.discount)
+        self.assertEqual(D('4.00'), result.discount)
         self.assertEqual(3, self.basket.num_items_with_discount)
         self.assertEqual(5, self.basket.num_items_without_discount)
 
@@ -127,6 +127,6 @@ class TestAMultibuyDiscountAppliedWithAValueCondition(TestCase):
     def test_applies_correctly_to_basket_which_exceeds_condition(self):
         add_products(self.basket, [(D('4.00'), 2), (D('2.00'), 2)])
         result = self.benefit.apply(self.basket, self.condition, self.offer)
-        self.assertEqual(D('2.00'), result.discount)
+        self.assertEqual(D('4.00'), result.discount)
         self.assertEqual(3, self.basket.num_items_with_discount)
         self.assertEqual(1, self.basket.num_items_without_discount)
