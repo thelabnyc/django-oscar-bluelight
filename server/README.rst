@@ -99,8 +99,10 @@ Changelog
 
 0.12.0
 ------------------
-- Improve UI of the offer group dashboard view
-- Improve checkout performance by tuning the update query in Offer.record_usage
+- Improve UI of the offer group dashboard view.
+- Improve checkout performance by tuning the update query in Offer.record_usage.
+- Alter behavior of MultibuyDiscountBenefit. Not discounts the second-most expensive product, rather than the cheapest product.
+- Remove now-unused cosmetic-pricing settings.
 
 0.11.1
 ------------------
