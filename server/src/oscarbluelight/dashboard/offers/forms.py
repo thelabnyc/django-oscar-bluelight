@@ -73,12 +73,8 @@ class MetaDataForm(BaseMetaDataForm):
         queryset=OfferGroup.objects.get_queryset(),
         help_text=_('Offer group to which this offer belongs'))
 
-    apply_to_displayed_prices = forms.BooleanField(
-        label=_("Apply offer to displayed product prices, before the product is added to a basket"),
-        required=False)
-
     class Meta(BaseMetaDataForm.Meta):
-        fields = ('name', 'short_name', 'description', 'offer_group', 'priority', 'apply_to_displayed_prices')
+        fields = ('name', 'short_name', 'description', 'offer_group', 'priority')
 
 
 class BenefitSelectionForm(forms.ModelForm):

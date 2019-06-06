@@ -113,9 +113,6 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                 <td className="offergroup__offer__type">
                     <span className="label label-info">Offer</span>
                 </td>
-                <td className="offergroup__offer__cosmetic">
-                    {this.buildBooleanLabel(offer.apply_to_displayed_prices, true)}
-                </td>
             </tr>
         );
     }
@@ -141,9 +138,6 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                     <td className="offergroup__voucher__type">
                         <span className="label label-success">Voucher</span>
                     </td>
-                    <td className="offergroup__voucher__cosmetic">
-                        {this.buildBooleanLabel(offer.apply_to_displayed_prices, true)}
-                    </td>
                 </tr>
             );
         });
@@ -168,7 +162,6 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                         <th className="offergroup__offer__name">Name</th>
                         <th className="offergroup__offer__priority">Priority</th>
                         <th className="offergroup__offer__type">Type</th>
-                        <th className="offergroup__offer__cosmetic">Cosmetic?</th>
                     </tr>
                 </thead>
                 <tbody>

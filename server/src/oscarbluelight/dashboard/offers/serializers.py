@@ -50,7 +50,6 @@ class OfferSerializer(serializers.ModelSerializer):
             'details_link',
             'desktop_image',
             'mobile_image',
-            'apply_to_displayed_prices',
         )
 
     def get_vouchers(self, obj):

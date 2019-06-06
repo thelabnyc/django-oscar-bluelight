@@ -67,7 +67,6 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.description = session_offer.description
         offer.offer_group = session_offer.offer_group
         offer.priority = session_offer.priority
-        offer.apply_to_displayed_prices = session_offer.apply_to_displayed_prices
 
         # Save the related models and assign to the offer
         temp_offer = self._fetch_object('benefit')

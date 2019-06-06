@@ -82,8 +82,6 @@ class ConditionalOffer(AbstractConditionalOffer):
     # When offer_type == "User", we use groups to determine which users get the offer
     groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
     offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True, on_delete=models.CASCADE)
-    apply_to_displayed_prices = models.BooleanField(default=False,
-        help_text=_("If enabled, cosmetic product prices displayed on product display pages will be discounted by this offer’s benefit."))
 
     class Meta:
         ordering = ('-offer_group__priority', '-priority', 'pk')
