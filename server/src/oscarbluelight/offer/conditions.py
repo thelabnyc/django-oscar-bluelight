@@ -31,13 +31,13 @@ class BluelightCountCondition(CountCondition):
     def name(self):
         return self._description % {
             'count': self.value,
-            'range': six.text_type(self.range).lower() if self.range else 'product range'}
+            'range': six.text_type(self.range).lower() if self.range else _('product range')}
 
     @property
     def description(self):
         return self._description % {
             'count': self.value,
-            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+            'range': utils.range_anchor(self.range) if self.range else _('product range')}
 
     def _clean(self):
         return _default_clean(self)
@@ -83,13 +83,13 @@ class BluelightCoverageCondition(CoverageCondition):
     def name(self):
         return self._description % {
             'count': self.value,
-            'range': six.text_type(self.range).lower() if self.range else 'product range'}
+            'range': six.text_type(self.range).lower() if self.range else _('product range')}
 
     @property
     def description(self):
         return self._description % {
             'count': self.value,
-            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+            'range': utils.range_anchor(self.range) if self.range else _('product range')}
 
     def _clean(self):
         return _default_clean(self)
@@ -145,14 +145,14 @@ class BluelightValueCondition(ValueCondition):
         return self._description % {
             'amount': currency(self.value),
             'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
-            'range': six.text_type(self.range).lower() if self.range else 'product range'}
+            'range': six.text_type(self.range).lower() if self.range else _('product range')}
 
     @property
     def description(self):
         return self._description % {
             'amount': currency(self.value),
             'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
-            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+            'range': utils.range_anchor(self.range) if self.range else _('product range')}
 
     def _clean(self):
         return _default_clean(self)
@@ -237,11 +237,16 @@ class CompoundCondition(Condition):
         (AND, _("Logical AND")),
         (OR, _("Logical OR")),
     )
-    conjunction = models.CharField(
-        _("Subcondition conjunction type"), choices=CONJUNCTION_TYPE_CHOICES,
-        default=AND, max_length=10)
+    conjunction = models.CharField(_("Sub-Condition conjunction type"),
+        choices=CONJUNCTION_TYPE_CHOICES,
+        default=AND,
+        max_length=10,
+        help_text="Select the conjunction which will be used to logically join the sub-conditions together.")
 
-    subconditions = models.ManyToManyField('offer.Condition', related_name='parent_conditions')
+    subconditions = models.ManyToManyField('offer.Condition',
+        related_name='parent_conditions',
+        verbose_name=_("Sub-Conditions"),
+        help_text=_("Select the sub-conditions that this compound-condition will combine."))
 
     class Meta:
         app_label = 'offer'
@@ -263,12 +268,12 @@ class CompoundCondition(Condition):
     @property
     def name(self):
         names = (c.name for c in self.children)
-        return self._human_readable_conjoin(names, 'Empty Condition')
+        return self._human_readable_conjoin(names, _('Empty Condition'))
 
     @property
     def description(self):
         descrs = (c.description for c in self.children)
-        return self._human_readable_conjoin(descrs, 'Empty Condition')
+        return self._human_readable_conjoin(descrs, _('Empty Condition'))
 
     def _clean(self):
         if self.range:

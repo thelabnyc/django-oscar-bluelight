@@ -1,5 +1,6 @@
 from collections import namedtuple
 from decimal import Decimal
+from django.utils.translation import ugettext_lazy as _
 import itertools
 
 
@@ -104,7 +105,7 @@ class BluelightBasketLineMixin(object):
         discounted line price of $100, which equates to a unit_effective_price of $50.
         """
         if self._discount_incl_tax > Decimal('0.00'):
-            raise RuntimeError('Bluelight does not support tax-inclusive discounting.')
+            raise RuntimeError(_('Bluelight does not support tax-inclusive discounting.'))
 
         # Protect against divide by 0 errors
         if self.quantity == 0:
@@ -140,13 +141,11 @@ class BluelightBasketLineMixin(object):
         to the challenges of OfferGroup compounding offers.
         """
         if incl_tax:
-            raise RuntimeError(
-                "Attempting to discount the tax-inclusive price of a line "
-                "when tax-exclusive discounts are already applied")
+            raise RuntimeError(_("Attempting to discount the tax-inclusive price of a line "
+                                 "when tax-exclusive discounts are already applied"))
         if self._discount_incl_tax > 0:
-            raise RuntimeError(
-                "Attempting to discount the tax-exclusive price of a line "
-                "when tax-inclusive discounts are already applied")
+            raise RuntimeError(_("Attempting to discount the tax-exclusive price of a line "
+                                 "when tax-inclusive discounts are already applied"))
 
         # Increase the total line discount amount
         self._discount_excl_tax += discount_value
@@ -213,7 +212,7 @@ class BluelightBasketLineMixin(object):
         Returns a list of (unit_price_incl_tax, unit_price_excl_tax, quantity) tuples.
         """
         if not self.is_tax_known:
-            raise RuntimeError("A price breakdown can only be determined when taxes are known")
+            raise RuntimeError(_("A price breakdown can only be determined when taxes are known"))
 
         # Create an array of the pre-discount unit prices with length equal to the line quantity
         item_prices = []

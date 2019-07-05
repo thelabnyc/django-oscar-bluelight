@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+from django.views.i18n import JavaScriptCatalog
 from rest_framework import routers
 from oscar.apps.dashboard.offers.app import OffersDashboardApplication as Application
 from oscar.core.loading import get_class
@@ -31,6 +32,11 @@ class OffersDashboardApplication(Application):
         custom_urls = [
             # API
             url(r'^api/', include(router.urls)),
+
+            # i18n JS Catalogue
+            url(r'^bluelight-i18n\.js$',
+                JavaScriptCatalog.as_view(packages=['oscarbluelight']),
+                name='oscarbluelight-i18n-js'),
 
             # Benefits
             url(r'^benefits/$', self.benefit_list_view.as_view(), name='benefit-list'),

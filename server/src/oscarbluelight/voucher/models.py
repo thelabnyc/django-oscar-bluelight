@@ -33,8 +33,11 @@ class Voucher(AbstractVoucher):
         on_delete=models.CASCADE,
         null=True,
         blank=True)
-    limit_usage_by_group = models.BooleanField(_("Limit usage to selected user groups"), default=False)
-    groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
+    limit_usage_by_group = models.BooleanField(_("Limit usage to selected user groups"),
+        default=False)
+    groups = models.ManyToManyField('auth.Group',
+        verbose_name=_("User Groups"),
+        blank=True)
 
     objects = VoucherManager()
 
@@ -90,7 +93,7 @@ class Voucher(AbstractVoucher):
     @transaction.atomic
     def create_children(self, count):
         if self.parent is not None:
-            raise RuntimeError('Can not create children for a child voucher. Nesting should only be 1 level.')
+            raise RuntimeError(_('Can not create children for a child voucher. Nesting should only be 1 level.'))
         if not self.id:
             self.save()
         children = []
@@ -180,7 +183,7 @@ class Voucher(AbstractVoucher):
                 self.__class__.objects.get(code=code)
             except Voucher.DoesNotExist:
                 return code
-        raise RuntimeError("Couldn't find a unique child code after %s iterations." % try_count)
+        raise RuntimeError(_("Couldn't find a unique child code after %s iterations.") % try_count)
 
 
     def _get_code_uniquifier(self, code_index, max_index, extra_length=3):

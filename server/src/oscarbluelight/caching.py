@@ -101,7 +101,7 @@ class FluentCache(object):
         # Add in key parts
         for key_part in self._key_parts:
             if key_part not in kwargs:
-                raise ValueError('Cache key is missing value for key part: {}'.format(key_part))
+                raise ValueError(_('Cache key is missing value for key part: %s') % key_part)
             val = kwargs[key_part]
             fragment = 'p:{}:{}'.format(key_part, val)
             key_fragments.append(fragment)

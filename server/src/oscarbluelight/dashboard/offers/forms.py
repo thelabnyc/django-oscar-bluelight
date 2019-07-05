@@ -31,7 +31,7 @@ class BenefitForm(forms.ModelForm):
         choices=_benefit_classes,
         required=True,
         label=_('Type'),
-        help_text='Select a benefit type')
+        help_text=_('Select a benefit type'))
 
     class Meta:
         model = Benefit
@@ -44,7 +44,7 @@ class ConditionForm(forms.ModelForm):
         choices=_condition_classes,
         required=True,
         label=_('Type'),
-        help_text='Select a condition type')
+        help_text=_('Select a condition type'))
 
     class Meta:
         model = Condition
@@ -55,12 +55,12 @@ class CompoundConditionForm(forms.ModelForm):
     CPATH = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
     proxy_class = forms.ChoiceField(
         choices=(
-            (CPATH, 'Compound Condition'),
+            (CPATH, _('Compound Condition')),
         ),
         initial=CPATH,
         disabled=True,
         label=_('Type'),
-        help_text='Select a condition type')
+        help_text=_('Select a condition type'))
 
     class Meta:
         model = CompoundCondition

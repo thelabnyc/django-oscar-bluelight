@@ -37,14 +37,14 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
     def name(self):
         return self._description % {
             'value': self.value,
-            'range': self.range.name if self.range else 'product range'}
+            'range': self.range.name if self.range else _('product range')}
 
 
     @property
     def description(self):
         return self._description % {
             'value': self.value,
-            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+            'range': utils.range_anchor(self.range) if self.range else _('product range')}
 
 
     def _clean(self):
@@ -113,14 +113,14 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
     def name(self):
         return self._description % {
             'value': currency(self.value),
-            'range': self.range.name.lower() if self.range else 'product range'}
+            'range': self.range.name.lower() if self.range else _('product range')}
 
 
     @property
     def description(self):
         return self._description % {
             'value': currency(self.value),
-            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+            'range': utils.range_anchor(self.range) if self.range else _('product range')}
 
 
     def _clean(self):
@@ -274,13 +274,13 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
     @property
     def name(self):
         return self._description % {
-            'range': self.range.name.lower() if self.range else 'product range'}
+            'range': self.range.name.lower() if self.range else _('product range')}
 
 
     @property
     def description(self):
         return self._description % {
-            'range': utils.range_anchor(self.range) if self.range else 'product range'}
+            'range': utils.range_anchor(self.range) if self.range else _('product range')}
 
 
     def _clean(self):
@@ -368,12 +368,10 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
                 _("A discount value is required"))
         if self.range:
             raise exceptions.ValidationError(
-                _("No range should be selected as this benefit does not "
-                  "apply to products"))
+                _("No range should be selected as this benefit does not apply to products"))
         if self.max_affected_items:
             raise exceptions.ValidationError(
-                _("Shipping discounts don't require a 'max affected items' "
-                  "attribute"))
+                _("Shipping discounts don't require a 'max affected items' attribute"))
 
     def apply(self, basket, condition, offer):
         self._clean()
@@ -400,12 +398,10 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
     def _clean(self):
         if self.range:
             raise exceptions.ValidationError(
-                _("No range should be selected as this benefit does not "
-                  "apply to products"))
+                _("No range should be selected as this benefit does not apply to products"))
         if self.max_affected_items:
             raise exceptions.ValidationError(
-                _("Shipping discounts don't require a 'max affected items' "
-                  "attribute"))
+                _("Shipping discounts don't require a 'max affected items' attribute"))
 
     def apply(self, basket, condition, offer):
         self._clean()
@@ -435,12 +431,10 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
                 _("Percentage discount cannot be greater than 100"))
         if self.range:
             raise exceptions.ValidationError(
-                _("No range should be selected as this benefit does not "
-                  "apply to products"))
+                _("No range should be selected as this benefit does not apply to products"))
         if self.max_affected_items:
             raise exceptions.ValidationError(
-                _("Shipping discounts don't require a 'max affected items' "
-                  "attribute"))
+                _("Shipping discounts don't require a 'max affected items' attribute"))
 
     def apply(self, basket, condition, offer):
         self._clean()
