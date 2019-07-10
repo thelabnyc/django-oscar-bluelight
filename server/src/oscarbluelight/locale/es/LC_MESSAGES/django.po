@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-05 17:14+0000\n"
+"POT-Creation-Date: 2019-07-10 18:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: caching.py:104
+#: caching.py:105
 #, python-format
 msgid "Cache key is missing value for key part: %s"
 msgstr ""
 
-#: dashboard/offers/forms.py:33 dashboard/offers/forms.py:46
-#: dashboard/offers/forms.py:62
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:50
+#: dashboard/offers/forms.py:34 dashboard/offers/forms.py:47
+#: dashboard/offers/forms.py:63 dashboard/offers/forms.py:79
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:55
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:55
 msgid "Type"
 msgstr ""
 
-#: dashboard/offers/forms.py:34
+#: dashboard/offers/forms.py:35 dashboard/offers/forms.py:64
 msgid "Select a benefit type"
 msgstr ""
 
-#: dashboard/offers/forms.py:47 dashboard/offers/forms.py:63
+#: dashboard/offers/forms.py:48 dashboard/offers/forms.py:80
 msgid "Select a condition type"
 msgstr ""
 
-#: dashboard/offers/forms.py:58
+#: dashboard/offers/forms.py:59
+msgid "Compound Benefit"
+msgstr ""
+
+#: dashboard/offers/forms.py:75
 msgid "Compound Condition"
 msgstr ""
 
-#: dashboard/offers/forms.py:72 dashboard/vouchers/forms.py:73
+#: dashboard/offers/forms.py:89 dashboard/vouchers/forms.py:73
 #: offer/models.py:93
 #: templates/oscarbluelight/dashboard/offers/offer_detail.html:41
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:33
@@ -52,76 +56,76 @@ msgstr ""
 msgid "Offer Group"
 msgstr ""
 
-#: dashboard/offers/forms.py:74
+#: dashboard/offers/forms.py:91
 msgid "Offer group to which this offer belongs"
 msgstr ""
 
-#: dashboard/offers/forms.py:94
+#: dashboard/offers/forms.py:111
 msgid "Limit offer to selected user groups"
 msgstr ""
 
-#: dashboard/offers/forms.py:98 offer/models.py:88 voucher/models.py:39
+#: dashboard/offers/forms.py:115 offer/models.py:88 voucher/models.py:39
 msgid "User Groups"
 msgstr ""
 
-#: dashboard/offers/forms.py:100 dashboard/vouchers/forms.py:52
+#: dashboard/offers/forms.py:117 dashboard/vouchers/forms.py:52
 msgid "Which user groups will be able to apply this offer?"
-msgstr ""
-
-#: dashboard/offers/views.py:91
-#, python-format
-msgid "Offer '%s' updated"
 msgstr ""
 
 #: dashboard/offers/views.py:93
 #, python-format
+msgid "Offer '%s' updated"
+msgstr ""
+
+#: dashboard/offers/views.py:95
+#, python-format
 msgid "Offer '%s' created!"
 msgstr ""
 
-#: dashboard/offers/views.py:115
+#: dashboard/offers/views.py:117
 msgid "Name and description"
 msgstr ""
 
-#: dashboard/offers/views.py:128 dashboard/vouchers/forms.py:69
+#: dashboard/offers/views.py:130 dashboard/vouchers/forms.py:69
 #: templates/oscarbluelight/dashboard/offers/offer_detail.html:49
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:29
 msgid "Incentive"
 msgstr ""
 
-#: dashboard/offers/views.py:173
+#: dashboard/offers/views.py:175
 #: templates/oscarbluelight/dashboard/offers/offer_detail.html:59
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:32
 msgid "Restrictions"
 msgstr ""
 
-#: dashboard/offers/views.py:185
+#: dashboard/offers/views.py:187
 msgid "All benefits"
 msgstr ""
 
-#: dashboard/offers/views.py:197
+#: dashboard/offers/views.py:199
 #, python-format
 msgid "Benefits for range '%s'"
 msgstr ""
 
-#: dashboard/offers/views.py:238
+#: dashboard/offers/views.py:259
 msgid "All conditions"
 msgstr ""
 
-#: dashboard/offers/views.py:250
+#: dashboard/offers/views.py:271
 #, python-format
 msgid "Conditions for range '%s'"
 msgstr ""
 
-#: dashboard/offers/views.py:331
+#: dashboard/offers/views.py:352
 msgid "System Offer Groups Can Not Be Deleted"
 msgstr ""
 
-#: dashboard/offers/views.py:334
+#: dashboard/offers/views.py:355
 msgid "Offer Groups That Still Contain Offers Can Not Be Deleted"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:18
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:48
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:53
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:53
 #: templates/oscarbluelight/dashboard/offers/offer_detail.html:28
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:25
@@ -318,7 +322,7 @@ msgstr ""
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:24
 #: templates/oscarbluelight/dashboard/offers/benefit_list.html:8
 #: templates/oscarbluelight/dashboard/offers/benefit_list.html:16
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:25
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:30
 #: templates/oscarbluelight/dashboard/ranges/range_list.html:40
 msgid "Benefits"
 msgstr ""
@@ -552,7 +556,7 @@ msgstr ""
 msgid "Select the benefits that this compound-benefit will apply."
 msgstr ""
 
-#: offer/benefits.py:457
+#: offer/benefits.py:457 offer/models.py:139
 msgid "Compound benefit"
 msgstr ""
 
@@ -667,7 +671,7 @@ msgstr ""
 msgid "Select the sub-conditions that this compound-condition will combine."
 msgstr ""
 
-#: offer/conditions.py:253 offer/models.py:205
+#: offer/conditions.py:253 offer/models.py:186
 msgid "Compound condition"
 msgstr ""
 
@@ -730,19 +734,19 @@ msgstr ""
 msgid "Offer is limited to user groups: %s"
 msgstr ""
 
-#: offer/models.py:165
+#: offer/models.py:156
 msgid "Benefit should not have a type field. Use proxy class instead."
 msgstr ""
 
-#: offer/models.py:222
+#: offer/models.py:203
 msgid "Condition should not have a type field. Use proxy class instead."
 msgstr ""
 
-#: offer/models.py:241
+#: offer/models.py:222
 msgid "Cache Version"
 msgstr ""
 
-#: offer/models.py:248
+#: offer/models.py:229
 msgid "Can not delete range with a dependent benefit or condition."
 msgstr ""
 
@@ -790,7 +794,7 @@ msgstr ""
 
 #: templates/oscarbluelight/dashboard/offers/benefit_delete.html:42
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:94
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:85
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:98
 #: templates/oscarbluelight/dashboard/offers/condition_delete.html:42
 #: templates/oscarbluelight/dashboard/offers/condition_edit.html:93
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:98
@@ -825,6 +829,7 @@ msgstr ""
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:13
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:32
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:40
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:24
 msgid "Create new benefit"
 msgstr ""
 
@@ -886,52 +891,56 @@ msgid "Cancel"
 msgstr ""
 
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:103
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:52
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:57
 #: templates/oscarbluelight/dashboard/offers/condition_edit.html:102
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:57
 msgid "Used by Offers"
 msgstr ""
 
 #: templates/oscarbluelight/dashboard/offers/benefit_edit.html:117
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:53
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:58
 #: templates/oscarbluelight/dashboard/offers/condition_edit.html:116
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:58
 msgid "Used by Vouchers"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:23
-msgid "Create new benfit"
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:27
+msgid "Create new compound benefit"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:33
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:38
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:38
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:10
 msgid "Searching..."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:33
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:38
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:38
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:10
 msgid "Search"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:43
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:48
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:48
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:20
 msgid "Reset"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:49
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:54
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:54
 msgid "Range"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:51
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:56
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:56
 msgid "Value"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:80
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:59
+msgid "Used by Benefits"
+msgstr ""
+
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:93
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:93
 #: templates/oscarbluelight/dashboard/offers/offer_list.html:73
 #: templates/oscarbluelight/dashboard/ranges/range_list.html:64
@@ -940,7 +949,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:84
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:97
 #: templates/oscarbluelight/dashboard/offers/condition_list.html:97
 #: templates/oscarbluelight/dashboard/offers/offer_detail.html:30
 #: templates/oscarbluelight/dashboard/offers/offer_detail.html:51
@@ -953,7 +962,7 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:94
+#: templates/oscarbluelight/dashboard/offers/benefit_list.html:107
 msgid "No benefits found."
 msgstr ""
 
