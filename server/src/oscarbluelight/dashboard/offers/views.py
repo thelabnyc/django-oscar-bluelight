@@ -10,6 +10,7 @@ from oscar.apps.dashboard.offers import views
 import json
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
+CompoundBenefit = get_model('offer', 'CompoundBenefit')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
@@ -22,6 +23,7 @@ OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
 
 ConditionSearchForm = get_class('dashboard.offers.forms', 'ConditionSearchForm')
 ConditionForm = get_class('dashboard.offers.forms', 'ConditionForm')
+CompoundBenefitForm = get_class('dashboard.offers.forms', 'CompoundBenefitForm')
 CompoundConditionForm = get_class('dashboard.offers.forms', 'CompoundConditionForm')
 
 MetaDataForm = get_class('dashboard.offers.forms', 'MetaDataForm')
@@ -212,6 +214,13 @@ class BenefitDeleteView(DeleteView):
     success_url = reverse_lazy('dashboard:benefit-list')
 
 
+class CompoundBenefitCreateView(CreateView):
+    model = CompoundBenefit
+    template_name = 'dashboard/offers/benefit_edit_compound.html'
+    form_class = CompoundBenefitForm
+    success_url = reverse_lazy('dashboard:benefit-list')
+
+
 class BenefitCreateView(CreateView):
     model = Benefit
     template_name = 'dashboard/offers/benefit_edit.html'
@@ -221,9 +230,21 @@ class BenefitCreateView(CreateView):
 
 class BenefitUpdateView(UpdateView):
     model = Benefit
-    template_name = 'dashboard/offers/benefit_edit.html'
-    form_class = BenefitForm
     success_url = reverse_lazy('dashboard:benefit-list')
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        return obj.proxy()
+
+    def get_form_class(self):
+        if hasattr(self.object, 'subbenefits'):
+            return CompoundBenefitForm
+        return BenefitForm
+
+    def get_template_names(self):
+        if hasattr(self.object, 'subbenefits'):
+            return 'dashboard/offers/benefit_edit_compound.html'
+        return 'dashboard/offers/benefit_edit.html'
 
 
 class ConditionListView(ListView):

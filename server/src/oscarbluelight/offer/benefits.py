@@ -1,7 +1,8 @@
 from decimal import Decimal as D
 from django.core import exceptions
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from oscar.core.loading import get_class
+from oscar.core.loading import get_model, get_class
 from oscar.apps.offer import utils
 from oscar.apps.offer.benefits import (
     PercentageDiscountBenefit,
@@ -15,7 +16,10 @@ from oscar.apps.offer.benefits import (
 )
 from oscar.templatetags.currency_filters import currency
 
+Benefit = get_model('offer', 'Benefit')
+
 BasketDiscount = get_class('offer.results', 'BasketDiscount')
+PostOrderAction = get_class('offer.results', 'PostOrderAction')
 ZERO_DISCOUNT = get_class('offer.results', 'ZERO_DISCOUNT')
 
 
@@ -442,6 +446,82 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
 
 
 
+class CompoundBenefit(Benefit):
+    subbenefits = models.ManyToManyField('offer.Benefit',
+        related_name='parent_benefits',
+        verbose_name=_("Sub-Benefits"),
+        help_text=_("Select the benefits that this compound-benefit will apply."))
+
+    class Meta:
+        app_label = 'offer'
+        verbose_name = _("Compound benefit")
+        verbose_name_plural = _("Compound benefits")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.proxy_class = "%s.%s" % (CompoundBenefit.__module__, CompoundBenefit.__name__)
+
+    @property
+    def children(self):
+        if self.pk is None:
+            return []
+        chil = [c.proxy() for c in self.subbenefits.order_by('id').all() if c.id != self.id]
+        return chil
+
+    @property
+    def name(self):
+        names = (c.name for c in self.children)
+        return self._human_readable_conjoin(names, _('Empty Benefit'))
+
+    @property
+    def description(self):
+        descrs = (c.description for c in self.children)
+        return self._human_readable_conjoin(descrs, _('Empty Benefit'))
+
+    def apply(self, basket, condition, offer):
+        combined_result = None
+        for child in self.children:
+            result = child.apply(basket, condition, offer)
+            if combined_result is None:
+                combined_result = result
+            elif combined_result.affects == result.affects:
+                combined_result.discount += result.discount
+            else:
+                raise ValueError(_("Can not combine offer benefits of differing types"))
+        return combined_result
+
+    def apply_deferred(self, basket, order, application):
+        results = []
+        for child in self.children:
+            result = child.apply_deferred(basket, order, application)
+            results.append(result)
+        descr = _(" and ").join([r.description for r in results])
+        return PostOrderAction(descr)
+
+    def clean(self):
+        errors = []
+        if self.value:
+            errors.append(_("Compound benefit should not have a value"))
+        if self.range:
+            errors.append(_("Compound benefit should not have a range"))
+        if self.max_affected_items:
+            errors.append(_("Compound benefit should not have a max affected items limit"))
+        if errors:
+            raise exceptions.ValidationError(errors)
+
+    def shipping_discount(self, charge):
+        discount = D('0.00')
+        for child in self.children:
+            discount += child.shipping_discount(charge - discount)
+        return discount
+
+    def _human_readable_conjoin(self, strings, empty=None):
+        strings = list(strings)
+        if len(strings) <= 0 and empty is not None:
+            return empty
+        return _(" and ").join(strings)
+
+
 __all__ = [
     'BluelightAbsoluteDiscountBenefit',
     'BluelightFixedPriceBenefit',
@@ -451,4 +531,5 @@ __all__ = [
     'BluelightShippingBenefit',
     'BluelightShippingFixedPriceBenefit',
     'BluelightShippingPercentageDiscountBenefit',
+    'CompoundBenefit',
 ]

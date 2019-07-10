@@ -10,6 +10,7 @@ from django.forms import ModelMultipleChoiceField
 from oscar.core.loading import get_model
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
+CompoundBenefit = get_model('offer', 'CompoundBenefit')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
@@ -49,6 +50,22 @@ class ConditionForm(forms.ModelForm):
     class Meta:
         model = Condition
         fields = ['range', 'proxy_class', 'value', ]
+
+
+class CompoundBenefitForm(forms.ModelForm):
+    CPATH = "%s.%s" % (CompoundBenefit.__module__, CompoundBenefit.__name__)
+    proxy_class = forms.ChoiceField(
+        choices=(
+            (CPATH, _('Compound Benefit')),
+        ),
+        initial=CPATH,
+        disabled=True,
+        label=_('Type'),
+        help_text=_('Select a benefit type'))
+
+    class Meta:
+        model = CompoundBenefit
+        fields = ['proxy_class', 'subbenefits']
 
 
 class CompoundConditionForm(forms.ModelForm):

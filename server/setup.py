@@ -13,7 +13,7 @@ packages = find_packages('src')
 
 install_requires = [
     'celery>=3.1.23',
-    'django-oscar>1.6.0',
+    'django-oscar>=1.6.0,<2.0.0',
     'djangorestframework>=3.6',
 ]
 

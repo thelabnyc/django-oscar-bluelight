@@ -132,20 +132,11 @@ class Benefit(AbstractBenefit):
             return _init_proxy_class(self, Klass)
         return super().proxy()
 
-    # TODO: Compatibility Hack. Remove once Oscar 1.5 is minimum supported version.
-    # In Oscar 1.5, they added a related name to this relationship. So what was
-    # ``conditionaloffer_set`` became ``offers``. This is a hack to make calls to ``offers``
-    # work in Oscar 1.3 and 1.4. In Oscar 1.5, Django's model metaclass overrides this so that
-    # it never gets called.
-    @property
-    def offers(self):
-        return self.conditionaloffer_set
-    # END TEMP
-
     @property
     def type_name(self):
         benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
         names = dict(benefit_classes)
+        names['oscarbluelight.offer.benefits.CompoundBenefit'] = _("Compound benefit")
         return names.get(self.proxy_class, self.proxy_class)
 
     @property
@@ -187,16 +178,6 @@ class Condition(AbstractCondition):
             Klass = load_proxy(self.proxy_class)
             return _init_proxy_class(self, Klass)
         return super().proxy()
-
-    # TODO: Compatibility Hack. Remove once Oscar 1.5 is minimum supported version.
-    # In Oscar 1.5, they added a related name to this relationship. So what was
-    # ``conditionaloffer_set`` became ``offers``. This is a hack to make calls to ``offers``
-    # work in Oscar 1.3 and 1.4. In Oscar 1.5, Django's model metaclass overrides this so that
-    # it never gets called.
-    @property
-    def offers(self):
-        return self.conditionaloffer_set
-    # END TEMP
 
     @property
     def type_name(self):
