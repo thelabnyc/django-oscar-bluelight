@@ -97,6 +97,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.13.0
+------------------
+- Internationalization
+- Feature: Compound Benefits. Allows applying more than one benefit with a single offer.
+
 0.12.0
 ------------------
 - Improve UI of the offer group dashboard view.
