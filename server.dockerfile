@@ -3,6 +3,10 @@ FROM python:3.7
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/server
 
+RUN apt-get update && \
+    apt-get install -y gettext && \
+    rm -rf /var/lib/apt/lists/*
+
 ADD server/ /oscarbluelight/server/
 RUN pip install -e .[development]
 

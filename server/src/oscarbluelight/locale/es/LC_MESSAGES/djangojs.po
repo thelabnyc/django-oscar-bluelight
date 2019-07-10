@@ -1,0 +1,97 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-07-05 17:14+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: offergroups/OfferGroupTable.tsx:56
+msgid "System groups can not be deleted."
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:58
+msgid "Remove all offers from this group to delete it."
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:60
+#, javascript-format
+msgid "Delete the %s offer group"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:68 offergroups/OfferGroupTable.tsx:227
+msgid "Actions"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:73
+#, javascript-format
+msgid "Edit the details of the %s offer group"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:74
+msgid "Edit"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:78
+msgid "Delete"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:90
+msgid "Yes"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:95
+msgid "No"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:117
+msgid "Offer"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:142
+msgid "Voucher"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:164
+msgid "#"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:165 offergroups/OfferGroupTable.tsx:223
+msgid "Name"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:166 offergroups/OfferGroupTable.tsx:225
+msgid "Priority"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:167
+msgid "Type"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:185
+msgid "Loading…"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:194
+msgid "No Offer Groups found."
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:224
+msgid "Is System Group?"
+msgstr ""
+
+#: offergroups/OfferGroupTable.tsx:226
+msgid "Group Contents"
+msgstr ""

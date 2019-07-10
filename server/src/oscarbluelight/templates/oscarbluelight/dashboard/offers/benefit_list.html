@@ -20,7 +20,12 @@
 {% block header %}
     <div class="page-header">
         <p class="pull-right">
-            <a href="{% url 'dashboard:benefit-create' %}" class="btn btn-primary btn-lg"><i class="icon-plus"></i> {% trans "Create new benfit" %}</a>
+            <a href="{% url 'dashboard:benefit-create' %}" class="btn btn-primary btn-lg">
+                <i class="icon-plus"></i> {% trans "Create new benefit" %}
+            </a>
+            <a href="{% url 'dashboard:benefit-create-compound' %}" class="btn btn-primary btn-lg">
+                <i class="icon-plus"></i> {% trans "Create new compound benefit" %}
+            </a>
         </p>
         <h1>{% trans "Benefits" %}</h1>
     </div>
@@ -51,6 +56,7 @@
                     <th>{% trans 'Value' %}</th>
                     <th>{% trans 'Used by Offers' %}</th>
                     <th>{% trans 'Used by Vouchers' %}</th>
+                    <th>{% trans 'Used by Benefits' %}</th>
                     <th></th>
                 </tr>
                 {% for benefit in benefits %}
@@ -70,6 +76,13 @@
                             <ul>
                                 {% for voucher in benefit.vouchers %}
                                     <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for benefit in benefit.parent_benefits.all %}
+                                    <li><a href="{% url 'dashboard:benefit-update' pk=benefit.pk %}">{{ benefit.name }}</li>
                                 {% endfor %}
                             </ul>
                         </td>

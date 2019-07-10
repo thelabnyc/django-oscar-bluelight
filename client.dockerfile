@@ -3,6 +3,10 @@ FROM node:10
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/client
 
+RUN apt-get update && \
+    apt-get install -y gettext && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install node_modules
 ADD client/package.json /oscarbluelight/client/package.json
 ADD client/yarn.lock /oscarbluelight/client/yarn.lock

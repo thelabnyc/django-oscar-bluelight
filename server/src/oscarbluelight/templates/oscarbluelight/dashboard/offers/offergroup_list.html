@@ -37,6 +37,7 @@
 
 {% block extrascripts %}
     {{ block.super }}
+    <script type="text/javascript" src="{% url 'dashboard:oscarbluelight-i18n-js' %}"></script>
     <script type="text/javascript" src="{% static 'oscarbluelight/vendor.js' %}"></script>
     <script type="text/javascript" src="{% static 'oscarbluelight/offergroups.js' %}"></script>
 {% endblock %}

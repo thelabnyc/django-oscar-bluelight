@@ -70,18 +70,32 @@ class ConditionalOffer(AbstractConditionalOffer):
     to consume OfferGroup -> only move to next (greater priority val) when previous
     offerGroup is consumed
     """
-    short_name = models.CharField(
-        _("Short Name"), max_length=50,
+    short_name = models.CharField(_("Short Name"),
+        max_length=50,
         help_text=_("Abbreviated version of offer name"))
-    desktop_image = models.ImageField(null=True, blank=True,
+    desktop_image = models.ImageField(_("Ad Image (Desktop)"),
+        null=True,
+        blank=True,
         upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'),
-        help_text="Desktop image used for promo display.")
-    mobile_image = models.ImageField(null=True, blank=True,
+        help_text=_("Desktop image used for promo display."))
+    mobile_image = models.ImageField(_("Ad Image (Mobile)"),
+        null=True,
+        blank=True,
         upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'),
-        help_text="Mobile image used for promo display.")
+        help_text=_("Mobile image used for promo display."))
     # When offer_type == "User", we use groups to determine which users get the offer
-    groups = models.ManyToManyField('auth.Group', verbose_name=_("User Groups"), blank=True)
-    offer_group = models.ForeignKey(OfferGroup, related_name='offers', null=True, on_delete=models.CASCADE)
+    groups = models.ManyToManyField('auth.Group',
+        verbose_name=_("User Groups"),
+        blank=True,
+        help_text=_("Select which User Groups are eligible for this offer. If none are selected, all "
+                    "users are eligible."))
+    offer_group = models.ForeignKey(OfferGroup,
+        verbose_name=_("Offer Group"),
+        related_name='offers',
+        null=True,
+        on_delete=models.CASCADE,
+        help_text=_("Select the Offer Group that this offer belongs to. Offer Group controls the order "
+                    "offers are applied in and which offers may be combined together."))
 
     class Meta:
         ordering = ('-offer_group__priority', '-priority', 'pk')
@@ -118,20 +132,11 @@ class Benefit(AbstractBenefit):
             return _init_proxy_class(self, Klass)
         return super().proxy()
 
-    # TODO: Compatibility Hack. Remove once Oscar 1.5 is minimum supported version.
-    # In Oscar 1.5, they added a related name to this relationship. So what was
-    # ``conditionaloffer_set`` became ``offers``. This is a hack to make calls to ``offers``
-    # work in Oscar 1.3 and 1.4. In Oscar 1.5, Django's model metaclass overrides this so that
-    # it never gets called.
-    @property
-    def offers(self):
-        return self.conditionaloffer_set
-    # END TEMP
-
     @property
     def type_name(self):
         benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
         names = dict(benefit_classes)
+        names['oscarbluelight.offer.benefits.CompoundBenefit'] = _("Compound benefit")
         return names.get(self.proxy_class, self.proxy_class)
 
     @property
@@ -174,16 +179,6 @@ class Condition(AbstractCondition):
             return _init_proxy_class(self, Klass)
         return super().proxy()
 
-    # TODO: Compatibility Hack. Remove once Oscar 1.5 is minimum supported version.
-    # In Oscar 1.5, they added a related name to this relationship. So what was
-    # ``conditionaloffer_set`` became ``offers``. This is a hack to make calls to ``offers``
-    # work in Oscar 1.3 and 1.4. In Oscar 1.5, Django's model metaclass overrides this so that
-    # it never gets called.
-    @property
-    def offers(self):
-        return self.conditionaloffer_set
-    # END TEMP
-
     @property
     def type_name(self):
         condition_classes = getattr(settings, 'BLUELIGHT_CONDITION_CLASSES', [])
@@ -224,12 +219,14 @@ class Condition(AbstractCondition):
 
 
 class Range(AbstractRange):
-    cache_version = models.PositiveIntegerField("Cache Version", editable=False, default=1)
+    cache_version = models.PositiveIntegerField(_("Cache Version"),
+        editable=False,
+        default=1)
 
     def delete(self, *args, **kwargs):
         # Disallow deleting a range with any dependents
         if self.benefit_set.exists() or self.condition_set.exists():
-            raise IntegrityError('Can not delete range with a dependent benefit or condition.')
+            raise IntegrityError(_('Can not delete range with a dependent benefit or condition.'))
         return super().delete(*args, **kwargs)
 
     @property

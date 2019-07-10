@@ -37,7 +37,7 @@
                         {% endif %}
                         <td>
                             {% if range.benefit_set.exists %}
-                                <em>Benefits</em>
+                                <em>{% trans "Benefits" %}</em>
                                 <ul>
                                     {% for benefit in range.benefit_set.all %}
                                         <li><a href="{% url 'dashboard:benefit-update' pk=benefit.pk %}">{{ benefit.name }}</a></li>
@@ -45,7 +45,7 @@
                                 </ul>
                             {% endif %}
                             {% if range.condition_set.exists %}
-                                <em>Conditions</em>
+                                <em>{% trans "Conditions" %}</em>
                                 <ul>
                                     {% for condition in range.condition_set.all %}
                                         <li><a href="{% url 'dashboard:condition-update' pk=condition.pk %}">{{ condition.name }}</a></li>
@@ -53,7 +53,7 @@
                                 </ul>
                             {% endif %}
                             {% if not range.benefit_set.exists and not range.condition_set.exists %}
-                                <em>None</em>
+                                <em>{% trans "None" %}</em>
                             {% endif %}
                         </td>
                         <td>{{ range.date_created }}</td>

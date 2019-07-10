@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+from django.views.i18n import JavaScriptCatalog
 from rest_framework import routers
 from oscar.apps.dashboard.offers.app import OffersDashboardApplication as Application
 from oscar.core.loading import get_class
@@ -9,6 +10,7 @@ class OffersDashboardApplication(Application):
     benefit_list_view = get_class('dashboard.offers.views', 'BenefitListView')
     benefit_delete_view = get_class('dashboard.offers.views', 'BenefitDeleteView')
     benefit_create_view = get_class('dashboard.offers.views', 'BenefitCreateView')
+    compound_benefit_create_view = get_class('dashboard.offers.views', 'CompoundBenefitCreateView')
     benefit_update_view = get_class('dashboard.offers.views', 'BenefitUpdateView')
 
     condition_list_view = get_class('dashboard.offers.views', 'ConditionListView')
@@ -32,9 +34,15 @@ class OffersDashboardApplication(Application):
             # API
             url(r'^api/', include(router.urls)),
 
+            # i18n JS Catalogue
+            url(r'^bluelight-i18n\.js$',
+                JavaScriptCatalog.as_view(packages=['oscarbluelight']),
+                name='oscarbluelight-i18n-js'),
+
             # Benefits
             url(r'^benefits/$', self.benefit_list_view.as_view(), name='benefit-list'),
             url(r'^benefits/new/$', self.benefit_create_view.as_view(), name='benefit-create'),
+            url(r'^benefits/new-compound/$', self.compound_benefit_create_view.as_view(), name='benefit-create-compound'),
             url(r'^benefits/(?P<pk>[0-9]+)/$', self.benefit_update_view.as_view(), name='benefit-update'),
             url(r'^benefits/(?P<pk>[0-9]+)/delete/$', self.benefit_delete_view.as_view(), name='benefit-delete'),
 

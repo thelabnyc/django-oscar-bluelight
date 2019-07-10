@@ -1,4 +1,5 @@
 from django.utils.functional import cached_property
+from django.utils.translation import gettext_lazy as _
 from oscar.core import prices
 from oscar.apps.partner.prices import FixedPrice as BaseFixedPrice
 
@@ -24,4 +25,4 @@ class FixedPrice(BaseFixedPrice):
     def cosmetic_incl_tax(self):
         if self.is_tax_known:
             return self.cosmetic_excl_tax + self.tax
-        raise prices.TaxNotKnown("Can't calculate price.incl_tax as tax isn't known")
+        raise prices.TaxNotKnown(_("Can't calculate price.incl_tax as tax isn't known"))

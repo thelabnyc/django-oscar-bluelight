@@ -10,6 +10,7 @@ from django.forms import ModelMultipleChoiceField
 from oscar.core.loading import get_model
 
 ConditionalOffer = get_model('offer', 'ConditionalOffer')
+CompoundBenefit = get_model('offer', 'CompoundBenefit')
 Benefit = get_model('offer', 'Benefit')
 CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
@@ -31,7 +32,7 @@ class BenefitForm(forms.ModelForm):
         choices=_benefit_classes,
         required=True,
         label=_('Type'),
-        help_text='Select a benefit type')
+        help_text=_('Select a benefit type'))
 
     class Meta:
         model = Benefit
@@ -44,23 +45,39 @@ class ConditionForm(forms.ModelForm):
         choices=_condition_classes,
         required=True,
         label=_('Type'),
-        help_text='Select a condition type')
+        help_text=_('Select a condition type'))
 
     class Meta:
         model = Condition
         fields = ['range', 'proxy_class', 'value', ]
 
 
-class CompoundConditionForm(forms.ModelForm):
-    CPATH = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
+class CompoundBenefitForm(forms.ModelForm):
+    CPATH = "%s.%s" % (CompoundBenefit.__module__, CompoundBenefit.__name__)
     proxy_class = forms.ChoiceField(
         choices=(
-            (CPATH, 'Compound Condition'),
+            (CPATH, _('Compound Benefit')),
         ),
         initial=CPATH,
         disabled=True,
         label=_('Type'),
-        help_text='Select a condition type')
+        help_text=_('Select a benefit type'))
+
+    class Meta:
+        model = CompoundBenefit
+        fields = ['proxy_class', 'subbenefits']
+
+
+class CompoundConditionForm(forms.ModelForm):
+    CPATH = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
+    proxy_class = forms.ChoiceField(
+        choices=(
+            (CPATH, _('Compound Condition')),
+        ),
+        initial=CPATH,
+        disabled=True,
+        label=_('Type'),
+        help_text=_('Select a condition type'))
 
     class Meta:
         model = CompoundCondition

@@ -1,4 +1,4 @@
-# Minimal makefile for building static assets and selenium screen shots
+.PHONY: statics screenshots translations
 
 DOCKERCOMPOSE = docker-compose
 
@@ -7,3 +7,14 @@ statics:
 
 screenshots:
 	@$(DOCKERCOMPOSE) run --rm test python sandbox/manage.py test oscarbluelight
+
+migrations:
+	@$(DOCKERCOMPOSE) run --rm test python sandbox/manage.py makemigrations
+
+# Create the .po and .mo files used for i18n
+translations:
+	cd client/src && \
+	django-admin makemessages --locale=es --extension=ts,tsx --domain djangojs && \
+	cd ../../server/src/oscarbluelight && \
+	django-admin makemessages --locale=es && \
+	django-admin compilemessages
