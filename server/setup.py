@@ -12,9 +12,9 @@ from versiontag import get_version, cache_git_tag  # NOQA
 packages = find_packages('src')
 
 install_requires = [
-    'celery>=3.1.23',
+    'celery>=4.3',
     'django-oscar>=1.6.0,<2.0.0',
-    'djangorestframework>=3.6',
+    'djangorestframework>=3.9',
 ]
 
 extras_require = {

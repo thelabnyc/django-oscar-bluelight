@@ -39,7 +39,7 @@ test_python35:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py35-django{111,200,210,220}-oscar16'
+    - tox -e 'py35-django{111,200,210,220}-drf{39,310}-oscar{16}'
 
 test_python36:
   stage: test
@@ -49,7 +49,7 @@ test_python36:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py36-django{111,200,210,220}-oscar16'
+    - tox -e 'py36-django{111,200,210,220}-drf{39,310}-oscar{16}'
 
 test_python37:
   stage: test
@@ -59,7 +59,7 @@ test_python37:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py37-django{200,210,220}-oscar16'
+    - tox -e 'py37-django{200,210,220}-drf{39,310}-oscar{16}'
 
 test_pypy35:
   stage: test
@@ -69,4 +69,4 @@ test_pypy35:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'pypy3-django{111,200,210,220}-oscar16'
+    - tox -e 'pypy3-django{111,200,210,220}-drf{39,310}-oscar{16}'
