@@ -4,6 +4,8 @@ from django.test import TestCase
 from oscar.apps.offer.utils import Applicator
 from oscar.test.basket import add_product, add_products
 from oscar.test import factories
+from django.core.cache import cache
+from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
     Condition,
     ConditionalOffer,
@@ -18,6 +20,10 @@ import mock
 
 class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         self.condition_product = factories.ProductFactory()
         condition_range = factories.RangeFactory()
         condition_range.add_product(self.condition_product)
@@ -67,6 +73,10 @@ class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
 
 class TestAnAbsoluteDiscountAppliedWithCountCondition(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         range = Range.objects.create(
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
@@ -162,6 +172,10 @@ class TestAnAbsoluteDiscountAppliedWithCountCondition(TestCase):
 
 class TestAnAbsoluteDiscount(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         range = Range.objects.create(
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
@@ -236,6 +250,10 @@ class TestAnAbsoluteDiscount(TestCase):
 
 class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         range = Range.objects.create(
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
@@ -285,6 +303,10 @@ class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
 
 class TestAnAbsoluteDiscountAppliedWithValueCondition(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         range = Range.objects.create(
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(
@@ -341,6 +363,10 @@ class TestAnAbsoluteDiscountAppliedWithValueCondition(TestCase):
 
 class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         range = Range.objects.create(
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(

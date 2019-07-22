@@ -40,3 +40,5 @@ BLUELIGHT_CONDITION_CLASSES = [
     ('oscarbluelight.offer.conditions.BluelightTaxInclusiveValueCondition', _("Depends on tax-inclusive value of items in basket that are in condition range")),
     ('oscarbluelight.offer.conditions.BluelightCoverageCondition', _("Needs to contain a set number of DISTINCT items from the condition range")),
 ]
+
+REDIS_CACHE_ALIAS = 'default'

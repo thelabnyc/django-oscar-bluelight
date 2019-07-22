@@ -1,4 +1,6 @@
 from decimal import Decimal as D
+from django.core.cache import cache
+from django_redis import get_redis_connection
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
 from oscarbluelight.offer.applicator import Applicator
 from oscar.test.factories import create_basket, create_product, create_stockrecord
@@ -8,6 +10,10 @@ from django.test import TransactionTestCase
 class CosmeticPricingCalculationTest(TransactionTestCase):
 
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         # Create a product
         self.product_main = create_product(product_class='Stuff')
         create_stockrecord(self.product_main, D('5000.00'), num_in_stock=100)

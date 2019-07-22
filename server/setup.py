@@ -15,6 +15,9 @@ install_requires = [
     'celery>=4.3',
     'django-oscar>=1.6.0,<2.0.0',
     'djangorestframework>=3.9',
+    'django-redis>=4.8.0',
+    'hiredis>=0.2.0',
+    'redis>=3.0.0',
 ]
 
 extras_require = {

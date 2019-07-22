@@ -2,9 +2,16 @@ from decimal import Decimal as D
 from django.test import TestCase
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
 from oscar.test.factories import create_basket, create_product, create_stockrecord
+from django.core.cache import cache
+from django_redis import get_redis_connection
 
 
 class BaseTest(TestCase):
+    def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
     def _build_basket(self, item_price=D('10.00'), item_quantity=5):
         basket = create_basket(empty=True)
         product = create_product()

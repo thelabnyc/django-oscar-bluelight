@@ -101,6 +101,7 @@ Changelog
 ------------------
 - Internationalization
 - Feature: Compound Benefits. Allows applying more than one benefit with a single offer.
+- Improve performance of Range.contains_product by utilizing Redis SETs. Requires Redis caching on the Django site
 
 0.12.0
 ------------------

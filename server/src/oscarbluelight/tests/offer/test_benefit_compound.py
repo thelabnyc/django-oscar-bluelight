@@ -9,11 +9,17 @@ from oscarbluelight.offer.models import (
     BluelightAbsoluteDiscountBenefit,
     CompoundBenefit,
 )
+from django.core.cache import cache
+from django_redis import get_redis_connection
 import mock
 
 
 class TestCompoundAbsoluteBenefitDiscount(TestCase):
     def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
         self.range_all = Range.objects.create(
             name="All products", includes_all_products=True)
         self.range_slippers = Range.objects.create(name="Slippers")

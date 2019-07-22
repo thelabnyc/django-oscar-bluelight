@@ -1,5 +1,7 @@
 from unittest import mock
 from django.test import TestCase
+from django.core.cache import cache
+from django_redis import get_redis_connection
 from oscarbluelight.offer.applicator import Applicator
 from oscarbluelight.offer.models import OfferGroup
 from oscarbluelight.offer.signals import pre_offer_group_apply, post_offer_group_apply
@@ -11,6 +13,11 @@ from oscarbluelight.offer.groups import (
 
 
 class OfferGroupModelTest(TestCase):
+    def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection(cache)
+        conn.flushdb()
+
     def test_register_system_offer_group(self):
         # System group should not exist yet
         self.assertEqual(OfferGroup.objects.filter(slug='my-system-group').count(), 0)

@@ -5,10 +5,14 @@ from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
 from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
 from psycopg2cffi import compat
 import os
+import sys
 
 compat.register()
 
+IS_UNIT_TEST = ('test' in sys.argv)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+VIRTUAL_ENV = os.environ.get('VIRTUAL_ENV', '').split('/').pop()
+CI_JOB_ID = os.environ.get('CI_JOB_ID', '0')
 
 DEBUG = True
 SECRET_KEY = 'li0$-gnv)76g$yf7p@(cg-^_q7j6df5cx$o-gsef5hd68phj!4'
@@ -103,11 +107,25 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+_redis_db = 0
+_redis_max_dbs = 16
+if IS_UNIT_TEST:
+    _redis_db = os.getpid() % _redis_max_dbs
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'bluelight-testing-sandbox',
-    }
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/0'.format(_redis_db),
+        'OPTIONS': {
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
+            'CONNECTION_POOL_KWARGS': {
+                "max_connections": 50,
+                "timeout": 20,
+            },
+            'PARSER_CLASS': 'redis.connection.HiredisParser',
+        },
+        'KEY_PREFIX': VIRTUAL_ENV,
+    },
 }
 
 STATIC_URL = '/static/'

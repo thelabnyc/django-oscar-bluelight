@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.core import exceptions
-from django.core.cache import cache
+from django.core.cache import caches
 from django.db import models, IntegrityError
 from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
+from django_redis import get_redis_connection
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -23,8 +24,11 @@ from oscar.apps.offer.results import (
 from oscar.apps.offer.utils import load_proxy
 import copy
 import logging
+import random
 
 logger = logging.getLogger(__name__)
+
+cache = caches[settings.REDIS_CACHE_ALIAS]
 
 
 def _init_proxy_class(obj, Klass):
@@ -231,18 +235,56 @@ class Range(AbstractRange):
 
     @property
     def _cache_ttl(self):
-        return getattr(settings, 'BLUELIGHT_RANGE_CACHE_TTL', 86400)
+        center = getattr(settings, 'BLUELIGHT_RANGE_CACHE_TTL', 86400 * 7)
+        entropy = 86400 / 2
+        return random.randrange(
+            max(0, center - entropy),
+            (center + entropy))
+
+    @property
+    def _cache_key(self):
+        return cache.make_key('oscarbluelight.models.Range.{}-{}.products'.format(self.pk, self.cache_version))
+
+    _member_cache = None
 
     def contains_product(self, product):
-        _super = super()
-
-        def _inner():
-            return _super.contains_product(product)
-        key = 'oscarbluelight.models.Range.{}-{}.contains_product.{}'.format(self.pk, self.cache_version, product.pk)
-        return cache.get_or_set(key, _inner, self._cache_ttl)
+        key = self._cache_key
+        conn = get_redis_connection(settings.REDIS_CACHE_ALIAS)
+        # Populate redis cache if it doesn't exist, then get the set of included product IDs
+        if self._member_cache is None:
+            if conn.exists(key):
+                self._member_cache = conn.smembers(key)
+            else:
+                self._member_cache = self._populate_member_cache()
+        # Check if the given product is in the set of included product IDs
+        product_ids = { product.pk }
+        if product.is_parent:
+            product_ids.add(product.parent.pk)
+        return len(self._member_cache & product_ids) > 0
 
     # Shorter alias for contains_product
     contains = contains_product
+
+    def _populate_member_cache(self):
+        # Get all products for the set
+        product_ids = self.all_products().values_list('pk', flat=True)
+        if len(product_ids) <= 0:
+            product_ids = [0]
+        product_ids = set(product_ids)
+        # Store the product IDs as a SET datatype in Redis
+        key = self._cache_key
+        conn = get_redis_connection(settings.REDIS_CACHE_ALIAS)
+        pipe = conn.pipeline()
+        pipe.delete(key)
+        pipe.sadd(key, *product_ids)
+        pipe.expire(key, self._cache_ttl)
+        pipe.execute()
+        return product_ids
+
+    def invalidate_cached_ids(self):
+        self._member_cache = None
+        return super().invalidate_cached_ids()
+
 
     def increment_cache_version(self):
         self.__class__.objects.filter(pk=self.pk).update(cache_version=(F('cache_version') + 1))
