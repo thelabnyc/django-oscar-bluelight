@@ -1,5 +1,4 @@
 from decimal import Decimal as D
-from django.core.cache import cache
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
 from oscarbluelight.offer.applicator import Applicator
@@ -11,8 +10,8 @@ class CosmeticPricingCalculationTest(TransactionTestCase):
 
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         # Create a product
         self.product_main = create_product(product_class='Stuff')

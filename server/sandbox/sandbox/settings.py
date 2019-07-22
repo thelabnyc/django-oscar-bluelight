@@ -113,6 +113,11 @@ if IS_UNIT_TEST:
     _redis_db = os.getpid() % _redis_max_dbs
 CACHES = {
     'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'oscarbluelight-testing-sandbox',
+        'KEY_PREFIX': VIRTUAL_ENV,
+    },
+    'redis': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://redis:6379/0'.format(_redis_db),
         'OPTIONS': {
@@ -127,6 +132,7 @@ CACHES = {
         'KEY_PREFIX': VIRTUAL_ENV,
     },
 }
+REDIS_CACHE_ALIAS = 'redis'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), '../tmp/static/')

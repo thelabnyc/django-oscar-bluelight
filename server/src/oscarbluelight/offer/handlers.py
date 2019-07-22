@@ -28,11 +28,20 @@ def invalidate_pricing_cache_ns(sender, instance, **kwargs):
     transaction.on_commit(lambda: pricing_cache_ns.invalidate())
 
 
+def update_range_member_cache(sender, instance, **kwargs):
+    for r in Range.objects.all():
+        r.increment_cache_version()
+
+
 # Invalidate range cache when it's data changes
 m2m_changed.connect(increment_range_cache_version, sender=Range.included_products.through)
 m2m_changed.connect(increment_range_cache_version, sender=Range.excluded_products.through)
 m2m_changed.connect(increment_range_cache_version, sender=Range.classes.through)
 m2m_changed.connect(increment_range_cache_version, sender=Range.included_categories.through)
+
+# Update range member cache when a product/category is saved
+post_save.connect(update_range_member_cache, sender=ProductCategory)
+post_save.connect(update_range_member_cache, sender=Product)
 
 # Invalidate cosmetic price cache whenever any Offer data changes
 post_save.connect(invalidate_pricing_cache_ns, sender=OfferGroup)

@@ -4,7 +4,6 @@ from django.test import TestCase
 from oscar.apps.offer.utils import Applicator
 from oscar.test.basket import add_product, add_products
 from oscar.test import factories
-from django.core.cache import cache
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
     Condition,
@@ -21,8 +20,8 @@ import mock
 class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         self.condition_product = factories.ProductFactory()
         condition_range = factories.RangeFactory()
@@ -74,8 +73,8 @@ class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
 class TestAnAbsoluteDiscountAppliedWithCountCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -173,8 +172,8 @@ class TestAnAbsoluteDiscountAppliedWithCountCondition(TestCase):
 class TestAnAbsoluteDiscount(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -251,8 +250,8 @@ class TestAnAbsoluteDiscount(TestCase):
 class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -304,8 +303,8 @@ class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
 class TestAnAbsoluteDiscountAppliedWithValueCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -364,8 +363,8 @@ class TestAnAbsoluteDiscountAppliedWithValueCondition(TestCase):
 class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)

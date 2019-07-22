@@ -2,7 +2,6 @@ from decimal import Decimal as D
 from django.test import TestCase
 from oscar.test import factories
 from oscar.test.basket import add_product, add_products
-from django.core.cache import cache
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
     Condition,
@@ -20,8 +19,8 @@ import mock
 class TestAFixedPriceDiscountAppliedWithCountCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)

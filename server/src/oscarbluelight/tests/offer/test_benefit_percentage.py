@@ -3,7 +3,6 @@ from django.core import exceptions
 from django.test import TestCase
 from oscar.test import factories
 from oscar.test.basket import add_product, add_products
-from django.core.cache import cache
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
     Condition,
@@ -20,8 +19,8 @@ import mock
 class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -113,8 +112,8 @@ class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
 class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -158,8 +157,8 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
 class TestAPercentageDiscountAppliedWithValueCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -210,8 +209,8 @@ class TestAPercentageDiscountAppliedWithValueCondition(TestCase):
 class TestAPercentageDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         range = Range.objects.create(
             name="All products", includes_all_products=True)
@@ -263,8 +262,8 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
 class TestAPercentageDiscountBenefit(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
     def test_requires_a_benefit_value(self):
         rng = Range.objects.create(

@@ -253,9 +253,9 @@ class Range(AbstractRange):
         # Populate redis cache if it doesn't exist, then get the set of included product IDs
         if self._member_cache is None:
             if conn.exists(key):
-                self._member_cache = conn.smembers(key)
+                self._member_cache = { int(pk) for pk in conn.smembers(key) }
             else:
-                self._member_cache = self._populate_member_cache()
+                self._member_cache = { int(pk) for pk in self.populate_member_cache() }
         # Check if the given product is in the set of included product IDs
         product_ids = { product.pk }
         if product.is_parent:
@@ -265,7 +265,7 @@ class Range(AbstractRange):
     # Shorter alias for contains_product
     contains = contains_product
 
-    def _populate_member_cache(self):
+    def populate_member_cache(self):
         # Get all products for the set
         product_ids = self.all_products().values_list('pk', flat=True)
         if len(product_ids) <= 0:

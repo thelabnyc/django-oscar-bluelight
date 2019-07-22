@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test import Client
 from django.urls import reverse
-from django.core.cache import cache
 from django_redis import get_redis_connection
 from oscar.core.loading import get_model, get_class
 from oscar.test.factories import create_basket, create_product, create_stockrecord
@@ -27,8 +26,8 @@ OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
 class OfferGroupModelTest(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         self.all_products = Range()
         self.all_products.includes_all_products = True
@@ -168,8 +167,8 @@ class OfferGroupModelTest(TestCase):
 class ConsumeOfferGroupOfferTest(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         self.all_products = Range()
         self.all_products.includes_all_products = True
@@ -404,8 +403,8 @@ class ConsumeOfferGroupOfferTest(TestCase):
 class OfferGroupApplicatorTest(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         self.all_products = Range()
         self.all_products.includes_all_products = True
@@ -1007,8 +1006,8 @@ class OfferGroupFormTest(TestCase):
 class OfferGroupViewTest(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection(cache)
-        conn.flushdb()
+        conn = get_redis_connection('redis')
+        conn.flushall()
 
         self.client = Client()
 
