@@ -248,6 +248,9 @@ class Range(AbstractRange):
     _member_cache = None
 
     def contains_product(self, product):
+        # If this range contains everything, short-circuit the normal (slower) logic
+        if self.includes_all_products:
+            return True
         key = self._cache_key
         conn = get_redis_connection(settings.REDIS_CACHE_ALIAS)
         # Populate redis cache if it doesn't exist, then get the set of included product IDs
