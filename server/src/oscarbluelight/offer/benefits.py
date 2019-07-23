@@ -15,6 +15,7 @@ from oscar.apps.offer.benefits import (
     ShippingPercentageDiscountBenefit,
 )
 from oscar.templatetags.currency_filters import currency
+import copy
 
 Benefit = get_model('offer', 'Benefit')
 
@@ -483,7 +484,7 @@ class CompoundBenefit(Benefit):
         for child in self.children:
             result = child.apply(basket, condition, offer)
             if combined_result is None:
-                combined_result = result
+                combined_result = copy.deepcopy(result)
             elif combined_result.affects == result.affects:
                 combined_result.discount += result.discount
             else:
