@@ -150,12 +150,20 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
     private buildOfferList (group: IOfferGroup) {
         const self = this;
-        const rows = group.offers.map((offer, i) => {
-            const index = (i + 1);
-            return (offer.vouchers.length > 0)
-                ? self.buildVoucherRow(index, offer)
-                : self.buildOfferRow(index, offer);
-        });
+        const rows = group.offers
+            .filter((offer) => {
+                // Don't display voucher offers who's voucher has been deleted
+                if (offer.offer_type === "Voucher" && offer.vouchers.length <= 0) {
+                    return false;
+                }
+                return true;
+            })
+            .map((offer, i) => {
+                const index = (i + 1);
+                return (offer.vouchers.length > 0)
+                    ? self.buildVoucherRow(index, offer)
+                    : self.buildOfferRow(index, offer);
+            });
         return (
             <table className="table table-bordered table-striped offergroup-subtable">
                 <caption>{group.name}</caption>

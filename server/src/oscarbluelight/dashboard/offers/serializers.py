@@ -44,6 +44,7 @@ class OfferSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+            'offer_type',
             'priority',
             'is_available',
             'vouchers',

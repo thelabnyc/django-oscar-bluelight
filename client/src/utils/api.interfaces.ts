@@ -10,6 +10,7 @@ export interface IVoucher {
 export interface IOffer {
     id: number;
     name: string;
+    offer_type: "Site" | "Voucher" | "User" | "Session";
     priority: number;
     is_available: boolean;
     vouchers: IVoucher[];
