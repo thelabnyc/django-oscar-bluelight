@@ -497,6 +497,8 @@ class CompoundBenefit(Benefit):
             result = child.apply_deferred(basket, order, application)
             if result is not None:
                 results.append(result)
+        if len(results) <= 0:
+            return None
         descr = _(" and ").join([r.description for r in results])
         return PostOrderAction(descr)
 
