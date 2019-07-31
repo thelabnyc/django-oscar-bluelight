@@ -250,6 +250,9 @@ class Range(AbstractRange):
     def contains_product(self, product):
         # If this range contains everything, short-circuit the normal (slower) logic
         if self.includes_all_products:
+            excluded_product_ids = self._excluded_product_ids()
+            if product.id in excluded_product_ids:
+                return False
             return True
         key = self._cache_key
         conn = get_redis_connection(settings.REDIS_CACHE_ALIAS)
@@ -261,7 +264,7 @@ class Range(AbstractRange):
                 self._member_cache = { int(pk) for pk in self.populate_member_cache() }
         # Check if the given product is in the set of included product IDs
         product_ids = { product.pk }
-        if product.is_parent:
+        if product.is_child:
             product_ids.add(product.parent.pk)
         return len(self._member_cache & product_ids) > 0
 
