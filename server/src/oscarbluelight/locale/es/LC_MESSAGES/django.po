@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-10 18:46+0000\n"
+"POT-Creation-Date: 2019-09-26 16:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgstr ""
 
 #: dashboard/offers/forms.py:34 dashboard/offers/forms.py:47
 #: dashboard/offers/forms.py:63 dashboard/offers/forms.py:79
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:55
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:55
+#: templates/oscar/dashboard/offers/benefit_list.html:55
+#: templates/oscar/dashboard/offers/condition_list.html:55
 msgid "Type"
 msgstr ""
 
@@ -47,12 +47,11 @@ msgid "Compound Condition"
 msgstr ""
 
 #: dashboard/offers/forms.py:89 dashboard/vouchers/forms.py:73
-#: offer/models.py:93
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:41
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:33
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:117
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:73
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:15
+#: offer/models.py:97 templates/oscar/dashboard/offers/offer_detail.html:41
+#: templates/oscar/dashboard/offers/offer_list.html:33
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:117
+#: templates/oscar/dashboard/vouchers/voucher_form.html:73
+#: templates/oscar/dashboard/vouchers/voucher_list.html:15
 msgid "Offer Group"
 msgstr ""
 
@@ -64,7 +63,7 @@ msgstr ""
 msgid "Limit offer to selected user groups"
 msgstr ""
 
-#: dashboard/offers/forms.py:115 offer/models.py:88 voucher/models.py:39
+#: dashboard/offers/forms.py:115 offer/models.py:92 voucher/models.py:39
 msgid "User Groups"
 msgstr ""
 
@@ -87,14 +86,14 @@ msgid "Name and description"
 msgstr ""
 
 #: dashboard/offers/views.py:130 dashboard/vouchers/forms.py:69
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:49
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:29
+#: templates/oscar/dashboard/offers/offer_detail.html:49
+#: templates/oscar/dashboard/offers/offer_list.html:29
 msgid "Incentive"
 msgstr ""
 
 #: dashboard/offers/views.py:175
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:59
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:32
+#: templates/oscar/dashboard/offers/offer_detail.html:59
+#: templates/oscar/dashboard/offers/offer_list.html:32
 msgid "Restrictions"
 msgstr ""
 
@@ -125,25 +124,25 @@ msgid "Offer Groups That Still Contain Offers Can Not Be Deleted"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:18
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:53
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:53
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:28
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:25
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:10
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:13
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:8
+#: templates/oscar/dashboard/offers/benefit_list.html:53
+#: templates/oscar/dashboard/offers/condition_list.html:53
+#: templates/oscar/dashboard/offers/offer_detail.html:28
+#: templates/oscar/dashboard/offers/offer_list.html:25
+#: templates/oscar/dashboard/ranges/range_list.html:10
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:13
+#: templates/oscar/dashboard/vouchers/voucher_list.html:8
 msgid "Name"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:20
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:37
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:18
+#: templates/oscar/dashboard/offers/offer_detail.html:37
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:18
 msgid "Description"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:24
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:23
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:9
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:23
+#: templates/oscar/dashboard/vouchers/voucher_list.html:9
 msgid "Code"
 msgstr ""
 
@@ -156,20 +155,20 @@ msgid "How many child codes should be created?"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:35
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:52
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:52
 msgid "Start datetime"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:38
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:57
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:57
 msgid "End datetime"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:41
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:45
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:34
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:47
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:16
+#: templates/oscar/dashboard/offers/offer_detail.html:45
+#: templates/oscar/dashboard/offers/offer_list.html:34
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:47
+#: templates/oscar/dashboard/vouchers/voucher_list.html:16
 msgid "Priority"
 msgstr ""
 
@@ -178,7 +177,7 @@ msgid "The highest priority vouchers are applied first"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:45
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:80
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:80
 msgid "Usage"
 msgstr ""
 
@@ -191,10 +190,10 @@ msgid "User Group Whitelist"
 msgstr ""
 
 #: dashboard/vouchers/forms.py:56
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:54
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:30
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:85
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:44
+#: templates/oscar/dashboard/offers/offer_detail.html:54
+#: templates/oscar/dashboard/offers/offer_list.html:30
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:85
+#: templates/oscar/dashboard/vouchers/voucher_form.html:44
 msgid "Condition"
 msgstr ""
 
@@ -205,22 +204,22 @@ msgid ""
 msgstr ""
 
 #: dashboard/vouchers/forms.py:61
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:62
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:12
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:62
+#: templates/oscar/dashboard/vouchers/voucher_list.html:12
 msgid "Desktop Image"
 msgstr ""
 
-#: dashboard/vouchers/forms.py:62 offer/models.py:80
+#: dashboard/vouchers/forms.py:62 offer/models.py:84
 msgid "Desktop image used for promo display."
 msgstr ""
 
 #: dashboard/vouchers/forms.py:65
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:71
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:13
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:71
+#: templates/oscar/dashboard/vouchers/voucher_list.html:13
 msgid "Mobile Image"
 msgstr ""
 
-#: dashboard/vouchers/forms.py:66 offer/models.py:85
+#: dashboard/vouchers/forms.py:66 offer/models.py:89
 msgid "Mobile image used for promo display."
 msgstr ""
 
@@ -304,38 +303,35 @@ msgstr ""
 msgid "Codes"
 msgstr ""
 
-#: defaults.py:16
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:6
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:15
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:15
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:24
-#: templates/oscarbluelight/dashboard/offers/offergroup_list.html:8
-#: templates/oscarbluelight/dashboard/offers/offergroup_list.html:21
-#: templates/oscarbluelight/dashboard/offers/offergroup_list.html:30
+#: defaults.py:16 templates/oscar/dashboard/offers/offergroup_delete.html:6
+#: templates/oscar/dashboard/offers/offergroup_delete.html:15
+#: templates/oscar/dashboard/offers/offergroup_edit.html:15
+#: templates/oscar/dashboard/offers/offergroup_edit.html:24
+#: templates/oscar/dashboard/offers/offergroup_list.html:8
+#: templates/oscar/dashboard/offers/offergroup_list.html:21
+#: templates/oscar/dashboard/offers/offergroup_list.html:30
 msgid "Offer Groups"
 msgstr ""
 
-#: defaults.py:17
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:7
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:16
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:15
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:24
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:8
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:16
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:30
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:40
+#: defaults.py:17 templates/oscar/dashboard/offers/benefit_delete.html:7
+#: templates/oscar/dashboard/offers/benefit_delete.html:16
+#: templates/oscar/dashboard/offers/benefit_edit.html:15
+#: templates/oscar/dashboard/offers/benefit_edit.html:24
+#: templates/oscar/dashboard/offers/benefit_list.html:8
+#: templates/oscar/dashboard/offers/benefit_list.html:16
+#: templates/oscar/dashboard/offers/benefit_list.html:30
+#: templates/oscar/dashboard/ranges/range_list.html:40
 msgid "Benefits"
 msgstr ""
 
-#: defaults.py:18
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:7
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:16
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:15
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:24
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:8
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:16
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:30
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:48
+#: defaults.py:18 templates/oscar/dashboard/offers/condition_delete.html:7
+#: templates/oscar/dashboard/offers/condition_delete.html:16
+#: templates/oscar/dashboard/offers/condition_edit.html:15
+#: templates/oscar/dashboard/offers/condition_edit.html:24
+#: templates/oscar/dashboard/offers/condition_list.html:8
+#: templates/oscar/dashboard/offers/condition_list.html:16
+#: templates/oscar/dashboard/offers/condition_list.html:30
+#: templates/oscar/dashboard/ranges/range_list.html:48
 msgid "Conditions"
 msgstr ""
 
@@ -386,205 +382,205 @@ msgid ""
 "Needs to contain a set number of DISTINCT items from the condition range"
 msgstr ""
 
-#: mixins.py:108
+#: mixins.py:109
 msgid "Bluelight does not support tax-inclusive discounting."
 msgstr ""
 
-#: mixins.py:144
+#: mixins.py:152
 msgid ""
 "Attempting to discount the tax-inclusive price of a line when tax-exclusive "
 "discounts are already applied"
 msgstr ""
 
-#: mixins.py:147
+#: mixins.py:155
 msgid ""
 "Attempting to discount the tax-exclusive price of a line when tax-inclusive "
 "discounts are already applied"
 msgstr ""
 
-#: mixins.py:215
+#: mixins.py:224
 msgid "A price breakdown can only be determined when taxes are known"
 msgstr ""
 
-#: offer/benefits.py:31
+#: offer/benefits.py:32
 #, python-format
 msgid "%(value)s%% discount on %(range)s"
 msgstr ""
 
-#: offer/benefits.py:36
+#: offer/benefits.py:37
 msgid "Percentage discount benefit"
 msgstr ""
 
-#: offer/benefits.py:37
+#: offer/benefits.py:38
 msgid "Percentage discount benefits"
 msgstr ""
 
-#: offer/benefits.py:44 offer/benefits.py:51 offer/benefits.py:120
-#: offer/benefits.py:127 offer/benefits.py:281 offer/benefits.py:287
+#: offer/benefits.py:45 offer/benefits.py:52 offer/benefits.py:121
+#: offer/benefits.py:128 offer/benefits.py:282 offer/benefits.py:288
 #: offer/conditions.py:34 offer/conditions.py:40 offer/conditions.py:86
 #: offer/conditions.py:92 offer/conditions.py:148 offer/conditions.py:155
 msgid "product range"
 msgstr ""
 
-#: offer/benefits.py:57
+#: offer/benefits.py:58
 msgid "Percentage benefits require a product range"
 msgstr ""
 
-#: offer/benefits.py:60 offer/benefits.py:435
+#: offer/benefits.py:61 offer/benefits.py:436
 msgid "Percentage discount cannot be greater than 100"
 msgstr ""
 
-#: offer/benefits.py:107
+#: offer/benefits.py:108
 #, python-format
 msgid "%(value)s discount on %(range)s"
 msgstr ""
 
-#: offer/benefits.py:112
+#: offer/benefits.py:113
 msgid "Absolute discount benefit"
 msgstr ""
 
-#: offer/benefits.py:113
+#: offer/benefits.py:114
 msgid "Absolute discount benefits"
 msgstr ""
 
-#: offer/benefits.py:133
+#: offer/benefits.py:134
 msgid "Fixed discount benefits require a product range"
 msgstr ""
 
-#: offer/benefits.py:136
+#: offer/benefits.py:137
 msgid "Fixed discount benefits require a value"
 msgstr ""
 
-#: offer/benefits.py:203
+#: offer/benefits.py:204
 #, python-format
 msgid "The products in the range are sold for %(amount)s"
 msgstr ""
 
-#: offer/benefits.py:208
+#: offer/benefits.py:209
 msgid "Fixed price benefit"
 msgstr ""
 
-#: offer/benefits.py:209
+#: offer/benefits.py:210
 msgid "Fixed price benefits"
 msgstr ""
 
-#: offer/benefits.py:221
+#: offer/benefits.py:222
 msgid "Fixed price benefits require a product range."
 msgstr ""
 
-#: offer/benefits.py:269
+#: offer/benefits.py:270
 #, python-format
 msgid "Second most expensive product from %(range)s is free"
 msgstr ""
 
-#: offer/benefits.py:274
+#: offer/benefits.py:275
 msgid "Multibuy discount benefit"
 msgstr ""
 
-#: offer/benefits.py:275
+#: offer/benefits.py:276
 msgid "Multibuy discount benefits"
 msgstr ""
 
-#: offer/benefits.py:293
+#: offer/benefits.py:294
 msgid "Multibuy benefits require a product range"
 msgstr ""
 
-#: offer/benefits.py:296
+#: offer/benefits.py:297
 msgid "Multibuy benefits don't require a value"
 msgstr ""
 
-#: offer/benefits.py:299
+#: offer/benefits.py:300
 msgid "Multibuy benefits don't require a 'max affected items' attribute"
 msgstr ""
 
-#: offer/benefits.py:354
+#: offer/benefits.py:355
 #, python-format
 msgid "%(amount)s off shipping cost"
 msgstr ""
 
-#: offer/benefits.py:359
+#: offer/benefits.py:360
 msgid "Shipping absolute discount benefit"
 msgstr ""
 
-#: offer/benefits.py:360
+#: offer/benefits.py:361
 msgid "Shipping absolute discount benefits"
 msgstr ""
 
-#: offer/benefits.py:372
+#: offer/benefits.py:373
 msgid "A discount value is required"
 msgstr ""
 
-#: offer/benefits.py:375 offer/benefits.py:405 offer/benefits.py:438
+#: offer/benefits.py:376 offer/benefits.py:406 offer/benefits.py:439
 msgid "No range should be selected as this benefit does not apply to products"
 msgstr ""
 
-#: offer/benefits.py:378 offer/benefits.py:408 offer/benefits.py:441
+#: offer/benefits.py:379 offer/benefits.py:409 offer/benefits.py:442
 msgid "Shipping discounts don't require a 'max affected items' attribute"
 msgstr ""
 
-#: offer/benefits.py:387
+#: offer/benefits.py:388
 #, python-format
 msgid "Get shipping for %(amount)s"
 msgstr ""
 
-#: offer/benefits.py:392
+#: offer/benefits.py:393
 msgid "Fixed price shipping benefit"
 msgstr ""
 
-#: offer/benefits.py:393
+#: offer/benefits.py:394
 msgid "Fixed price shipping benefits"
 msgstr ""
 
-#: offer/benefits.py:417
+#: offer/benefits.py:418
 #, python-format
 msgid "%(value)s%% off of shipping cost"
 msgstr ""
 
-#: offer/benefits.py:422
+#: offer/benefits.py:423
 msgid "Shipping percentage discount benefit"
 msgstr ""
 
-#: offer/benefits.py:423
+#: offer/benefits.py:424
 msgid "Shipping percentage discount benefits"
 msgstr ""
 
-#: offer/benefits.py:452
+#: offer/benefits.py:453
 msgid "Sub-Benefits"
 msgstr ""
 
-#: offer/benefits.py:453
+#: offer/benefits.py:454
 msgid "Select the benefits that this compound-benefit will apply."
 msgstr ""
 
-#: offer/benefits.py:457 offer/models.py:139
+#: offer/benefits.py:458 offer/models.py:143
 msgid "Compound benefit"
 msgstr ""
 
-#: offer/benefits.py:458
+#: offer/benefits.py:459
 msgid "Compound benefits"
 msgstr ""
 
-#: offer/benefits.py:474 offer/benefits.py:479
+#: offer/benefits.py:475 offer/benefits.py:480
 msgid "Empty Benefit"
 msgstr ""
 
-#: offer/benefits.py:490
+#: offer/benefits.py:491
 msgid "Can not combine offer benefits of differing types"
 msgstr ""
 
-#: offer/benefits.py:498 offer/benefits.py:522 offer/conditions.py:310
+#: offer/benefits.py:502 offer/benefits.py:526 offer/conditions.py:310
 msgid " and "
 msgstr ""
 
-#: offer/benefits.py:504
+#: offer/benefits.py:508
 msgid "Compound benefit should not have a value"
 msgstr ""
 
-#: offer/benefits.py:506
+#: offer/benefits.py:510
 msgid "Compound benefit should not have a range"
 msgstr ""
 
-#: offer/benefits.py:508
+#: offer/benefits.py:512
 msgid "Compound benefit should not have a max affected items limit"
 msgstr ""
 
@@ -671,7 +667,7 @@ msgstr ""
 msgid "Select the sub-conditions that this compound-condition will combine."
 msgstr ""
 
-#: offer/conditions.py:253 offer/models.py:186
+#: offer/conditions.py:253 offer/models.py:190
 msgid "Compound condition"
 msgstr ""
 
@@ -695,170 +691,169 @@ msgstr ""
 msgid " or "
 msgstr ""
 
-#: offer/models.py:56
+#: offer/models.py:60
 msgid "OfferGroup"
 msgstr ""
 
-#: offer/models.py:73
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:33
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:26
+#: offer/models.py:77 templates/oscar/dashboard/offers/offer_detail.html:33
+#: templates/oscar/dashboard/offers/offer_list.html:26
 msgid "Short Name"
 msgstr ""
 
-#: offer/models.py:75
+#: offer/models.py:79
 msgid "Abbreviated version of offer name"
 msgstr ""
 
-#: offer/models.py:76
+#: offer/models.py:80
 msgid "Ad Image (Desktop)"
 msgstr ""
 
-#: offer/models.py:81
+#: offer/models.py:85
 msgid "Ad Image (Mobile)"
 msgstr ""
 
-#: offer/models.py:90
+#: offer/models.py:94
 msgid ""
 "Select which User Groups are eligible for this offer. If none are selected, "
 "all users are eligible."
 msgstr ""
 
-#: offer/models.py:97
+#: offer/models.py:101
 msgid ""
 "Select the Offer Group that this offer belongs to. Offer Group controls the "
 "order offers are applied in and which offers may be combined together."
 msgstr ""
 
-#: offer/models.py:107
+#: offer/models.py:111
 #, python-format
 msgid "Offer is limited to user groups: %s"
 msgstr ""
 
-#: offer/models.py:156
+#: offer/models.py:160
 msgid "Benefit should not have a type field. Use proxy class instead."
 msgstr ""
 
-#: offer/models.py:203
+#: offer/models.py:207
 msgid "Condition should not have a type field. Use proxy class instead."
 msgstr ""
 
-#: offer/models.py:222
+#: offer/models.py:226
 msgid "Cache Version"
 msgstr ""
 
-#: offer/models.py:229
+#: offer/models.py:233
 msgid "Can not delete range with a dependent benefit or condition."
 msgstr ""
 
-#: templates/oscarbluelight/catalogue/partials/stock_record.html:9
+#: templates/oscar/catalogue/partials/stock_record.html:9
 msgid "Free"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:7
+#: templates/oscar/dashboard/offers/benefit_delete.html:7
 msgid "Delete benefit"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:13
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:21
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:14
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:13
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:21
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:14
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:12
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:21
-#: templates/oscarbluelight/dashboard/offers/offergroup_list.html:19
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:14
+#: templates/oscar/dashboard/offers/benefit_delete.html:13
+#: templates/oscar/dashboard/offers/benefit_edit.html:21
+#: templates/oscar/dashboard/offers/benefit_list.html:14
+#: templates/oscar/dashboard/offers/condition_delete.html:13
+#: templates/oscar/dashboard/offers/condition_edit.html:21
+#: templates/oscar/dashboard/offers/condition_list.html:14
+#: templates/oscar/dashboard/offers/offergroup_delete.html:12
+#: templates/oscar/dashboard/offers/offergroup_edit.html:21
+#: templates/oscar/dashboard/offers/offergroup_list.html:19
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:14
 msgid "Dashboard"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:21
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:21
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:20
+#: templates/oscar/dashboard/offers/benefit_delete.html:21
+#: templates/oscar/dashboard/offers/condition_delete.html:21
+#: templates/oscar/dashboard/offers/offergroup_delete.html:20
 msgid "Delete?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:32
+#: templates/oscar/dashboard/offers/benefit_delete.html:32
 msgid "Are you sure you want to delete this benefit?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:34
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:33
+#: templates/oscar/dashboard/offers/benefit_delete.html:34
+#: templates/oscar/dashboard/offers/offergroup_delete.html:33
 msgid "Deleting this benefit will also delete the following offers:"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:42
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:42
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:41
+#: templates/oscar/dashboard/offers/benefit_delete.html:42
+#: templates/oscar/dashboard/offers/condition_delete.html:42
+#: templates/oscar/dashboard/offers/offergroup_delete.html:41
 msgid "Deleting..."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:42
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:94
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:98
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:42
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:93
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:98
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:80
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:41
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:86
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:79
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:81
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:169
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:73
+#: templates/oscar/dashboard/offers/benefit_delete.html:42
+#: templates/oscar/dashboard/offers/benefit_edit.html:94
+#: templates/oscar/dashboard/offers/benefit_list.html:98
+#: templates/oscar/dashboard/offers/condition_delete.html:42
+#: templates/oscar/dashboard/offers/condition_edit.html:93
+#: templates/oscar/dashboard/offers/condition_list.html:98
+#: templates/oscar/dashboard/offers/offer_list.html:80
+#: templates/oscar/dashboard/offers/offergroup_delete.html:41
+#: templates/oscar/dashboard/offers/offergroup_edit.html:86
+#: templates/oscar/dashboard/ranges/range_list.html:79
+#: templates/oscar/dashboard/ranges/range_list.html:81
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:169
+#: templates/oscar/dashboard/vouchers/voucher_list.html:73
 msgid "Delete"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:42
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:42
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:41
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:37
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:168
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:169
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:126
+#: templates/oscar/dashboard/offers/benefit_delete.html:42
+#: templates/oscar/dashboard/offers/condition_delete.html:42
+#: templates/oscar/dashboard/offers/offergroup_delete.html:41
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:37
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:168
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:169
+#: templates/oscar/dashboard/vouchers/voucher_form.html:126
 msgid "or"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_delete.html:43
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:43
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:42
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:38
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:170
+#: templates/oscar/dashboard/offers/benefit_delete.html:43
+#: templates/oscar/dashboard/offers/condition_delete.html:43
+#: templates/oscar/dashboard/offers/offergroup_delete.html:42
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:38
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:170
 msgid "cancel"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:13
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:32
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:40
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:24
+#: templates/oscar/dashboard/offers/benefit_edit.html:13
+#: templates/oscar/dashboard/offers/benefit_edit.html:32
+#: templates/oscar/dashboard/offers/benefit_edit.html:40
+#: templates/oscar/dashboard/offers/benefit_list.html:24
 msgid "Create new benefit"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:51
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:51
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:51
+#: templates/oscar/dashboard/offers/benefit_edit.html:51
+#: templates/oscar/dashboard/offers/condition_edit.html:51
+#: templates/oscar/dashboard/offers/offergroup_edit.html:51
 msgid "Details"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:58
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:58
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:58
+#: templates/oscar/dashboard/offers/benefit_edit.html:58
+#: templates/oscar/dashboard/offers/condition_edit.html:58
+#: templates/oscar/dashboard/offers/offergroup_edit.html:58
 msgid "Oops! We found some errors"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:58
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:58
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:58
+#: templates/oscar/dashboard/offers/benefit_edit.html:58
+#: templates/oscar/dashboard/offers/condition_edit.html:58
+#: templates/oscar/dashboard/offers/offergroup_edit.html:58
 msgid "please check the error messages below and try again"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:70
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:70
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:70
+#: templates/oscar/dashboard/offers/benefit_edit.html:70
+#: templates/oscar/dashboard/offers/condition_edit.html:70
+#: templates/oscar/dashboard/offers/offergroup_edit.html:70
 msgid "Fields marked with * are mandatory."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:76
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:76
+#: templates/oscar/dashboard/offers/benefit_edit.html:76
+#: templates/oscar/dashboard/offers/condition_edit.html:76
 #, python-format
 msgid ""
 "\n"
@@ -867,106 +862,106 @@ msgid ""
 "                            "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:90
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:89
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:82
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:37
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:126
+#: templates/oscar/dashboard/offers/benefit_edit.html:90
+#: templates/oscar/dashboard/offers/condition_edit.html:89
+#: templates/oscar/dashboard/offers/offergroup_edit.html:82
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:37
+#: templates/oscar/dashboard/vouchers/voucher_form.html:126
 msgid "Saving..."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:90
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:89
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:82
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:37
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:126
+#: templates/oscar/dashboard/offers/benefit_edit.html:90
+#: templates/oscar/dashboard/offers/condition_edit.html:89
+#: templates/oscar/dashboard/offers/offergroup_edit.html:82
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:37
+#: templates/oscar/dashboard/vouchers/voucher_form.html:126
 msgid "Save"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:92
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:91
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:84
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:129
+#: templates/oscar/dashboard/offers/benefit_edit.html:92
+#: templates/oscar/dashboard/offers/condition_edit.html:91
+#: templates/oscar/dashboard/offers/offergroup_edit.html:84
+#: templates/oscar/dashboard/vouchers/voucher_form.html:129
 msgid "Cancel"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:103
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:57
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:102
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:57
+#: templates/oscar/dashboard/offers/benefit_edit.html:103
+#: templates/oscar/dashboard/offers/benefit_list.html:57
+#: templates/oscar/dashboard/offers/condition_edit.html:102
+#: templates/oscar/dashboard/offers/condition_list.html:57
 msgid "Used by Offers"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_edit.html:117
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:58
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:116
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:58
+#: templates/oscar/dashboard/offers/benefit_edit.html:117
+#: templates/oscar/dashboard/offers/benefit_list.html:58
+#: templates/oscar/dashboard/offers/condition_edit.html:116
+#: templates/oscar/dashboard/offers/condition_list.html:58
 msgid "Used by Vouchers"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:27
+#: templates/oscar/dashboard/offers/benefit_list.html:27
 msgid "Create new compound benefit"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:38
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:38
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:10
+#: templates/oscar/dashboard/offers/benefit_list.html:38
+#: templates/oscar/dashboard/offers/condition_list.html:38
+#: templates/oscar/dashboard/offers/offer_list.html:10
 msgid "Searching..."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:38
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:38
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:10
+#: templates/oscar/dashboard/offers/benefit_list.html:38
+#: templates/oscar/dashboard/offers/condition_list.html:38
+#: templates/oscar/dashboard/offers/offer_list.html:10
 msgid "Search"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:48
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:48
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:20
+#: templates/oscar/dashboard/offers/benefit_list.html:48
+#: templates/oscar/dashboard/offers/condition_list.html:48
+#: templates/oscar/dashboard/offers/offer_list.html:20
 msgid "Reset"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:54
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:54
+#: templates/oscar/dashboard/offers/benefit_list.html:54
+#: templates/oscar/dashboard/offers/condition_list.html:54
 msgid "Range"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:56
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:56
+#: templates/oscar/dashboard/offers/benefit_list.html:56
+#: templates/oscar/dashboard/offers/condition_list.html:56
 msgid "Value"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:59
+#: templates/oscar/dashboard/offers/benefit_list.html:59
 msgid "Used by Benefits"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:93
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:93
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:73
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:64
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:34
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:67
+#: templates/oscar/dashboard/offers/benefit_list.html:93
+#: templates/oscar/dashboard/offers/condition_list.html:93
+#: templates/oscar/dashboard/offers/offer_list.html:73
+#: templates/oscar/dashboard/ranges/range_list.html:64
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:34
+#: templates/oscar/dashboard/vouchers/voucher_list.html:67
 msgid "Actions"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:97
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:97
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:30
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:51
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:56
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:71
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:79
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:69
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:168
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:72
+#: templates/oscar/dashboard/offers/benefit_list.html:97
+#: templates/oscar/dashboard/offers/condition_list.html:97
+#: templates/oscar/dashboard/offers/offer_detail.html:30
+#: templates/oscar/dashboard/offers/offer_detail.html:51
+#: templates/oscar/dashboard/offers/offer_detail.html:56
+#: templates/oscar/dashboard/offers/offer_detail.html:71
+#: templates/oscar/dashboard/offers/offer_list.html:79
+#: templates/oscar/dashboard/ranges/range_list.html:69
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:168
+#: templates/oscar/dashboard/vouchers/voucher_list.html:72
 msgid "Edit"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_list.html:107
+#: templates/oscar/dashboard/offers/benefit_list.html:107
 msgid "No benefits found."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_selection_form.html:16
+#: templates/oscar/dashboard/offers/benefit_selection_form.html:16
 #, python-format
 msgid ""
 "\n"
@@ -975,30 +970,30 @@ msgid ""
 "        "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/benefit_selection_form.html:23
+#: templates/oscar/dashboard/offers/benefit_selection_form.html:23
 msgid "Continue to step 3"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:7
+#: templates/oscar/dashboard/offers/condition_delete.html:7
 msgid "Delete condition"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:32
+#: templates/oscar/dashboard/offers/condition_delete.html:32
 msgid "Are you sure you want to delete this condition?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_delete.html:34
+#: templates/oscar/dashboard/offers/condition_delete.html:34
 msgid "Deleting this condition will also delete the following offers:"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:13
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:32
-#: templates/oscarbluelight/dashboard/offers/condition_edit.html:40
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:24
+#: templates/oscar/dashboard/offers/condition_edit.html:13
+#: templates/oscar/dashboard/offers/condition_edit.html:32
+#: templates/oscar/dashboard/offers/condition_edit.html:40
+#: templates/oscar/dashboard/offers/condition_list.html:24
 msgid "Create new condition"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_edit_compound.html:9
+#: templates/oscar/dashboard/offers/condition_edit_compound.html:9
 #, python-format
 msgid ""
 "\n"
@@ -1007,19 +1002,19 @@ msgid ""
 "        "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:27
+#: templates/oscar/dashboard/offers/condition_list.html:27
 msgid "Create new compound condition"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:59
+#: templates/oscar/dashboard/offers/condition_list.html:59
 msgid "Used by Conditions"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_list.html:107
+#: templates/oscar/dashboard/offers/condition_list.html:107
 msgid "No conditions found."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_selection_form.html:21
+#: templates/oscar/dashboard/offers/condition_selection_form.html:21
 #, python-format
 msgid ""
 "\n"
@@ -1028,264 +1023,264 @@ msgid ""
 "        "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/condition_selection_form.html:28
+#: templates/oscar/dashboard/offers/condition_selection_form.html:28
 msgid "Continue to step 4"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:10
+#: templates/oscar/dashboard/offers/offer_detail.html:10
 msgid "Offer currently available"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:12
+#: templates/oscar/dashboard/offers/offer_detail.html:12
 msgid "Offer not available due to restrictions!"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:15
+#: templates/oscar/dashboard/offers/offer_detail.html:15
 msgid "Total cost:"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:16
+#: templates/oscar/dashboard/offers/offer_detail.html:16
 msgid "Number of orders:"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:17
+#: templates/oscar/dashboard/offers/offer_detail.html:17
 msgid "Number of uses:"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:22
+#: templates/oscar/dashboard/offers/offer_detail.html:22
 msgid "Date created:"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:23
+#: templates/oscar/dashboard/offers/offer_detail.html:23
 msgid "Offer details"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:78
+#: templates/oscar/dashboard/offers/offer_detail.html:78
 msgid "Export to CSV"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:79
+#: templates/oscar/dashboard/offers/offer_detail.html:79
 msgid "Orders that used this offer"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:83
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:144
+#: templates/oscar/dashboard/offers/offer_detail.html:83
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:144
 msgid "Order number"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:84
+#: templates/oscar/dashboard/offers/offer_detail.html:84
 msgid "Order date"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:85
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:146
+#: templates/oscar/dashboard/offers/offer_detail.html:85
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:146
 msgid "Order total"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_detail.html:86
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:36
+#: templates/oscar/dashboard/offers/offer_detail.html:86
+#: templates/oscar/dashboard/offers/offer_list.html:36
 msgid "Cost"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:27
+#: templates/oscar/dashboard/offers/offer_list.html:27
 msgid "Start Date"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:28
+#: templates/oscar/dashboard/offers/offer_list.html:28
 msgid "End Date"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:31
+#: templates/oscar/dashboard/offers/offer_list.html:31
 msgid "Is Available?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:35
+#: templates/oscar/dashboard/offers/offer_list.html:35
 msgid "Uses"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:49
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:34
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:98
+#: templates/oscar/dashboard/offers/offer_list.html:49
+#: templates/oscar/dashboard/ranges/range_list.html:34
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:98
 msgid "Yes"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:51
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:36
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:100
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:43
+#: templates/oscar/dashboard/offers/offer_list.html:51
+#: templates/oscar/dashboard/ranges/range_list.html:36
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:100
+#: templates/oscar/dashboard/vouchers/voucher_list.html:43
 msgid "No"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:77
+#: templates/oscar/dashboard/offers/offer_list.html:77
 msgid "Browse"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:78
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:71
+#: templates/oscar/dashboard/offers/offer_list.html:78
+#: templates/oscar/dashboard/vouchers/voucher_list.html:71
 msgid "Stats"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offer_list.html:89
+#: templates/oscar/dashboard/offers/offer_list.html:89
 msgid "No offers found."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:6
+#: templates/oscar/dashboard/offers/offergroup_delete.html:6
 msgid "Delete Offer Group"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offergroup_delete.html:31
+#: templates/oscar/dashboard/offers/offergroup_delete.html:31
 msgid "Are you sure you want to delete this offer group?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:13
-#: templates/oscarbluelight/dashboard/offers/offergroup_list.html:28
+#: templates/oscar/dashboard/offers/offergroup_edit.html:13
+#: templates/oscar/dashboard/offers/offergroup_list.html:28
 msgid "Create new Offer Group"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:32
-#: templates/oscarbluelight/dashboard/offers/offergroup_edit.html:40
+#: templates/oscar/dashboard/offers/offergroup_edit.html:32
+#: templates/oscar/dashboard/offers/offergroup_edit.html:40
 msgid "Create new offer group"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:6
+#: templates/oscar/dashboard/ranges/range_list.html:6
 msgid "Ranges"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:11
+#: templates/oscar/dashboard/ranges/range_list.html:11
 msgid "Num products"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:12
+#: templates/oscar/dashboard/ranges/range_list.html:12
 msgid "Is public?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:13
+#: templates/oscar/dashboard/ranges/range_list.html:13
 msgid "Dependents"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:14
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:19
+#: templates/oscar/dashboard/ranges/range_list.html:14
+#: templates/oscar/dashboard/vouchers/voucher_list.html:19
 msgid "Date created"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:29
+#: templates/oscar/dashboard/ranges/range_list.html:29
 msgid "All"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:56
+#: templates/oscar/dashboard/ranges/range_list.html:56
 msgid "None"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:71
+#: templates/oscar/dashboard/ranges/range_list.html:71
 msgid "Edit products"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:75
+#: templates/oscar/dashboard/ranges/range_list.html:75
 msgid "View on site"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:79
+#: templates/oscar/dashboard/ranges/range_list.html:79
 msgid "Can not delete a product with a dependent condition or benefit."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/ranges/range_list.html:91
+#: templates/oscar/dashboard/ranges/range_list.html:91
 msgid "No ranges found."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:8
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:22
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:26
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:30
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:8
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:22
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:26
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:30
 msgid "Add children"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:8
-#: templates/oscarbluelight/dashboard/vouchers/voucher_add_children.html:17
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:8
+#: templates/oscar/dashboard/vouchers/voucher_add_children.html:17
 msgid "Vouchers"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:8
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:8
 msgid "Voucher details"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:28
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:14
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:28
+#: templates/oscar/dashboard/vouchers/voucher_list.html:14
 msgid "Num child codes"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:38
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:74
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:38
+#: templates/oscar/dashboard/vouchers/voucher_list.html:74
 msgid "Add more child codes"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:39
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:76
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:39
+#: templates/oscar/dashboard/vouchers/voucher_list.html:76
 msgid "Export codes as CSV"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:40
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:77
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:40
+#: templates/oscar/dashboard/vouchers/voucher_list.html:77
 msgid "Export codes as JSON"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:90
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:147
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:90
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:147
 msgid "Discount"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:95
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:95
 msgid "Usage is limited to specific user groups?"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:107
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:107
 msgid "Whitelisted User Groups"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:125
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:125
 msgid "Voucher performance"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:129
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:129
 msgid "Number of basket additions"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:130
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:130
 msgid "Number of orders"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:131
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:131
 msgid "Total discount"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:136
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:136
 msgid "Recent orders"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:140
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:140
 msgid "No orders have been placed that use this voucher."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:145
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:145
 msgid "Voucher code"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_detail.html:148
+#: templates/oscar/dashboard/vouchers/voucher_detail.html:148
 msgid "Date placed"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:14
+#: templates/oscar/dashboard/vouchers/voucher_form.html:14
 msgid "Edit voucher"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:16
+#: templates/oscar/dashboard/vouchers/voucher_form.html:16
 msgid "Create voucher"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:34
+#: templates/oscar/dashboard/vouchers/voucher_form.html:34
 msgid "Coupon Display"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:51
+#: templates/oscar/dashboard/vouchers/voucher_form.html:51
 #, python-format
 msgid ""
 "\n"
@@ -1294,11 +1289,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:59
+#: templates/oscar/dashboard/vouchers/voucher_form.html:59
 msgid "Reward"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:66
+#: templates/oscar/dashboard/vouchers/voucher_form.html:66
 #, python-format
 msgid ""
 "\n"
@@ -1307,7 +1302,7 @@ msgid ""
 "                        "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:80
+#: templates/oscar/dashboard/vouchers/voucher_form.html:80
 #, python-format
 msgid ""
 "\n"
@@ -1316,44 +1311,44 @@ msgid ""
 "                        "
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:89
+#: templates/oscar/dashboard/vouchers/voucher_form.html:89
 msgid "Child Codes"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:95
+#: templates/oscar/dashboard/vouchers/voucher_form.html:95
 #, python-format
 msgid "All changes will apply to this voucher and its %(count)s child codes."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:97
+#: templates/oscar/dashboard/vouchers/voucher_form.html:97
 msgid "This voucher has no children."
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_form.html:107
+#: templates/oscar/dashboard/vouchers/voucher_form.html:107
 msgid "Usage Constraints"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:10
+#: templates/oscar/dashboard/vouchers/voucher_list.html:10
 msgid "Status"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:11
+#: templates/oscar/dashboard/vouchers/voucher_list.html:11
 msgid "Usage is Limited to User Groups"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:17
+#: templates/oscar/dashboard/vouchers/voucher_list.html:17
 msgid "Num baskets"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:18
+#: templates/oscar/dashboard/vouchers/voucher_list.html:18
 msgid "Num orders"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:32
+#: templates/oscar/dashboard/vouchers/voucher_list.html:32
 msgid "Active"
 msgstr ""
 
-#: templates/oscarbluelight/dashboard/vouchers/voucher_list.html:34
+#: templates/oscar/dashboard/vouchers/voucher_list.html:34
 msgid "Inactive"
 msgstr ""
 

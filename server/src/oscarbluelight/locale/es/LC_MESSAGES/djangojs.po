@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-10 18:46+0000\n"
+"POT-Creation-Date: 2019-09-26 16:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,7 +31,7 @@ msgstr ""
 msgid "Delete the %s offer group"
 msgstr ""
 
-#: offergroups/OfferGroupTable.tsx:68 offergroups/OfferGroupTable.tsx:227
+#: offergroups/OfferGroupTable.tsx:68
 msgid "Actions"
 msgstr ""
 
@@ -50,48 +50,4 @@ msgstr ""
 
 #: offergroups/OfferGroupTable.tsx:90
 msgid "Yes"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:95
-msgid "No"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:117
-msgid "Offer"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:142
-msgid "Voucher"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:164
-msgid "#"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:165 offergroups/OfferGroupTable.tsx:223
-msgid "Name"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:166 offergroups/OfferGroupTable.tsx:225
-msgid "Priority"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:167
-msgid "Type"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:185
-msgid "Loading…"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:194
-msgid "No Offer Groups found."
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:224
-msgid "Is System Group?"
-msgstr ""
-
-#: offergroups/OfferGroupTable.tsx:226
-msgid "Group Contents"
 msgstr ""

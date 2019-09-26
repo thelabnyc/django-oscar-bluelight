@@ -13,7 +13,7 @@ from oscarbluelight.offer.models import (
     BluelightFixedPriceBenefit,
 )
 from .base import BaseTest
-import mock
+from unittest import mock
 
 
 class TestAFixedPriceDiscountAppliedWithCountCondition(TestCase):

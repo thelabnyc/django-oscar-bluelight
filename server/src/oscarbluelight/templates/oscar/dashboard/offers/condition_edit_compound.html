@@ -1,0 +1,16 @@
+{% extends 'oscar/dashboard/offers/condition_edit.html' %}
+
+{% load currency_filters %}
+{% load i18n %}
+
+{% block form_fields %}
+    <p>
+        {% url 'dashboard:range-list' as range_list_url %}
+        {% blocktrans %}
+        Ranges can be created and edited from within the <a href="{{ range_list_url }}">range dashboard</a>.
+        {% endblocktrans %}
+    </p>
+
+    {% include "oscar/dashboard/partials/form_field.html" with field=form.conjunction %}
+    {% include "oscar/dashboard/partials/form_field.html" with field=form.subconditions %}
+{% endblock %}

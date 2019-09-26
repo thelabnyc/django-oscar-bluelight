@@ -1,0 +1,128 @@
+{% extends 'oscar/dashboard/layout.html' %}
+
+{% load currency_filters %}
+
+{% load i18n %}
+
+{% block body_class %}{{ block.super }} create-page{% endblock %}
+
+{% block title %}
+    {% if condition.pk %}
+        {{ condition.name }}:
+    {% else %}
+        {% trans "Create new condition" %}:
+    {% endif %}
+    {{ title }} | {% trans "Conditions" %} | {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ul class="breadcrumb">
+    <li>
+        <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
+    </li>
+    <li>
+        <a href="{% url 'dashboard:condition-list' %}">{% trans "Conditions" %}</a>
+    </li>
+    {% if object.pk %}
+        <li>
+            <a href="{% url 'dashboard:condition-update' pk=object.pk %}">{{ object.name }}</a>
+        </li>
+    {% else %}
+        <li>
+            {% trans "Create new condition" %}
+        </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block headertext %}
+    {% if not object.pk %}
+        {% trans "Create new condition" %}
+    {% else %}
+        {{ object.name }}
+    {% endif %}
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="row">
+        <div class="col-md-6">
+            <form action="." method="post" class="form-stacked wysiwyg fixed-actions">
+                <div class="table-header">
+                    <h3>{% trans "Details" %}</h3>
+                </div>
+                <div class="well">
+                    {% csrf_token %}
+
+                    {% if form.is_bound and not form.is_valid %}
+                        <div class="alert alert-danger">
+                            <strong>{% trans "Oops! We found some errors" %}</strong> - {% trans "please check the error messages below and try again" %}
+                        </div>
+                    {% endif %}
+
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert alert-danger form-group has-error">
+                                <span class="help-inline"><i class="icon-exclamation-sign"></i> {{ error }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <p>{% trans "Fields marked with * are mandatory." %}</p>
+
+                    {% block form_fields %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.range %}
+                        <p>
+                            {% url 'dashboard:range-list' as range_list_url %}
+                            {% blocktrans %}
+                            Ranges can be created and edited from within the <a href="{{ range_list_url }}">range dashboard</a>.
+                            {% endblocktrans %}
+                        </p>
+
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.proxy_class %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.value %}
+                    {% endblock %}
+                </div>
+
+                <div class="fixed-actions-group">
+                    <div class="form-actions">
+                        <div class="pull-right">
+                            <button class="btn btn-default" name="save" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button>
+                        </div>
+                        <a class="btn btn-default" href="{% url 'dashboard:condition-list' %}">{% trans "Cancel" %}</a>
+                        {% if object.pk %}
+                            <a class="btn btn-danger" href="{% url 'dashboard:condition-delete' pk=object.pk %}">{% trans "Delete" %}</a></li>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% if object.non_voucher_offers %}
+            <div class="col-md-4">
+                <div class="table-header">
+                    <h3>{% trans "Used by Offers" %}</h3>
+                </div>
+                <div class="well">
+                    <ul>
+                        {% for offer in object.non_voucher_offers %}
+                            <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+        {% if object.vouchers %}
+            <div class="col-md-4">
+                <div class="table-header">
+                    <h3>{% trans "Used by Vouchers" %}</h3>
+                </div>
+                <div class="well">
+                    <ul>
+                        {% for voucher in object.vouchers %}
+                            <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

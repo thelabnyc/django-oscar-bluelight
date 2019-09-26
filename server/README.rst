@@ -47,34 +47,46 @@ Install `django-oscar-bluelight`.::
 Import Bluelight's settings into your projects `settings.py` file.::
 
     from oscar.defaults import *
-    from oscarbluelight.defaults import *  # NOQA # Needed so that Bluelight's views show up in the dashboard
-    from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
-    from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
+    from oscarbluelight.defaults import *  # Needed so that Bluelight's views show up in the dashboard
 
-Add Bluelight to your install apps.::
+Add Bluelight to your installed apps (replacing the equivalent Django Oscar apps). The top-level ``oscarbluelight`` app must be defined before the ``oscar`` app—if it isn't Django will not correctly find the Bluelight's templates.::
 
     INSTALLED_APPS = [
         ...
-    ] + get_core_apps([
-        ...
-        'oscarbluelight.dashboard.offers',
-        'oscarbluelight.dashboard.vouchers',
-        'oscarbluelight.offer',
-        'oscarbluelight.voucher',
-        ...
-    ])
+        # Bluelight. Must come before `django-oscar` so that template inheritance / overrides work correctly.
+        'oscarbluelight',
 
-Add Bluelight's template directory directly before Oscar's.::
-
-    TEMPLATES = [
-        {
-            'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': [
-                BLUELIGHT_TEMPLATE_DIR,
-                OSCAR_MAIN_TEMPLATE_DIR,
-            ],
-            ...
-        }
+        # django-oscar
+        'oscar',
+        'oscar.apps.analytics',
+        'oscar.apps.checkout',
+        'oscar.apps.address',
+        'oscar.apps.shipping',
+        'oscar.apps.catalogue',
+        'oscar.apps.catalogue.reviews',
+        'sandbox.partner',  # 'oscar.apps.partner',
+        'sandbox.basket',  # 'oscar.apps.basket',
+        'oscar.apps.payment',
+        'oscarbluelight.offer',  # 'oscar.apps.offer',
+        'oscar.apps.order',
+        'oscar.apps.customer',
+        'oscar.apps.search',
+        'oscarbluelight.voucher',  # 'oscar.apps.voucher',
+        'oscar.apps.wishlists',
+        'oscar.apps.dashboard',
+        'oscar.apps.dashboard.reports',
+        'oscar.apps.dashboard.users',
+        'oscar.apps.dashboard.orders',
+        'oscar.apps.dashboard.catalogue',
+        'oscarbluelight.dashboard.offers',  # 'oscar.apps.dashboard.offers',
+        'oscar.apps.dashboard.partners',
+        'oscar.apps.dashboard.pages',
+        'oscar.apps.dashboard.ranges',
+        'oscar.apps.dashboard.reviews',
+        'oscarbluelight.dashboard.vouchers',  # 'oscar.apps.dashboard.vouchers',
+        'oscar.apps.dashboard.communications',
+        'oscar.apps.dashboard.shipping',
+        ...
     ]
 
 Fork the basket application in your project and add ``BluelightBasketMixin`` as a parent class of the ``Line`` model.::
@@ -96,6 +108,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 
 Changelog
 =========
+
+0.14.0
+------------------
+- Add support for django-oscar 2.x.
+- Drop support for django-oscar 1.x.
 
 0.13.0
 ------------------

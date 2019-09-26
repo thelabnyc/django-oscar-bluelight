@@ -1,8 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from oscar.defaults import *  # noqa
 from oscarbluelight.defaults import *  # NOQA
-from oscar import OSCAR_MAIN_TEMPLATE_DIR, get_core_apps
-from oscarbluelight import BLUELIGHT_TEMPLATE_DIR
 from psycopg2cffi import compat
 import os
 import sys
@@ -28,6 +26,7 @@ LANGUAGES = (
 )
 
 INSTALLED_APPS = [
+    # Core Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,17 +35,51 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
-    'widget_tweaks',
-    'rest_framework',
+
+    # Bluelight. Must come before `django-oscar` so that template inheritance / overrides work correctly.
     'oscarbluelight',
-] + get_core_apps([
-    'oscarbluelight.dashboard.offers',
-    'oscarbluelight.dashboard.vouchers',
-    'oscarbluelight.offer',
-    'oscarbluelight.voucher',
-    'sandbox.basket',
-    'sandbox.partner',
-])
+
+    # django-oscar
+    'oscar',
+    'oscar.apps.analytics',
+    'oscar.apps.checkout',
+    'oscar.apps.address',
+    'oscar.apps.shipping',
+    'oscar.apps.catalogue',
+    'oscar.apps.catalogue.reviews',
+    'sandbox.partner',  # 'oscar.apps.partner',
+    'sandbox.basket',  # 'oscar.apps.basket',
+    'oscar.apps.payment',
+    'oscarbluelight.offer',  # 'oscar.apps.offer',
+    'oscar.apps.order',
+    'oscar.apps.customer',
+    'oscar.apps.search',
+    'oscarbluelight.voucher',  # 'oscar.apps.voucher',
+    'oscar.apps.wishlists',
+    'oscar.apps.dashboard',
+    'oscar.apps.dashboard.reports',
+    'oscar.apps.dashboard.users',
+    'oscar.apps.dashboard.orders',
+    'oscar.apps.dashboard.catalogue',
+    'oscarbluelight.dashboard.offers',  # 'oscar.apps.dashboard.offers',
+    'oscar.apps.dashboard.partners',
+    'oscar.apps.dashboard.pages',
+    'oscar.apps.dashboard.ranges',
+    'oscar.apps.dashboard.reviews',
+    'oscarbluelight.dashboard.vouchers',  # 'oscar.apps.dashboard.vouchers',
+    'oscar.apps.dashboard.communications',
+    'oscar.apps.dashboard.shipping',
+
+    # 3rd-party apps that oscar depends on
+    'widget_tweaks',
+    'haystack',
+    'treebeard',
+    'sorl.thumbnail',
+    'django_tables2',
+
+    # 3rd-party apps we depend on
+    'rest_framework',
+]
 
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
@@ -68,10 +101,7 @@ AUTHENTICATION_BACKENDS = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BLUELIGHT_TEMPLATE_DIR,
-            OSCAR_MAIN_TEMPLATE_DIR,
-        ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,7 +111,6 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'oscar.apps.search.context_processors.search_form',
-                'oscar.apps.promotions.context_processors.promotions',
                 'oscar.apps.checkout.context_processors.checkout',
                 'oscar.apps.customer.notifications.context_processors.notifications',
                 'oscar.core.context_processors.metadata',

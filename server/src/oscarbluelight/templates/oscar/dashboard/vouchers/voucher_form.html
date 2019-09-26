@@ -1,0 +1,160 @@
+{% extends 'oscar/dashboard/vouchers/voucher_form.html' %}
+{% load currency_filters %}
+{% load i18n %}
+
+{% block dashboard_content %}
+    <form action="." method="post" enctype="multipart/form-data" class="form-stacked wysiwyg fixed-actions">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-header">
+                    <h2><i class="icon-money icon-large"></i>
+                        {% if voucher %}
+                            {% trans "Edit voucher" %}
+                        {% else %}
+                            {% trans "Create voucher" %}
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.name %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.description %}
+
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.code %}
+
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.priority %}
+
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.start_datetime %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.end_datetime %}
+                </div>
+
+                <div class="table-header">
+                    <h2><i class="icon-money icon-large"></i>
+                        {% trans "Coupon Display" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.desktop_image %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.mobile_image %}
+                </div>
+
+                <div class="table-header">
+                    <h2><i class="icon-gift icon-large"></i>
+                        {% trans "Condition" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.condition %}
+                    <p>
+                        {% url 'dashboard:condition-list' as condition_list_url %}
+                        {% blocktrans %}
+                        Conditions can be created and edited from within the <a href="{{ condition_list_url }}">condition dashboard</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+
+                <div class="table-header">
+                    <h2><i class="icon-gift icon-large"></i>
+                        {% trans "Reward" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.benefit %}
+                    <p>
+                        {% url 'dashboard:benefit-list' as benefit_list_url %}
+                        {% blocktrans %}
+                        Incentives can be created and edited from within the <a href="{{ benefit_list_url }}">benefit dashboard</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <div class="table-header">
+                    <h2><i class="icon-gift icon-large"></i>
+                        {% trans "Offer Group" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.offer_group %}
+                    <p>
+                        {% url 'dashboard:offergroup-list' as offergroup_list_url %}
+                        {% blocktrans %}
+                        Offer groups can be created and edited from within the <a href="{{ offergroup_list_url }}">offer group dashboard</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="table-header">
+                    <h2><i class="icon-cogs icon-large"></i>
+                        {% trans "Child Codes" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% if voucher %}
+                        {% if voucher.children.count %}
+                            <p>{% blocktrans with voucher.children.count as count %}All changes will apply to this voucher and its {{ count }} child codes.{% endblocktrans %}</p>
+                        {% else %}
+                            <p>{% blocktrans %}This voucher has no children.{% endblocktrans %}</p>
+                        {% endif %}
+                    {% else %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.create_children %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.child_count %}
+                    {% endif %}
+                </div>
+
+                <div class="table-header">
+                    <h2><i class="icon-user icon-large"></i>
+                        {% trans "Usage Constraints" %}
+                    </h2>
+                </div>
+                <div class="well">
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.usage %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.limit_usage_by_group %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.groups %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.max_global_applications %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.max_user_applications %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.max_basket_applications %}
+                    {% include "oscar/dashboard/partials/form_field.html" with field=form.max_discount %}
+                </div>
+            </div>
+        </div>
+
+        {% block form_actions %}
+            <div class="fixed-actions-group">
+                <div class="form-actions">
+                    <div class="pull-right">
+                        <button class="btn btn-primary btn-lg" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button> {% trans "or" %}
+                    </div>
+
+                    <a class="btn btn-default btn-lg" href="{% url 'dashboard:voucher-list' %}">{% trans "Cancel" %}</a>
+                </div>
+            </div>
+        {% endblock form_actions %}
+    </form>
+{% endblock dashboard_content %}
+
+
+{% block extrascripts %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        var groupCheckbox = $('#id_limit_usage_by_group'),
+            groupSelect = $('#id_groups'),
+            childrenCheckbox = $('#id_create_children'),
+            childrenCount = $('#id_child_count');
+
+        if (groupCheckbox.length > 0 && groupSelect.length > 0) {
+            groupSelect.prop("disabled", !groupCheckbox.get(0).checked);
+            groupCheckbox.on('change', function() {
+                groupSelect.prop("disabled", !this.checked);
+            });
+        }
+
+        if (childrenCheckbox.length > 0 && childrenCount.length > 0) {
+            childrenCount.prop("disabled", !childrenCheckbox.get(0).checked);
+            childrenCheckbox.on('change', function() {
+                childrenCount.prop("disabled", !this.checked);
+            });
+        }
+    </script>
+{% endblock %}

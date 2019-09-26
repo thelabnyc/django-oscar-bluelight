@@ -28,8 +28,8 @@ ConditionalOffer = get_model('offer', 'ConditionalOffer')
 Voucher = get_model('voucher', 'Voucher')
 OrderDiscount = get_model('order', 'OrderDiscount')
 
-AddChildCodesForm = get_class('dashboard.vouchers.forms', 'AddChildCodesForm')
-VoucherForm = get_class('dashboard.vouchers.forms', 'VoucherForm')
+AddChildCodesForm = get_class('vouchers_dashboard.forms', 'AddChildCodesForm')
+VoucherForm = get_class('vouchers_dashboard.forms', 'VoucherForm')
 BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER')
 
 
@@ -177,7 +177,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
 
 
 class AddChildCodesView(generic.FormView):
-    template_name = 'dashboard/vouchers/voucher_add_children.html'
+    template_name = 'oscar/dashboard/vouchers/voucher_add_children.html'
     model = Voucher
     form_class = AddChildCodesForm
 
