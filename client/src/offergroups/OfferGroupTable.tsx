@@ -1,5 +1,5 @@
-import React = require('react');
-import classNames = require('classnames');
+import React from 'react';
+import classNames from 'classnames';
 import {listOfferGroups} from '../utils/api';
 import {IOfferGroup, IOffer} from '../utils/api.interfaces';
 
@@ -27,19 +27,11 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     }
 
 
-    componentDidMount () {
-        listOfferGroups(this.props.endpoint, (err, resp) => {
-            if (err) {
-                console.log(err);
-                console.log(resp);
-                return;
-            }
-
-            const groups = resp.body as IOfferGroup[];
-            this.setState({
-                isLoading: false,
-                groups: groups,
-            });
+    async componentDidMount () {
+        const groups = await listOfferGroups(this.props.endpoint);
+        this.setState({
+            isLoading: false,
+            groups: groups,
         });
     }
 
@@ -51,7 +43,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         const deleteClass = (hasOffers || isSystemGroup) ? 'disabled' : '';
 
         let deleteTitle: string;
-        let deleteLink: string;
+        let deleteLink: string | undefined = undefined;
         if (isSystemGroup) {
             deleteTitle = gettext('System groups can not be deleted.');
         } else if (hasOffers) {

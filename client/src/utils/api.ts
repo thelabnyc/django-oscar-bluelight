@@ -1,9 +1,10 @@
-import request = require('superagent');
+import request from 'superagent';
+import {IOfferGroup} from './api.interfaces';
 
 
-export const listOfferGroups = function(endpoint = '/dashboard/offers/api/offergroups/', callback?: (err: any, resp: request.Response) => void) {
-    return request
+export const listOfferGroups = async (endpoint = '/dashboard/offers/api/offergroups/') => {
+    const resp = await request
         .get(endpoint)
-        .set('Accept', 'application/json')
-        .end(callback);
+        .set('Accept', 'application/json');
+    return resp.body as IOfferGroup[];
 };
