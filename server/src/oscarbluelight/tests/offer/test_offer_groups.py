@@ -19,7 +19,7 @@ Voucher = get_model('voucher', 'Voucher')
 
 Applicator = get_class('offer.applicator', 'Applicator')
 BasketDiscount = get_class('offer.results', 'BasketDiscount')
-OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
+OfferGroupForm = get_class('offers_dashboard.forms', 'OfferGroupForm')
 
 
 
@@ -470,6 +470,19 @@ class OfferGroupApplicatorTest(TestCase):
         self.assertEqual(lines[0].consumer.consumed(), 0)
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
+        self.assertEqual(lines[0].has_discount, False)
+        self.assertEqual(lines[0].is_available_for_discount, True)
+        self.assertEqual(lines[0].discount_value, D('0.00'))
+        self.assertEqual(lines[0].unit_effective_price, D('200.00'))
+        self.assertEqual(lines[0].unit_tax, D('0.00'))
+        self.assertEqual(lines[0].is_tax_known, True)
+        self.assertEqual(lines[0].unit_price_incl_tax, D('200.00'))
+        self.assertEqual(lines[0].unit_price_excl_tax, D('200.00'))
+        self.assertEqual(lines[0].line_price_incl_tax, D('400.00'))
+        self.assertEqual(lines[0].line_price_excl_tax, D('400.00'))
+        self.assertEqual(lines[0].line_price_incl_tax_incl_discounts, D('400.00'))
+        self.assertEqual(lines[0].line_price_excl_tax_incl_discounts, D('400.00'))
+        self.assertEqual(lines[0].line_tax, D('0.00'))
 
         # Make sure applicator signals haven't been called yet
         pre_offers_apply.assert_not_called()
@@ -642,10 +655,64 @@ class OfferGroupApplicatorTest(TestCase):
         self.assertEqual(application['result'].discount, D('100.00'))
         self.assertIsNone(application['voucher'])
 
+        # Check line amounts
+        lines = basket.all_lines()
+        self.assertEqual(len(lines), 1)
+        purchase_info = lines[0].purchase_info.price
+        self.assertEqual(purchase_info.exists, True)
+        self.assertEqual(purchase_info.is_tax_known, True)
+        self.assertEqual(purchase_info.excl_tax, D('100.00'))
+        self.assertEqual(purchase_info.incl_tax, D('100.00'))
+        self.assertEqual(purchase_info.effective_price, D('100.00'))
+        self.assertEqual(purchase_info.tax, D('0.00'))
+        self.assertEqual(purchase_info.retail, None)
+        self.assertEqual(purchase_info.currency, 'USD')
+        self.assertEqual(lines[0].has_discount, True)
+        self.assertEqual(lines[0].quantity_with_discount, 2)
+        self.assertEqual(lines[0].quantity_without_discount, 0)
+        self.assertEqual(lines[0].is_available_for_discount, False)
+        self.assertEqual(lines[0].discount_value, D('200.00'))
+        self.assertEqual(lines[0].unit_effective_price, D('0.00'))
+        self.assertEqual(lines[0].unit_tax, D('0.00'))
+        self.assertEqual(lines[0].is_tax_known, True)
+        self.assertEqual(lines[0].unit_price_incl_tax, D('100.00'))
+        self.assertEqual(lines[0].unit_price_excl_tax, D('100.00'))
+        self.assertEqual(lines[0].line_price_incl_tax, D('200.00'))
+        self.assertEqual(lines[0].line_price_excl_tax, D('200.00'))
+        self.assertEqual(lines[0].line_price_incl_tax_incl_discounts, D('0.00'))
+        self.assertEqual(lines[0].line_price_excl_tax_incl_discounts, D('0.00'))
+        self.assertEqual(lines[0].line_tax, D('0.00'))
+
         # Set tax on the line
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         lines[0].purchase_info.price.tax = D('1.00')
+
+        # Check line amounts
+        purchase_info = lines[0].purchase_info.price
+        self.assertEqual(purchase_info.exists, True)
+        self.assertEqual(purchase_info.is_tax_known, True)
+        self.assertEqual(purchase_info.excl_tax, D('100.00'))
+        self.assertEqual(purchase_info.incl_tax, D('101.00'))
+        self.assertEqual(purchase_info.effective_price, D('100.00'))
+        self.assertEqual(purchase_info.tax, D('1.00'))
+        self.assertEqual(purchase_info.retail, None)
+        self.assertEqual(purchase_info.currency, 'USD')
+        self.assertEqual(lines[0].has_discount, True)
+        self.assertEqual(lines[0].quantity_with_discount, 2)
+        self.assertEqual(lines[0].quantity_without_discount, 0)
+        self.assertEqual(lines[0].is_available_for_discount, False)
+        self.assertEqual(lines[0].discount_value, D('200.00'))
+        self.assertEqual(lines[0].unit_effective_price, D('0.00'))
+        self.assertEqual(lines[0].unit_tax, D('1.00'))
+        self.assertEqual(lines[0].is_tax_known, True)
+        self.assertEqual(lines[0].unit_price_incl_tax, D('101.00'))
+        self.assertEqual(lines[0].unit_price_excl_tax, D('100.00'))
+        self.assertEqual(lines[0].line_price_incl_tax, D('202.00'))
+        self.assertEqual(lines[0].line_price_excl_tax, D('200.00'))
+        self.assertEqual(lines[0].line_price_incl_tax_incl_discounts, D('2.00'))
+        self.assertEqual(lines[0].line_price_excl_tax_incl_discounts, D('0.00'))
+        self.assertEqual(lines[0].line_tax, D('2.00'))
 
         # Ensure the price breakdown still returns tax, even though the rest of the line is free.
         self.assertEqual(lines[0].quantity, 2)

@@ -1,0 +1,29 @@
+{% extends 'oscar/dashboard/offers/step_form.html' %}
+{% load i18n %}
+
+
+{% block progress %}
+    {% include 'oscar/dashboard/offers/progress.html' with step=2 %}
+{% endblock %}
+
+
+{% block form_fields %}
+    <span class="error-block">{{ form.non_field_errors }}</span>
+
+    {% include "oscar/dashboard/partials/form_field.html" with field=form.benefit %}
+    <p>
+        {% url 'dashboard:benefit-list' as benefit_list_url %}
+        {% blocktrans %}
+        Incentives can be created and edited from within the <a href="{{ benefit_list_url }}">benefit dashboard</a>.
+        {% endblocktrans %}
+    </p>
+{% endblock %}
+
+
+{% block submittext %}{% trans "Continue to step 3" %}{% endblock %}
+
+
+{% block onbodyload %}
+    {{ block.super }}
+    oscar.dashboard.offers.init();
+{% endblock %}

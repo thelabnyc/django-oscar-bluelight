@@ -1,1 +1,1 @@
-default_app_config = 'sandbox.basket.config.BasketConfig'
+default_app_config = 'sandbox.basket.apps.BasketConfig'

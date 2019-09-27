@@ -1,0 +1,85 @@
+{% extends 'oscar/dashboard/vouchers/voucher_list.html' %}
+{% load currency_filters %}
+{% load sorting_tags %}
+{% load i18n %}
+
+{% block table_head %}
+    <tr>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Code" %}</th>
+        <th>{% trans "Status" %}</th>
+        <th>{% trans "Usage is Limited to User Groups" %}</th>
+        <th>{% trans "Desktop Image" %}</th>
+        <th>{% trans "Mobile Image" %}</th>
+        <th>{% trans "Num child codes" %}</th>
+        <th>{% trans "Offer Group" %}</th>
+        <th>{% trans "Priority" %}</th>
+        <th>{% anchor 'num_basket_additions' _("Num baskets") %}</th>
+        <th>{% anchor 'num_orders' _("Num orders") %}</th>
+        <th>{% anchor 'date_created' _("Date created") %}</th>
+        <th></th>
+    </tr>
+{% endblock table_head %}
+
+{% block table_row %}
+    <tr> <!-- name -->
+        <td><a href="{% url 'dashboard:voucher-stats' voucher.id %}">{{ voucher.name }}</a></td>
+        <td> <!-- code -->
+            <span class="label label-info">{{ voucher.code }}</span>
+        </td>
+        <td> <!-- status -->
+            {% if voucher.is_active %}
+                <span class="label label-success">{% trans "Active" %}</span>
+            {% else %}
+                <span class="label label-danger">{% trans "Inactive" %}</span>
+            {% endif %}
+        </td>
+        <td> <!-- user groups -->
+            {% if voucher.limit_usage_by_group %}
+                {% for group in voucher.groups.all %}
+                    <span class="label label-info">{{ group.name }}</span>
+                {% endfor %}
+            {% else %}
+                <span class="label label-warning">{% trans "No" %}</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if voucher.offers.first %}
+                {% include "oscar/dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.desktop_image %}
+            {% endif %}
+        </td>
+        <td>
+            {% if voucher.offers.first %}
+                {% include "oscar/dashboard/vouchers/voucher_thumbnail.html" with record=voucher.offers.first.mobile_image %}
+            {% endif %}
+        </td>
+        <td>{{ voucher.children.count | default:'-' }}</td> <!-- num children -->
+        <td>{{ voucher.offer_group | default:'-' }}</td>
+        <td>{{ voucher.priority }}</td>
+        <td>{{ voucher.num_basket_additions }}</td>
+        <td>{{ voucher.num_orders }}</td>
+        <td>{{ voucher.date_created }}</td>
+        <td>
+            {% block row_actions %}
+                <div class="btn-toolbar">
+                    <div class="btn-group">
+                        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true">
+                            {% trans "Actions" %}
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.id %}">{% trans "Stats" %}</a></li>
+                            <li><a href="{% url 'dashboard:voucher-update' pk=voucher.id %}">{% trans "Edit" %}</a></li>
+                            <li><a href="{% url 'dashboard:voucher-delete' pk=voucher.id %}">{% trans "Delete" %}</a></li>
+                            <li><a href="{% url 'dashboard:voucher-add-children' pk=voucher.id %}">{% trans "Add more child codes" %}</a></li>
+                            {% if voucher.children.exists %}
+                                <li><a href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}">{% trans "Export codes as CSV" %}</a></li>
+                                <li><a href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='json' %}">{% trans "Export codes as JSON" %}</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            {% endblock row_actions %}
+        </td>
+    </tr>
+{% endblock table_row %}

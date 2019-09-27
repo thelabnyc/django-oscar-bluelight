@@ -1,1 +1,1 @@
-default_app_config = 'oscarbluelight.dashboard.offers.config.OffersDashboardConfig'
+default_app_config = 'oscarbluelight.dashboard.offers.apps.OffersDashboardConfig'

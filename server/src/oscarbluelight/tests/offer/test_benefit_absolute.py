@@ -14,7 +14,7 @@ from oscarbluelight.offer.models import (
     BluelightAbsoluteDiscountBenefit,
     BluelightValueCondition,
 )
-import mock
+from unittest import mock
 
 
 class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):

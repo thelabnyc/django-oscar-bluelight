@@ -10,7 +10,7 @@ from oscarbluelight.offer.models import (
     CompoundBenefit,
 )
 from django_redis import get_redis_connection
-import mock
+from unittest import mock
 
 
 class TestCompoundAbsoluteBenefitDiscount(TestCase):

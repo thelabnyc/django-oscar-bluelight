@@ -1,4 +1,4 @@
-import React = require('react');
+import React from 'react';
 import {render} from 'react-dom';
 import OfferGroupTable from './offergroups/OfferGroupTable';
 
@@ -45,7 +45,7 @@ declare global {
 const main = function() {
     const elem = document.querySelector('#offergroup-table') as HTMLDivElement;
     const component = (
-        <OfferGroupTable endpoint={elem.dataset.offergroupApi} />
+        <OfferGroupTable endpoint={elem.dataset.offergroupApi || ''} />
     );
     render(component, elem);
 };

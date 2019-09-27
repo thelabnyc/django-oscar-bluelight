@@ -1,6 +1,7 @@
 from collections import namedtuple
 from decimal import Decimal
 from django.utils.translation import ugettext_lazy as _
+from oscar.core.utils import round_half_up
 import itertools
 
 
@@ -123,6 +124,13 @@ class BluelightBasketLineMixin(object):
         return unit_price_discounted
 
 
+    @property
+    def line_price_incl_tax_incl_discounts(self):
+        if self.line_price_incl_tax is not None:
+            return max(0, round_half_up(self.line_price_incl_tax - self.discount_value))
+        return None
+
+
     def clear_discount(self):
         """
         Remove any discounts from this line.
@@ -203,6 +211,7 @@ class BluelightBasketLineMixin(object):
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
         self.consumer.finalize_offer_group_applications()
+        self._offer_group_starting_discount = self.discount_value
 
 
     def get_price_breakdown(self):
@@ -249,8 +258,7 @@ class BluelightBasketLineMixin(object):
         # Return a list of (unit_price_incl_tax, unit_price_excl_tax, quantity)
         prices = []
         line_price_excl_tax_incl_discounts = self.line_price_excl_tax_incl_discounts
-        # TODO: Remove the ``or`` default once https://github.com/django-oscar/django-oscar/issues/2395 is resolved.
-        line_tax = self.line_tax or Decimal('0.00')
+        line_tax = self.line_tax
 
         # Avoid a divide by 0 error when the line is completely free, but still has tax applied to it.
         free = Decimal('0.00')

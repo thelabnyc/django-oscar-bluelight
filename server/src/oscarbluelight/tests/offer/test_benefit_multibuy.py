@@ -11,7 +11,7 @@ from oscarbluelight.offer.models import (
     BluelightMultibuyDiscountBenefit,
     BluelightValueCondition,
 )
-import mock
+from unittest import mock
 
 
 class TestAMultibuyDiscountAppliedWithCountCondition(TestCase):

@@ -12,19 +12,20 @@ const IS_PROD = (process.env.NODE_ENV === 'production');
 // Rules
 const rules = [
     {
-        test: /\.tsx?$/,
+        test: /\.[tj]sx?$/,
         include: APP_DIR,
         loader: 'awesome-typescript-loader',
         enforce: 'pre',
     },
     {
-        enforce: "pre",
-        test: /\.js$/,
+        test: /\.[tj]sx?/,
         loader: "source-map-loader",
+        enforce: "pre",
     },
     {
-        test: /\.[tj]sx?/,
-        include: APP_DIR,
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'node_modules/'),
+        exclude: path.resolve(__dirname, 'node_modules/core-js/'),
         use: {
             loader: 'babel-loader',
             options: Object.assign({}, JSON.parse(fs.readFileSync('.babelrc', 'utf8')), {
@@ -39,6 +40,9 @@ const rules = [
             MiniCssExtractPlugin.loader,
             {
                 loader: 'css-loader',
+                options: {
+                    importLoaders: 2
+                },
             },
             {
                 loader: 'postcss-loader',
@@ -55,6 +59,12 @@ const rules = [
             MiniCssExtractPlugin.loader,
             {
                 loader: 'css-loader',
+                options: {
+                    importLoaders: 1
+                },
+            },
+            {
+                loader: 'postcss-loader',
             },
         ],
     },

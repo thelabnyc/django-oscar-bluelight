@@ -1,16 +1,43 @@
 {
+    "awesomeTypescriptLoaderOptions": {
+        "useBabel": true,
+        "babelCore": "@babel/core"
+    },
     "compilerOptions": {
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
         "declaration": false,
-        "outDir": "../server/src/oscarbluelight/static/oscarbluelight/",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "target": "es6",
+        "declarationMap": false,
+        "downlevelIteration": true,
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": true,
+        "inlineSources": false,
         "jsx": "react",
-        "allowJs": false,
+        "lib": [
+            "es6",
+            "es2017",
+            "es2015.collection",
+            "es2015.iterable",
+            "dom"
+        ],
+        "module": "esnext",
+        "moduleResolution": "node",
+        "newLine": "lf",
+        "noFallthroughCasesInSwitch": true,
         "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "noUnusedLocals": true
+        "outDir": "../server/src/oscarbluelight/static/oscarbluelight/",
+        "preserveConstEnums": true,
+        "pretty": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "target": "es6"
     },
     "include": [
         "./src/**/*"

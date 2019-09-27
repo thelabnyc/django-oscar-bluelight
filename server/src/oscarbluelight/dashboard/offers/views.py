@@ -17,19 +17,19 @@ Condition = get_model('offer', 'Condition')
 OfferGroup = get_model('offer', 'OfferGroup')
 Voucher = get_model('voucher', 'Voucher')
 
-BenefitSearchForm = get_class('dashboard.offers.forms', 'BenefitSearchForm')
-BenefitForm = get_class('dashboard.offers.forms', 'BenefitForm')
-OfferGroupForm = get_class('dashboard.offers.forms', 'OfferGroupForm')
+BenefitSearchForm = get_class('offers_dashboard.forms', 'BenefitSearchForm')
+BenefitForm = get_class('offers_dashboard.forms', 'BenefitForm')
+OfferGroupForm = get_class('offers_dashboard.forms', 'OfferGroupForm')
 
-ConditionSearchForm = get_class('dashboard.offers.forms', 'ConditionSearchForm')
-ConditionForm = get_class('dashboard.offers.forms', 'ConditionForm')
-CompoundBenefitForm = get_class('dashboard.offers.forms', 'CompoundBenefitForm')
-CompoundConditionForm = get_class('dashboard.offers.forms', 'CompoundConditionForm')
+ConditionSearchForm = get_class('offers_dashboard.forms', 'ConditionSearchForm')
+ConditionForm = get_class('offers_dashboard.forms', 'ConditionForm')
+CompoundBenefitForm = get_class('offers_dashboard.forms', 'CompoundBenefitForm')
+CompoundConditionForm = get_class('offers_dashboard.forms', 'CompoundConditionForm')
 
-MetaDataForm = get_class('dashboard.offers.forms', 'MetaDataForm')
-BenefitSelectionForm = get_class('dashboard.offers.forms', 'BenefitSelectionForm')
-ConditionSelectionForm = get_class('dashboard.offers.forms', 'ConditionSelectionForm')
-RestrictionsForm = get_class('dashboard.offers.forms', 'RestrictionsForm')
+MetaDataForm = get_class('offers_dashboard.forms', 'MetaDataForm')
+BenefitSelectionForm = get_class('offers_dashboard.forms', 'BenefitSelectionForm')
+ConditionSelectionForm = get_class('offers_dashboard.forms', 'ConditionSelectionForm')
+RestrictionsForm = get_class('offers_dashboard.forms', 'RestrictionsForm')
 
 
 class OfferWizardStepView(views.OfferWizardStepView):
@@ -109,7 +109,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
 class OfferMetaDataView(OfferWizardStepView):
     step_name = 'metadata'
     form_class = MetaDataForm
-    template_name = 'dashboard/offers/metadata_form.html'
+    template_name = 'oscar/dashboard/offers/metadata_form.html'
     url_name = 'dashboard:offer-metadata'
     success_url_name = 'dashboard:offer-benefit'
 
@@ -120,7 +120,7 @@ class OfferMetaDataView(OfferWizardStepView):
 class OfferBenefitView(OfferWizardStepView):
     step_name = 'benefit'
     form_class = BenefitSelectionForm
-    template_name = 'dashboard/offers/benefit_selection_form.html'
+    template_name = 'oscar/dashboard/offers/benefit_selection_form.html'
     url_name = 'dashboard:offer-benefit'
     success_url_name = 'dashboard:offer-condition'
     previous_view = OfferMetaDataView
@@ -133,7 +133,7 @@ class OfferBenefitView(OfferWizardStepView):
 class OfferConditionView(OfferWizardStepView):
     step_name = 'condition'
     form_class = ConditionSelectionForm
-    template_name = 'dashboard/offers/condition_selection_form.html'
+    template_name = 'oscar/dashboard/offers/condition_selection_form.html'
     url_name = 'dashboard:offer-condition'
     success_url_name = 'dashboard:offer-restrictions'
     previous_view = OfferBenefitView
@@ -142,7 +142,7 @@ class OfferConditionView(OfferWizardStepView):
 class OfferRestrictionsView(OfferWizardStepView):
     step_name = 'restrictions'
     form_class = RestrictionsForm
-    template_name = 'dashboard/offers/restrictions_form.html'
+    template_name = 'oscar/dashboard/offers/restrictions_form.html'
     previous_view = OfferConditionView
     url_name = 'dashboard:offer-restrictions'
 
@@ -178,7 +178,7 @@ class OfferRestrictionsView(OfferWizardStepView):
 class BenefitListView(ListView):
     model = Benefit
     context_object_name = 'benefits'
-    template_name = 'dashboard/offers/benefit_list.html'
+    template_name = 'oscar/dashboard/offers/benefit_list.html'
     form_class = BenefitSearchForm
 
     def get_queryset(self):
@@ -210,20 +210,20 @@ class BenefitListView(ListView):
 
 class BenefitDeleteView(DeleteView):
     model = Benefit
-    template_name = 'dashboard/offers/benefit_delete.html'
+    template_name = 'oscar/dashboard/offers/benefit_delete.html'
     success_url = reverse_lazy('dashboard:benefit-list')
 
 
 class CompoundBenefitCreateView(CreateView):
     model = CompoundBenefit
-    template_name = 'dashboard/offers/benefit_edit_compound.html'
+    template_name = 'oscar/dashboard/offers/benefit_edit_compound.html'
     form_class = CompoundBenefitForm
     success_url = reverse_lazy('dashboard:benefit-list')
 
 
 class BenefitCreateView(CreateView):
     model = Benefit
-    template_name = 'dashboard/offers/benefit_edit.html'
+    template_name = 'oscar/dashboard/offers/benefit_edit.html'
     form_class = BenefitForm
     success_url = reverse_lazy('dashboard:benefit-list')
 
@@ -243,14 +243,14 @@ class BenefitUpdateView(UpdateView):
 
     def get_template_names(self):
         if hasattr(self.object, 'subbenefits'):
-            return 'dashboard/offers/benefit_edit_compound.html'
-        return 'dashboard/offers/benefit_edit.html'
+            return 'oscar/dashboard/offers/benefit_edit_compound.html'
+        return 'oscar/dashboard/offers/benefit_edit.html'
 
 
 class ConditionListView(ListView):
     model = Condition
     context_object_name = 'conditions'
-    template_name = 'dashboard/offers/condition_list.html'
+    template_name = 'oscar/dashboard/offers/condition_list.html'
     form_class = ConditionSearchForm
 
     def get_queryset(self):
@@ -282,20 +282,20 @@ class ConditionListView(ListView):
 
 class ConditionDeleteView(DeleteView):
     model = Condition
-    template_name = 'dashboard/offers/condition_delete.html'
+    template_name = 'oscar/dashboard/offers/condition_delete.html'
     success_url = reverse_lazy('dashboard:condition-list')
 
 
 class CompoundConditionCreateView(CreateView):
     model = CompoundCondition
-    template_name = 'dashboard/offers/condition_edit_compound.html'
+    template_name = 'oscar/dashboard/offers/condition_edit_compound.html'
     form_class = CompoundConditionForm
     success_url = reverse_lazy('dashboard:condition-list')
 
 
 class ConditionCreateView(CreateView):
     model = Condition
-    template_name = 'dashboard/offers/condition_edit.html'
+    template_name = 'oscar/dashboard/offers/condition_edit.html'
     form_class = ConditionForm
     success_url = reverse_lazy('dashboard:condition-list')
 
@@ -315,25 +315,25 @@ class ConditionUpdateView(UpdateView):
 
     def get_template_names(self):
         if hasattr(self.object, 'subconditions'):
-            return 'dashboard/offers/condition_edit_compound.html'
-        return 'dashboard/offers/condition_edit.html'
+            return 'oscar/dashboard/offers/condition_edit_compound.html'
+        return 'oscar/dashboard/offers/condition_edit.html'
 
 
 class OfferGroupCreateView(CreateView):
     model = OfferGroup
-    template_name = 'dashboard/offers/offergroup_edit.html'
+    template_name = 'oscar/dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')
 
 
 class OfferGroupListView(ListView):
     model = OfferGroup
-    template_name = 'dashboard/offers/offergroup_list.html'
+    template_name = 'oscar/dashboard/offers/offergroup_list.html'
 
 
 class OfferGroupDeleteView(DeleteView):
     model = OfferGroup
-    template_name = 'dashboard/offers/offergroup_delete.html'
+    template_name = 'oscar/dashboard/offers/offergroup_delete.html'
     success_url = reverse_lazy('dashboard:offergroup-list')
 
     def get(self, request, *args, **kwargs):
@@ -359,6 +359,6 @@ class OfferGroupDeleteView(DeleteView):
 
 class OfferGroupUpdateView(UpdateView):
     model = OfferGroup
-    template_name = 'dashboard/offers/offergroup_edit.html'
+    template_name = 'oscar/dashboard/offers/offergroup_edit.html'
     form_class = OfferGroupForm
     success_url = reverse_lazy('dashboard:offergroup-list')

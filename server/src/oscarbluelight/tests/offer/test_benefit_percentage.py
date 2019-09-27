@@ -12,7 +12,7 @@ from oscarbluelight.offer.models import (
     BluelightValueCondition,
     BluelightPercentageDiscountBenefit,
 )
-import mock
+from unittest import mock
 
 
 

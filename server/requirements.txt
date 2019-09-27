@@ -25,7 +25,6 @@ Jinja2==2.9.6
 kombu==4.0.2
 MarkupSafe==1.0
 mccabe==0.6.1
-mock==2.0.0
 olefile==0.44
 packaging==16.8
 pbr==3.0.1
