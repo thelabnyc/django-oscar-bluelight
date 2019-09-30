@@ -2,11 +2,21 @@ from django.conf.urls import url, include
 from django.views.i18n import JavaScriptCatalog
 from rest_framework import routers
 from oscar.apps.dashboard.offers import apps
+from oscar.core.loading import get_class
 
 
 
 class OffersDashboardConfig(apps.OffersDashboardConfig):
     name = 'oscarbluelight.dashboard.offers'
+
+    def ready(self):
+        self.list_view = get_class('offers_dashboard.views', 'OfferListView')
+        self.metadata_view = get_class('offers_dashboard.views', 'OfferMetaDataView')
+        self.condition_view = get_class('offers_dashboard.views', 'OfferConditionView')
+        self.benefit_view = get_class('offers_dashboard.views', 'OfferBenefitView')
+        self.restrictions_view = get_class('offers_dashboard.views', 'OfferRestrictionsView')
+        self.delete_view = get_class('offers_dashboard.views', 'OfferDeleteView')
+        self.detail_view = get_class('offers_dashboard.views', 'OfferDetailView')
 
     def get_urls(self):
         from .api_views import OfferGroupViewSet

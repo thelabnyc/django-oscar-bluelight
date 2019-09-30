@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
+from oscar.apps.dashboard.offers.views import *  # noqa
 from oscar.apps.dashboard.offers import views
 import json
 

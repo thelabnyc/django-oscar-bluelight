@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
 from oscar.core.loading import get_class, get_model
+from oscar.apps.dashboard.vouchers.views import *  # noqa
 from oscar.apps.dashboard.vouchers.views import (
     VoucherListView as DefaultVoucherListView,
     VoucherCreateView as DefaultVoucherCreateView,

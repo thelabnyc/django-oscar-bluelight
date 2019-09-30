@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-26 16:19-0400\n"
+"POT-Creation-Date: 2019-09-30 17:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,55 +71,55 @@ msgstr ""
 msgid "Which user groups will be able to apply this offer?"
 msgstr ""
 
-#: dashboard/offers/views.py:93
+#: dashboard/offers/views.py:94
 #, python-format
 msgid "Offer '%s' updated"
 msgstr ""
 
-#: dashboard/offers/views.py:95
+#: dashboard/offers/views.py:96
 #, python-format
 msgid "Offer '%s' created!"
 msgstr ""
 
-#: dashboard/offers/views.py:117
+#: dashboard/offers/views.py:118
 msgid "Name and description"
 msgstr ""
 
-#: dashboard/offers/views.py:130 dashboard/vouchers/forms.py:69
+#: dashboard/offers/views.py:131 dashboard/vouchers/forms.py:69
 #: templates/oscar/dashboard/offers/offer_detail.html:49
 #: templates/oscar/dashboard/offers/offer_list.html:29
 msgid "Incentive"
 msgstr ""
 
-#: dashboard/offers/views.py:175
+#: dashboard/offers/views.py:176
 #: templates/oscar/dashboard/offers/offer_detail.html:59
 #: templates/oscar/dashboard/offers/offer_list.html:32
 msgid "Restrictions"
 msgstr ""
 
-#: dashboard/offers/views.py:187
+#: dashboard/offers/views.py:188
 msgid "All benefits"
 msgstr ""
 
-#: dashboard/offers/views.py:199
+#: dashboard/offers/views.py:200
 #, python-format
 msgid "Benefits for range '%s'"
 msgstr ""
 
-#: dashboard/offers/views.py:259
+#: dashboard/offers/views.py:260
 msgid "All conditions"
 msgstr ""
 
-#: dashboard/offers/views.py:271
+#: dashboard/offers/views.py:272
 #, python-format
 msgid "Conditions for range '%s'"
 msgstr ""
 
-#: dashboard/offers/views.py:352
+#: dashboard/offers/views.py:353
 msgid "System Offer Groups Can Not Be Deleted"
 msgstr ""
 
-#: dashboard/offers/views.py:355
+#: dashboard/offers/views.py:356
 msgid "Offer Groups That Still Contain Offers Can Not Be Deleted"
 msgstr ""
 
@@ -289,17 +289,17 @@ msgstr ""
 msgid "The start date must be before the end date"
 msgstr ""
 
-#: dashboard/vouchers/views.py:57 dashboard/vouchers/views.py:158
+#: dashboard/vouchers/views.py:58 dashboard/vouchers/views.py:159
 #, python-format
 msgid "Offer for voucher '%s'"
 msgstr ""
 
-#: dashboard/vouchers/views.py:86 dashboard/vouchers/views.py:196
+#: dashboard/vouchers/views.py:87 dashboard/vouchers/views.py:197
 #, python-format
 msgid "Creating %s child codes…"
 msgstr ""
 
-#: dashboard/vouchers/views.py:224
+#: dashboard/vouchers/views.py:225
 msgid "Codes"
 msgstr ""
 
