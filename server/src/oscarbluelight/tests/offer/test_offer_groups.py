@@ -1188,3 +1188,19 @@ class OfferGroupViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         qs = Voucher.objects.filter(name='Test Voucher')
         self.assertEqual(qs.count(), 1)
+
+
+    def test_create_voucher_with_group(self):
+        self.client.login(username='john', password='johnpassword')
+        resp_get = self.client.get(reverse('dashboard:voucher-create'))
+        self.assertEqual(resp_get.status_code, 200)
+        form = resp_get.context['form']
+        data = form.initial
+        data['name'] = 'Test Voucher'
+        data['code'] = 'test'
+        data['benefit'] = self.offer.benefit
+        data['offer_group'] = self.offer_group
+        data['start_datetime'] = datetime.now(),
+        data['end_datetime'] = datetime.now() + timedelta(seconds=120),
+        response = self.client.post(reverse('dashboard:voucher-create'), data)
+        self.assertEqual(response.status_code, 200)
