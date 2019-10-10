@@ -143,7 +143,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         voucher.start_datetime = form.cleaned_data['start_datetime']
         voucher.end_datetime = form.cleaned_data['end_datetime']
         voucher.limit_usage_by_group = form.cleaned_data['limit_usage_by_group']
-        voucher.groups = form.cleaned_data['groups']
+        voucher.groups.set(form.cleaned_data['groups'])
         voucher.save()
 
         benefit = form.cleaned_data['benefit']

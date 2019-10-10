@@ -1204,3 +1204,23 @@ class OfferGroupViewTest(TestCase):
         data['end_datetime'] = datetime.now() + timedelta(seconds=120),
         response = self.client.post(reverse('dashboard:voucher-create'), data)
         self.assertEqual(response.status_code, 200)
+
+
+    def test_update_voucher_with_group(self):
+        voucher = Voucher.objects.create(
+            name='Test Voucher',
+            code='TEST',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now() + timedelta(seconds=120),
+            limit_usage_by_group=False)
+        voucher.offers.add(self.offer)
+        self.client.login(username='john', password='johnpassword')
+        resp_get = self.client.get(reverse('dashboard:voucher-update', args=[voucher.pk]))
+        self.assertEqual(resp_get.status_code, 200)
+        form = resp_get.context['form']
+        self.assertEqual(form.initial['code'], 'TEST')
+        # add group
+        data = {'offer_group': self.offer_group.pk}
+        response = self.client.post(reverse('dashboard:voucher-update', args=[voucher.pk]), data=data)
+        self.assertEqual(response.status_code, 200)
