@@ -4,7 +4,6 @@ from django.test import TestCase
 from oscar.test import factories
 from oscar.test.basket import add_product, add_products
 from django_redis import get_redis_connection
-from oscarbluelight.offer.applicator import Applicator
 from oscarbluelight.offer.models import (
     Condition,
     Range,
