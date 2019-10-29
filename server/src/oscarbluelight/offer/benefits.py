@@ -82,6 +82,9 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 break
 
             quantity_affected = min(line.quantity_without_discount, max_affected_items - affected_items)
+            if quantity_affected <= 0:
+                break
+
             line_discount = self.round(discount_percent / D('100.0') * price * int(quantity_affected))
 
             if discount_amount_available is not None:
@@ -334,6 +337,10 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         # This must be a single line basket; use the cheapest line as a fallback.
         if not line:
             discount, line = line_tuples[0]
+
+        # Make sure we can actually discount this line
+        if line.quantity_without_discount <= 0:
+            return ZERO_DISCOUNT
 
         line.discount(discount, 1, incl_tax=False, offer=offer)
 

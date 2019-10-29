@@ -210,6 +210,8 @@ class TestAnAbsoluteDiscount(TestCase):
         self.offer.get_voucher.return_value = None
 
         add_product(self.basket, D('5.00'))
+        # Apply benefit twice to simulate how Applicator will actually do it
+        self.benefit.apply(self.basket, self.condition, self.offer)
         self.benefit.apply(self.basket, self.condition, self.offer)
 
         line = self.basket.all_lines()[0]
@@ -232,6 +234,8 @@ class TestAnAbsoluteDiscount(TestCase):
         self.offer.get_voucher.return_value = voucher
 
         add_product(self.basket, D('5.00'))
+        # Apply benefit twice to simulate how Applicator will actually do it
+        self.benefit.apply(self.basket, self.condition, self.offer)
         self.benefit.apply(self.basket, self.condition, self.offer)
 
         line = self.basket.all_lines()[0]

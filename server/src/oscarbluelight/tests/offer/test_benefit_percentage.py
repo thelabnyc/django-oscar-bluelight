@@ -4,6 +4,7 @@ from django.test import TestCase
 from oscar.test import factories
 from oscar.test.basket import add_product, add_products
 from django_redis import get_redis_connection
+from oscarbluelight.offer.applicator import Applicator
 from oscarbluelight.offer.models import (
     Condition,
     Range,
@@ -75,6 +76,8 @@ class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
         self.offer.get_voucher.return_value = None
 
         add_product(self.basket, D('5.00'))
+        # Apply benefit twice to simulate how Applicator will actually do it
+        self.benefit.apply(self.basket, self.condition, self.offer)
         self.benefit.apply(self.basket, self.condition, self.offer)
 
         line = self.basket.all_lines()[0]
@@ -97,6 +100,8 @@ class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
         self.offer.get_voucher.return_value = voucher
 
         add_product(self.basket, D('5.00'))
+        # Apply benefit twice to simulate how Applicator will actually do it
+        self.benefit.apply(self.basket, self.condition, self.offer)
         self.benefit.apply(self.basket, self.condition, self.offer)
 
         line = self.basket.all_lines()[0]
