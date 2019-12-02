@@ -56,9 +56,9 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         if not self.range:
             raise exceptions.ValidationError(
                 _("Percentage benefits require a product range"))
-        if self.value > 100:
+        if not self.value or self.value <= 0 or self.value > 100:
             raise exceptions.ValidationError(
-                _("Percentage discount cannot be greater than 100"))
+                _("Percentage discount requires a value between 0 and 100"))
 
 
     def apply(self, basket, condition, offer, discount_percent=None, max_total_discount=None, consume_items=None):
@@ -83,7 +83,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
 
             quantity_affected = min(line.quantity_without_discount, max_affected_items - affected_items)
             if quantity_affected <= 0:
-                break
+                continue
 
             line_discount = self.round(discount_percent / D('100.0') * price * int(quantity_affected))
 

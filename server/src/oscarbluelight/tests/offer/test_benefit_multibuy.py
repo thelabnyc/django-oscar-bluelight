@@ -4,9 +4,7 @@ from oscar.test.basket import add_product, add_products
 from oscar.test import factories
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
-    Condition,
     Range,
-    Benefit,
     BluelightCountCondition,
     BluelightMultibuyDiscountBenefit,
     BluelightValueCondition,
@@ -24,11 +22,11 @@ class TestAMultibuyDiscountAppliedWithCountCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=3)
         self.benefit = BluelightMultibuyDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.MULTIBUY)
+            proxy_class='oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit')
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
 
@@ -113,11 +111,11 @@ class TestAMultibuyDiscountAppliedWithAValueCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(
             range=range,
-            type=Condition.VALUE,
+            proxy_class='oscarbluelight.offer.conditions.BluelightValueCondition',
             value=D('10.00'))
         self.benefit = BluelightMultibuyDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.MULTIBUY)
+            proxy_class='oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit')
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
 

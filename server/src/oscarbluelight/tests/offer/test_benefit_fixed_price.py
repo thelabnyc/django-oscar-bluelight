@@ -26,11 +26,11 @@ class TestAFixedPriceDiscountAppliedWithCountCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=3)
         self.benefit = BluelightFixedPriceBenefit.objects.create(
             range=range,
-            type=Benefit.FIXED_PRICE,
+            proxy_class='oscarbluelight.offer.benefits.BluelightFixedPriceBenefit',
             value=D('20.00'))
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)

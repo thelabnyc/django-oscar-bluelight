@@ -2,9 +2,7 @@ from decimal import Decimal as D
 from django.test import TestCase
 from oscar.test import factories
 from oscarbluelight.offer.models import (
-    Condition,
     Range,
-    Benefit,
     BluelightCountCondition,
     BluelightAbsoluteDiscountBenefit,
     BluelightPercentageDiscountBenefit,
@@ -33,16 +31,16 @@ class TestCompoundAbsoluteBenefitDiscount(TestCase):
 
         self.condition = BluelightCountCondition.objects.create(
             range=self.range_all,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=1)
 
         self.benefit_slippers = BluelightAbsoluteDiscountBenefit.objects.create(
             range=self.range_slippers,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('13.00'))
         self.benefit_pillows = BluelightAbsoluteDiscountBenefit.objects.create(
             range=self.range_pillows,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('27.00'))
 
         self.benefit_compound = CompoundBenefit.objects.create()
@@ -93,7 +91,7 @@ class TestCompoundBluelightPercentageBenefitDiscount(TestCase):
 
         self.condition = BluelightCountCondition.objects.create(
             range=self.range_mattresses,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=1)
 
         self.benefit_mattress_protector = BluelightPercentageDiscountBenefit.objects.create(

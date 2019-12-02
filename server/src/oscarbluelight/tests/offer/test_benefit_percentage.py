@@ -5,7 +5,6 @@ from oscar.test import factories
 from oscar.test.basket import add_product, add_products
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
-    Condition,
     Range,
     Benefit,
     BluelightCountCondition,
@@ -26,11 +25,11 @@ class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=2)
         self.benefit = BluelightPercentageDiscountBenefit(
             range=range,
-            type=Benefit.PERCENTAGE,
+            proxy_class='oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit',
             value=20)
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
@@ -123,11 +122,11 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=2)
         self.benefit = BluelightPercentageDiscountBenefit(
             range=range,
-            type=Benefit.PERCENTAGE,
+            proxy_class='oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit',
             value=20,
             max_affected_items=1)
         self.offer = mock.Mock()
@@ -158,6 +157,62 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
         self.assertEqual(2, self.basket.num_items_without_discount)
 
 
+class TestAPercentageDiscountWithMultipleApplicationsWithCountCondition(TestCase):
+    def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection('redis')
+        conn.flushall()
+
+        self.range_mattresses = Range.objects.create(name="Mattresses")
+        self.range_slippers = Range.objects.create(name="Slippers")
+
+        self.mattress = factories.create_product(title='Mattress', price=D('2999.00'))
+        self.slipper1 = factories.create_product(title='Slipper', price=D('78.00'))
+        self.slipper2 = factories.create_product(title='Slipper', price=D('79.00'))
+
+        self.range_mattresses.add_product(self.mattress)
+        self.range_slippers.add_product(self.slipper1)
+        self.range_slippers.add_product(self.slipper2)
+
+        self.condition = BluelightCountCondition.objects.create(
+            range=self.range_mattresses,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
+            value=1)
+
+        self.benefit = BluelightPercentageDiscountBenefit.objects.create(
+            range=self.range_slippers,
+            proxy_class='oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit',
+            value=D('100.00'),
+            max_affected_items=1)
+
+        self.offer = mock.Mock()
+        self.basket = factories.create_basket(empty=True)
+
+
+    def test_applies_correctly_to_basket_which_matches_multiple_lines_multiple_times(self):
+        # Add two different lines to the basket
+        self.basket.add_product(self.mattress, 2)
+        self.basket.add_product(self.slipper1, 1)
+        self.basket.add_product(self.slipper2, 1)
+        # Apply once
+        self.assertTrue(self.condition.proxy().is_satisfied(self.offer, self.basket))
+        result = self.benefit.apply(self.basket, self.condition, self.offer)
+        self.assertTrue(result.is_successful)
+        self.assertEqual(result.discount, D('78.00'))
+        self.assertEqual(self.basket.num_items_with_discount, 2)
+        self.assertEqual(self.basket.num_items_without_discount, 2)
+        # Apply second time
+        self.assertTrue(self.condition.proxy().is_satisfied(self.offer, self.basket))
+        result = self.benefit.apply(self.basket, self.condition, self.offer)
+        self.assertTrue(result.is_successful)
+        self.assertEqual(result.discount, D('79.00'))
+        self.assertEqual(self.basket.num_items_with_discount, 4)
+        self.assertEqual(self.basket.num_items_without_discount, 0)
+        # Can't apply a third time because the condition is no longer satisfied
+        self.assertFalse(self.condition.proxy().is_satisfied(self.offer, self.basket))
+
+
+
 class TestAPercentageDiscountAppliedWithValueCondition(TestCase):
     def setUp(self):
         # Flush the cache
@@ -168,11 +223,11 @@ class TestAPercentageDiscountAppliedWithValueCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(
             range=range,
-            type=Condition.VALUE,
+            proxy_class='oscarbluelight.offer.conditions.BluelightValueCondition',
             value=D('10.00'))
         self.benefit = BluelightPercentageDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.PERCENTAGE,
+            proxy_class='oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit',
             value=20)
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
@@ -220,11 +275,11 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(
             range=range,
-            type=Condition.VALUE,
+            proxy_class='oscarbluelight.offer.conditions.BluelightValueCondition',
             value=D('10.00'))
         self.benefit = BluelightPercentageDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.PERCENTAGE,
+            proxy_class='oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit',
             value=20,
             max_affected_items=1)
         self.offer = mock.Mock()
@@ -273,7 +328,8 @@ class TestAPercentageDiscountBenefit(TestCase):
         rng = Range.objects.create(
             name="", includes_all_products=True)
         benefit = Benefit.objects.create(
-            type=Benefit.PERCENTAGE, range=rng
+            range=rng,
+            proxy_class='oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit',
         )
         with self.assertRaises(exceptions.ValidationError):
             benefit.clean()

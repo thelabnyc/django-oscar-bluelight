@@ -6,7 +6,6 @@ from oscar.test.basket import add_product, add_products
 from oscar.test import factories
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
-    Condition,
     ConditionalOffer,
     Range,
     Benefit,
@@ -28,7 +27,7 @@ class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
         condition_range.add_product(self.condition_product)
         self.condition = BluelightCountCondition.objects.create(
             range=condition_range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=2)
 
         self.benefit_product = factories.ProductFactory()
@@ -36,7 +35,7 @@ class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
         benefit_range.add_product(self.benefit_product)
         self.benefit = BluelightAbsoluteDiscountBenefit.objects.create(
             range=benefit_range,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('3.00'))
 
         self.offer = ConditionalOffer(
@@ -80,12 +79,12 @@ class TestAnAbsoluteDiscountAppliedWithCountCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=2)
         self.offer = mock.Mock()
         self.benefit = BluelightAbsoluteDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('3.00'))
         self.basket = factories.create_basket(empty=True)
 
@@ -179,11 +178,11 @@ class TestAnAbsoluteDiscount(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=2)
         self.benefit = BluelightAbsoluteDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('4.00'))
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
@@ -261,11 +260,11 @@ class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightCountCondition.objects.create(
             range=range,
-            type=Condition.COUNT,
+            proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
             value=2)
         self.benefit = BluelightAbsoluteDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('3.00'),
             max_affected_items=1)
         self.offer = mock.Mock()
@@ -314,11 +313,11 @@ class TestAnAbsoluteDiscountAppliedWithValueCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(
             range=range,
-            type=Condition.VALUE,
+            proxy_class='oscarbluelight.offer.conditions.BluelightValueCondition',
             value=D('10.00'))
         self.benefit = BluelightAbsoluteDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('3.00'))
         self.offer = mock.Mock()
         self.basket = factories.create_basket(empty=True)
@@ -374,11 +373,11 @@ class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
             name="All products", includes_all_products=True)
         self.condition = BluelightValueCondition.objects.create(
             range=range,
-            type=Condition.VALUE,
+            proxy_class='oscarbluelight.offer.conditions.BluelightValueCondition',
             value=D('10.00'))
         self.benefit = BluelightAbsoluteDiscountBenefit.objects.create(
             range=range,
-            type=Benefit.FIXED,
+            proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit',
             value=D('3.00'),
             max_affected_items=1)
         self.offer = mock.Mock()
@@ -436,6 +435,6 @@ class TestAnAbsoluteDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
 class TestAnAbsoluteDiscountBenefit(TestCase):
     def test_requires_a_benefit_value(self):
         rng = Range.objects.create(name="", includes_all_products=True)
-        benefit = Benefit.objects.create(type=Benefit.FIXED, range=rng)
+        benefit = Benefit.objects.create(proxy_class='oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit', range=rng)
         with self.assertRaises(exceptions.ValidationError):
             benefit.clean()
