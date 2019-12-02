@@ -61,7 +61,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 _("Percentage discount cannot be greater than 100"))
 
 
-    def apply(self, basket, condition, offer, discount_percent=None, max_total_discount=None):
+    def apply(self, basket, condition, offer, discount_percent=None, max_total_discount=None, consume_items=None):
         self._clean()
 
         if discount_percent is None:
@@ -98,7 +98,10 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
             discount += line_discount
 
         if discount > 0:
-            condition.consume_items(offer, basket, affected_lines)
+            if consume_items:
+                consume_items(offer, basket, affected_lines)
+            else:
+                condition.consume_items(offer, basket, affected_lines)
         return BasketDiscount(discount)
 
 
@@ -140,7 +143,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                 _("Fixed discount benefits require a value"))
 
 
-    def apply(self, basket, condition, offer, discount_amount=None, max_total_discount=None):
+    def apply(self, basket, condition, offer, discount_amount=None, max_total_discount=None, consume_items=None):
         self._clean()
 
         if discount_amount is None:
@@ -188,7 +191,10 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
             affected_lines.append((line, line_discount, qty))
             applied_discount += line_discount
 
-        condition.consume_items(offer, basket, affected_lines)
+        if consume_items:
+            consume_items(offer, basket, affected_lines)
+        else:
+            condition.consume_items(offer, basket, affected_lines)
 
         return BasketDiscount(discount)
 
@@ -225,7 +231,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 _("Fixed price benefits require a product range."))
 
 
-    def apply(self, basket, condition, offer):
+    def apply(self, basket, condition, offer, consume_items=None):
         self._clean()
 
         # Fetch basket lines that are in the range and available to be used in an offer.
@@ -304,7 +310,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
                   "attribute"))
 
 
-    def apply(self, basket, condition, offer):
+    def apply(self, basket, condition, offer, consume_items=None):
         self._clean()
 
         line_tuples = self.get_applicable_lines(offer, basket)
@@ -345,7 +351,10 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         line.discount(discount, 1, incl_tax=False, offer=offer)
 
         affected_lines = [(line, discount, 1)]
-        condition.consume_items(offer, basket, affected_lines)
+        if consume_items:
+            consume_items(offer, basket, affected_lines)
+        else:
+            condition.consume_items(offer, basket, affected_lines)
 
         return BasketDiscount(discount)
 
@@ -385,7 +394,7 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
             raise exceptions.ValidationError(
                 _("Shipping discounts don't require a 'max affected items' attribute"))
 
-    def apply(self, basket, condition, offer):
+    def apply(self, basket, condition, offer, consume_items=None):
         self._clean()
         return super().apply(basket, condition, offer)
 
@@ -415,7 +424,7 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
             raise exceptions.ValidationError(
                 _("Shipping discounts don't require a 'max affected items' attribute"))
 
-    def apply(self, basket, condition, offer):
+    def apply(self, basket, condition, offer, consume_items=None):
         self._clean()
         return super().apply(basket, condition, offer)
 
@@ -448,7 +457,7 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
             raise exceptions.ValidationError(
                 _("Shipping discounts don't require a 'max affected items' attribute"))
 
-    def apply(self, basket, condition, offer):
+    def apply(self, basket, condition, offer, consume_items=None):
         self._clean()
         return super().apply(basket, condition, offer)
 
@@ -486,16 +495,30 @@ class CompoundBenefit(Benefit):
         descrs = (c.description for c in self.children)
         return self._human_readable_conjoin(descrs, _('Empty Benefit'))
 
-    def apply(self, basket, condition, offer):
+    def apply(self, basket, condition, offer, consume_items=None):
         combined_result = None
+        affected_lines = []
+
+        def _consume_items(_offer, _basket, _affected_lines):
+            for line in _affected_lines:
+                affected_lines.append(line)
+
         for child in self.children:
-            result = child.apply(basket, condition, offer)
+            result = child.apply(basket, condition, offer,
+                consume_items=_consume_items)
             if combined_result is None:
                 combined_result = copy.deepcopy(result)
             elif combined_result.affects == result.affects:
                 combined_result.discount += result.discount
             else:
                 raise ValueError(_("Can not combine offer benefits of differing types"))
+
+        if result.discount > 0:
+            if consume_items:
+                consume_items(offer, basket, affected_lines)
+            else:
+                condition.consume_items(offer, basket, affected_lines)
+
         return combined_result
 
     def apply_deferred(self, basket, order, application):
