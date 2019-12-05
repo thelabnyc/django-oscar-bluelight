@@ -322,6 +322,18 @@ class ConsumeOfferGroupOfferTest(TestCase):
         self.assertEqual(line.quantity_with_discount, 5)
         self.assertEqual(line.quantity_without_discount, 0)
 
+    @mock.patch('oscar.apps.offer.abstract_models.AbstractConditionalOffer.apply_benefit')
+    def test_oscar_apply_benefit_failure(self, mock_apply_benefit):
+        # Simulate an Exception from django-oscars's apply_benefit function
+        mock_apply_benefit.side_effect = Exception(
+            'Error occured when using oscar\'s apply_benefit function '
+        )
+
+        # Try to apply first ConditionalOffer to the basket
+        offer = ConditionalOffer.objects.first()
+        discount = offer.apply_benefit(self.basket)
+        self.assertEqual(discount.discount, D('0'))
+
 
     def test_add_another_offer_group(self):
         cond_a = Condition()

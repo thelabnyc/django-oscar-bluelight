@@ -116,7 +116,7 @@ class ConditionalOffer(AbstractConditionalOffer):
     def apply_benefit(self, basket):
         try:
             return super().apply_benefit(basket)
-        except exceptions.ValidationError as e:
+        except Exception as e:
             logger.exception(e)
             return ZERO_DISCOUNT
 
