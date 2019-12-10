@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
@@ -31,13 +32,17 @@ OrderDiscount = get_model('order', 'OrderDiscount')
 
 AddChildCodesForm = get_class('vouchers_dashboard.forms', 'AddChildCodesForm')
 VoucherForm = get_class('vouchers_dashboard.forms', 'VoucherForm')
+OrderDiscountSearchForm = get_class('offers_dashboard.forms', 'OrderDiscountSearchForm')
+
 BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER')
+
 
 
 class VoucherListView(DefaultVoucherListView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.exclude_children()
+
 
 
 class VoucherCreateView(DefaultVoucherCreateView):
@@ -89,18 +94,43 @@ class VoucherCreateView(DefaultVoucherCreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+
 class VoucherStatsView(DefaultVoucherStatsView):
-    MAX_DISPLAYED_ORDERS = 25
+    form_class = OrderDiscountSearchForm
+
+    def get_related_order_discounts(self):
+        ids = [self.object.id] + [c.id for c in self.object.children.all()]
+        qs = OrderDiscount.objects\
+            .filter(voucher_id__in=ids)\
+            .order_by('-order__date_placed')
+        self.form = self.form_class(self.request.GET)
+        qs, is_filtered = self.form.filter_queryset(qs)
+        self.is_filtered = is_filtered
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        ids = [self.object.id] + [c.id for c in self.object.children.all()]
-        discounts = OrderDiscount.objects.filter(voucher_id__in=ids)
-        discounts = discounts.order_by('-order__date_placed')
-        ctx['discounts'] = discounts[:self.MAX_DISPLAYED_ORDERS]
+        # Child vouchers
         ctx['children'] = self.object.children.order_by('code')
+        # Related orders
+        discounts = self.get_related_order_discounts()
+        paginator = Paginator(discounts, settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE)
+        ctx['is_paginated'] = True
+        ctx['paginator'] = paginator
+        ctx['page_obj'] = paginator.get_page(self.request.GET.get('page', 1))
+        ctx['discounts'] = ctx['page_obj']
+        ctx['form'] = self.form
+        ctx['is_filtered'] = self.is_filtered
         return ctx
+
+    def render_to_response(self, context):
+        if self.request.GET.get('format') == 'csv':
+            OrderDiscountCSVFormatter = get_class('offers_dashboard.reports', 'OrderDiscountCSVFormatter')
+            formatter = OrderDiscountCSVFormatter()
+            qs = self.get_related_order_discounts().order_by('order__date_placed')
+            return formatter.generate_response(qs, offer=self.object.offers.first())
+        return super().render_to_response(context)
+
 
 
 class VoucherUpdateView(DefaultVoucherUpdateView):
@@ -177,6 +207,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+
 class AddChildCodesView(generic.FormView):
     template_name = 'oscar/dashboard/vouchers/voucher_add_children.html'
     model = Voucher
@@ -199,6 +230,7 @@ class AddChildCodesView(generic.FormView):
 
     def get_success_url(self):
         return reverse('dashboard:voucher-stats', args=(self.kwargs['pk'], ))
+
 
 
 class ExportChildCodesView(generic.DetailView):

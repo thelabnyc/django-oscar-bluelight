@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
+from oscar.forms.widgets import DatePickerInput
 from oscar.apps.dashboard.offers.forms import (
     MetaDataForm as BaseMetaDataForm,
     RestrictionsForm as BaseRestrictionsForm,
@@ -16,6 +17,7 @@ CompoundCondition = get_model('offer', 'CompoundCondition')
 Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
 OfferGroup = get_model('offer', 'OfferGroup')
+Order = get_model('order', 'Order')
 
 
 class BenefitSearchForm(forms.Form):
@@ -24,6 +26,33 @@ class BenefitSearchForm(forms.Form):
 
 class ConditionSearchForm(forms.Form):
     range = forms.ModelChoiceField(required=False, queryset=Range.objects.order_by('name'))
+
+
+class OrderDiscountSearchForm(forms.Form):
+    number = forms.CharField(required=False, label=_("Order number"))
+    status_choices = [('', '---------')] + [(v, v) for v in Order.all_statuses()]
+    status = forms.ChoiceField(required=False, label=_("Order status"), choices=status_choices)
+    date_from = forms.DateField(required=False, label=_("Date from"), widget=DatePickerInput)
+    date_to = forms.DateField(required=False, label=_("Date to"), widget=DatePickerInput)
+
+    def filter_queryset(self, qs):
+        if not self.is_valid():
+            return qs
+        data = self.cleaned_data
+        is_filtered = False
+        if data.get('number'):
+            qs = qs.filter(order__number__icontains=data['number'])
+            is_filtered = True
+        if data.get('status'):
+            qs = qs.filter(order__status=data['status'])
+            is_filtered = True
+        if data.get('date_from'):
+            qs = qs.filter(order__date_placed__gte=data['date_from'])
+            is_filtered = True
+        if data.get('date_to'):
+            qs = qs.filter(order__date_placed__lte=data['date_to'])
+            is_filtered = True
+        return qs, is_filtered
 
 
 class BenefitForm(forms.ModelForm):
