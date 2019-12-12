@@ -27,10 +27,12 @@ ConditionForm = get_class('offers_dashboard.forms', 'ConditionForm')
 CompoundBenefitForm = get_class('offers_dashboard.forms', 'CompoundBenefitForm')
 CompoundConditionForm = get_class('offers_dashboard.forms', 'CompoundConditionForm')
 
+OrderDiscountSearchForm = get_class('offers_dashboard.forms', 'OrderDiscountSearchForm')
 MetaDataForm = get_class('offers_dashboard.forms', 'MetaDataForm')
 BenefitSelectionForm = get_class('offers_dashboard.forms', 'BenefitSelectionForm')
 ConditionSelectionForm = get_class('offers_dashboard.forms', 'ConditionSelectionForm')
 RestrictionsForm = get_class('offers_dashboard.forms', 'RestrictionsForm')
+
 
 
 class OfferWizardStepView(views.OfferWizardStepView):
@@ -107,6 +109,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
         return super().form_valid(form)
 
 
+
 class OfferMetaDataView(OfferWizardStepView):
     step_name = 'metadata'
     form_class = MetaDataForm
@@ -116,6 +119,7 @@ class OfferMetaDataView(OfferWizardStepView):
 
     def get_title(self):
         return _("Name and description")
+
 
 
 class OfferBenefitView(OfferWizardStepView):
@@ -131,6 +135,7 @@ class OfferBenefitView(OfferWizardStepView):
         return _("Incentive")
 
 
+
 class OfferConditionView(OfferWizardStepView):
     step_name = 'condition'
     form_class = ConditionSelectionForm
@@ -138,6 +143,7 @@ class OfferConditionView(OfferWizardStepView):
     url_name = 'dashboard:offer-condition'
     success_url_name = 'dashboard:offer-restrictions'
     previous_view = OfferBenefitView
+
 
 
 class OfferRestrictionsView(OfferWizardStepView):
@@ -176,6 +182,33 @@ class OfferRestrictionsView(OfferWizardStepView):
         return _("Restrictions")
 
 
+
+class OfferDetailView(views.OfferDetailView):
+    form_class = OrderDiscountSearchForm
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('-order__date_placed')
+        self.form = self.form_class(self.request.GET)
+        qs, is_filtered = self.form.filter_queryset(qs)
+        self.is_filtered = is_filtered
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['form'] = self.form
+        ctx['is_filtered'] = self.is_filtered
+        return ctx
+
+    def render_to_response(self, context):
+        if self.request.GET.get('format') == 'csv':
+            OrderDiscountCSVFormatter = get_class('offers_dashboard.reports', 'OrderDiscountCSVFormatter')
+            formatter = OrderDiscountCSVFormatter()
+            qs = self.get_queryset().order_by('order__date_placed')
+            return formatter.generate_response(qs, offer=self.offer)
+        return super().render_to_response(context)
+
+
+
 class BenefitListView(ListView):
     model = Benefit
     context_object_name = 'benefits'
@@ -209,10 +242,12 @@ class BenefitListView(ListView):
         return ctx
 
 
+
 class BenefitDeleteView(DeleteView):
     model = Benefit
     template_name = 'oscar/dashboard/offers/benefit_delete.html'
     success_url = reverse_lazy('dashboard:benefit-list')
+
 
 
 class CompoundBenefitCreateView(CreateView):
@@ -222,11 +257,13 @@ class CompoundBenefitCreateView(CreateView):
     success_url = reverse_lazy('dashboard:benefit-list')
 
 
+
 class BenefitCreateView(CreateView):
     model = Benefit
     template_name = 'oscar/dashboard/offers/benefit_edit.html'
     form_class = BenefitForm
     success_url = reverse_lazy('dashboard:benefit-list')
+
 
 
 class BenefitUpdateView(UpdateView):
@@ -246,6 +283,7 @@ class BenefitUpdateView(UpdateView):
         if hasattr(self.object, 'subbenefits'):
             return 'oscar/dashboard/offers/benefit_edit_compound.html'
         return 'oscar/dashboard/offers/benefit_edit.html'
+
 
 
 class ConditionListView(ListView):
@@ -281,10 +319,12 @@ class ConditionListView(ListView):
         return ctx
 
 
+
 class ConditionDeleteView(DeleteView):
     model = Condition
     template_name = 'oscar/dashboard/offers/condition_delete.html'
     success_url = reverse_lazy('dashboard:condition-list')
+
 
 
 class CompoundConditionCreateView(CreateView):
@@ -294,11 +334,13 @@ class CompoundConditionCreateView(CreateView):
     success_url = reverse_lazy('dashboard:condition-list')
 
 
+
 class ConditionCreateView(CreateView):
     model = Condition
     template_name = 'oscar/dashboard/offers/condition_edit.html'
     form_class = ConditionForm
     success_url = reverse_lazy('dashboard:condition-list')
+
 
 
 class ConditionUpdateView(UpdateView):
@@ -320,6 +362,7 @@ class ConditionUpdateView(UpdateView):
         return 'oscar/dashboard/offers/condition_edit.html'
 
 
+
 class OfferGroupCreateView(CreateView):
     model = OfferGroup
     template_name = 'oscar/dashboard/offers/offergroup_edit.html'
@@ -327,9 +370,11 @@ class OfferGroupCreateView(CreateView):
     success_url = reverse_lazy('dashboard:offergroup-list')
 
 
+
 class OfferGroupListView(ListView):
     model = OfferGroup
     template_name = 'oscar/dashboard/offers/offergroup_list.html'
+
 
 
 class OfferGroupDeleteView(DeleteView):
@@ -356,6 +401,7 @@ class OfferGroupDeleteView(DeleteView):
             messages.error(request, _("Offer Groups That Still Contain Offers Can Not Be Deleted"))
             return False
         return True
+
 
 
 class OfferGroupUpdateView(UpdateView):

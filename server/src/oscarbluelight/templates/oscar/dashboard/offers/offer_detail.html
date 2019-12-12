@@ -27,7 +27,7 @@
             <tr>
                 <th>{% trans "Name" %}</th>
                 <td>{{ offer.name }}</td>
-                <td rowspan="6"><a id="edit_metadata" href="{% url 'dashboard:offer-metadata' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
+                <td rowspan="5"><a id="edit_metadata" href="{% url 'dashboard:offer-metadata' pk=offer.pk %}" class="btn btn-default">{% trans "Edit" %}</a></td>
             </tr>
             <tr>
                 <th>{% trans "Short Name" %}</th>
@@ -73,14 +73,44 @@
         </tbody>
     </table>
 
-    {% if order_discounts %}
-        <div class="table-header">
-            <a class="pull-right btn" href=".?format=csv">{% trans "Export to CSV" %}</a>
-            <h2>{% trans "Orders that used this offer" %}</h2>
-        </div>
-        <table class="table table-bordered table-striped">
+    <h2>{% trans "Orders that used this offer" %}</h2>
+    <div class="well">
+        <form method="get" class="form">
+            {% include 'oscar/dashboard/partials/form_fields.html' with form=form %}
+            <button type="submit" class="btn btn-primary" data-loading-text="{% trans 'Searching...' %}">
+                {% trans "Search" %}
+            </button>
+            <button
+                type="submit"
+                class="btn btn-default"
+                name="format"
+                value="csv"
+            >
+                {% trans "Export to CSV" %}
+            </button>
+            {% if is_filtered %}
+                <a class="btn btn-default" href="{% url 'dashboard:offer-detail' pk=offer.pk %}">
+                    {% trans "Reset" %}
+                </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="table-header">
+        {% if is_filtered %}
+            <h2>{% trans "Orders matching search" %}</h2>
+        {% else %}
+            <h2>{% trans "All orders" %}</h2>
+        {% endif %}
+    </div>
+    <table class="table table-bordered table-striped">
+        {% if not order_discounts %}
+            <tr>
+                <td><em>{% trans "No orders found." %}</em></td>
+            </tr>
+        {% else %}
             <thead>
                 <th>{% trans "Order number" %}</th>
+                <th>{% trans "Order status" %}</th>
                 <th>{% trans "Order date" %}</th>
                 <th>{% trans "Order total" %}</th>
                 <th>{% trans "Cost" %}</th>
@@ -90,6 +120,7 @@
                     {% with order=discount.order %}
                         <tr>
                             <td><a href="{% url 'dashboard:order-detail' number=order.number %}">{{ order.number }}</a></td>
+                            <td>{{ order.status }}</td>
                             <td>{{ order.date_placed }}</td>
                             <td>{{ order.total_incl_tax|currency }}</td>
                             <td>{{ discount.amount|currency }}</td>
@@ -97,7 +128,7 @@
                     {% endwith %}
                 {% endfor %}
             </tbody>
-        </table>
-        {% include 'oscar/dashboard/partials/pagination.html' %}
-    {% endif %}
+        {% endif %}
+    </table>
+    {% include 'oscar/dashboard/partials/pagination.html' %}
 {% endblock dashboard_content %}
