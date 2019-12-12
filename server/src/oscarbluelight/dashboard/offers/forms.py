@@ -32,13 +32,22 @@ class ConditionSearchForm(forms.Form):
 
 class OrderDiscountSearchForm(forms.Form):
     number = forms.CharField(required=False, label=_("Order number"))
-    status_choices = [('', '---------')] + [(v, v) for v in Order.all_statuses()]
-    status = forms.ChoiceField(required=False, label=_("Order status"), choices=status_choices)
+    status = forms.ChoiceField(required=False, label=_("Order status"), choices=[])
     date_from = forms.DateField(required=False, label=_("Date from"), widget=DatePickerInput)
     date_to = forms.DateField(required=False, label=_("Date to"), widget=DatePickerInput)
     product = forms.CharField(required=False, label=_("Product"))
-    payment_method_choices = [('', '---------')] + [(src.code, src.name) for src in SourceType.objects.all()]
-    payment_method = forms.ChoiceField(required=False, label=_("Payment method"), choices=payment_method_choices)
+    payment_method = forms.ChoiceField(required=False, label=_("Payment method"), choices=[])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['status'].choices = self.get_order_status_choices()
+        self.fields['payment_method'].choices = self.get_payment_method_choices()
+
+    def get_order_status_choices(self):
+        return [('', '---------')] + [(v, v) for v in Order.all_statuses()]
+
+    def get_payment_method_choices(self):
+        return [('', '---------')] + [(src.code, src.name) for src in SourceType.objects.all()]
 
     def filter_queryset(self, qs):
         if not self.is_valid():
