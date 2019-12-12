@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
@@ -18,6 +19,7 @@ Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
 OfferGroup = get_model('offer', 'OfferGroup')
 Order = get_model('order', 'Order')
+SourceType = get_model('payment', 'SourceType')
 
 
 class BenefitSearchForm(forms.Form):
@@ -34,6 +36,9 @@ class OrderDiscountSearchForm(forms.Form):
     status = forms.ChoiceField(required=False, label=_("Order status"), choices=status_choices)
     date_from = forms.DateField(required=False, label=_("Date from"), widget=DatePickerInput)
     date_to = forms.DateField(required=False, label=_("Date to"), widget=DatePickerInput)
+    product = forms.CharField(required=False, label=_("Product"))
+    payment_method_choices = [('', '---------')] + [(src.code, src.name) for src in SourceType.objects.all()]
+    payment_method = forms.ChoiceField(required=False, label=_("Payment method"), choices=payment_method_choices)
 
     def filter_queryset(self, qs):
         if not self.is_valid():
@@ -51,6 +56,16 @@ class OrderDiscountSearchForm(forms.Form):
             is_filtered = True
         if data.get('date_to'):
             qs = qs.filter(order__date_placed__lte=data['date_to'])
+            is_filtered = True
+        if data.get('product'):
+            qs = qs.filter((
+                Q(order__lines__title__icontains=data['product']) |  # NOQA
+                Q(order__lines__upc__icontains=data['product']) |  # NOQA
+                Q(order__lines__partner_sku__icontains=data['product'])
+            ))
+            is_filtered = True
+        if data.get('payment_method'):
+            qs = qs.filter(order__sources__source_type__code=data['payment_method'])
             is_filtered = True
         return qs, is_filtered
 
