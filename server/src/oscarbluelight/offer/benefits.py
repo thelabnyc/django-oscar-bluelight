@@ -29,7 +29,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
     """
     An offer benefit that gives a percentage discount
     """
-    _description = _("%(value)s%% discount on %(range)s")
+    _description = _("%(value)s%% discount on %(range)s, %(max_affected_items)s")
 
     class Meta:
         app_label = 'offer'
@@ -42,14 +42,18 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
     def name(self):
         return self._description % {
             'value': self.value,
-            'range': self.range.name if self.range else _('product range')}
+            'range': self.range.name if self.range else _('product range'),
+            'max_affected_items': (_('maximum %s item(s)') % self.max_affected_items) if self.max_affected_items else _('no maximum'),
+        }
 
 
     @property
     def description(self):
         return self._description % {
             'value': self.value,
-            'range': utils.range_anchor(self.range) if self.range else _('product range')}
+            'range': utils.range_anchor(self.range) if self.range else _('product range'),
+            'max_affected_items': (_('maximum %s item(s)') % self.max_affected_items) if self.max_affected_items else _('no maximum'),
+        }
 
 
     def _clean(self):
@@ -111,7 +115,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
     """
     An offer benefit that gives an absolute discount
     """
-    _description = _("%(value)s discount on %(range)s")
+    _description = _("%(value)s discount on %(range)s, %(max_affected_items)s")
 
     class Meta:
         app_label = 'offer'
@@ -124,14 +128,18 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
     def name(self):
         return self._description % {
             'value': currency(self.value),
-            'range': self.range.name.lower() if self.range else _('product range')}
+            'range': self.range.name.lower() if self.range else _('product range'),
+            'max_affected_items': (_('maximum %s item(s)') % self.max_affected_items) if self.max_affected_items else _('no maximum'),
+        }
 
 
     @property
     def description(self):
         return self._description % {
             'value': currency(self.value),
-            'range': utils.range_anchor(self.range) if self.range else _('product range')}
+            'range': utils.range_anchor(self.range) if self.range else _('product range'),
+            'max_affected_items': (_('maximum %s item(s)') % self.max_affected_items) if self.max_affected_items else _('no maximum'),
+        }
 
 
     def _clean(self):
@@ -210,7 +218,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
     gives the basket items in the benefit range for a fixed price, not the basket items
     in the condition range. It also respects the max_affected_items setting.
     """
-    _description = _("The products in the range are sold for %(amount)s")
+    _description = _("The products in the range are sold for %(amount)s, %(max_affected_items)s")
 
     class Meta:
         app_label = 'offer'
@@ -222,7 +230,9 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
     @property
     def name(self):
         return self._description % {
-            'amount': currency(self.value)}
+            'amount': currency(self.value),
+            'max_affected_items': (_('maximum %s item(s)') % self.max_affected_items) if self.max_affected_items else _('no maximum'),
+        }
 
 
     def _clean(self):
@@ -288,13 +298,15 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
     @property
     def name(self):
         return self._description % {
-            'range': self.range.name.lower() if self.range else _('product range')}
+            'range': self.range.name.lower() if self.range else _('product range'),
+        }
 
 
     @property
     def description(self):
         return self._description % {
-            'range': utils.range_anchor(self.range) if self.range else _('product range')}
+            'range': utils.range_anchor(self.range) if self.range else _('product range'),
+        }
 
 
     def _clean(self):
@@ -380,7 +392,8 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
     @property
     def name(self):
         return self._description % {
-            'amount': currency(self.value)}
+            'amount': currency(self.value),
+        }
 
 
     def _clean(self):
@@ -413,7 +426,8 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
     @property
     def name(self):
         return self._description % {
-            'amount': currency(self.value)}
+            'amount': currency(self.value),
+        }
 
 
     def _clean(self):
@@ -443,7 +457,8 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
     @property
     def name(self):
         return self._description % {
-            'value': self.value}
+            'value': self.value,
+        }
 
 
     def _clean(self):

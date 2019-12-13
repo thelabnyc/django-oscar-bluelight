@@ -216,7 +216,10 @@ class BenefitListView(ListView):
     form_class = BenefitSearchForm
 
     def get_queryset(self):
-        qs = self.model._default_manager.order_by('-id')
+        qs = self.model._default_manager\
+            .select_related('range')\
+            .prefetch_related('offers', 'parent_benefits')\
+            .order_by('-id')
 
         self.description = _("All benefits")
 
@@ -293,7 +296,10 @@ class ConditionListView(ListView):
     form_class = ConditionSearchForm
 
     def get_queryset(self):
-        qs = self.model._default_manager.order_by('-id')
+        qs = self.model._default_manager\
+            .select_related('range')\
+            .prefetch_related('offers', 'parent_conditions')\
+            .order_by('-id')
 
         self.description = _("All conditions")
 
