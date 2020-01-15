@@ -4,6 +4,7 @@ from django.core.cache import caches
 from django.db import models, IntegrityError
 from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import force_str
 from django_redis import get_redis_connection
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
@@ -137,6 +138,10 @@ class Benefit(AbstractBenefit):
         return super().proxy()
 
     @property
+    def name(self):
+        return force_str(super().name)
+
+    @property
     def type_name(self):
         benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
         names = dict(benefit_classes)
@@ -182,6 +187,10 @@ class Condition(AbstractCondition):
             Klass = load_proxy(self.proxy_class)
             return _init_proxy_class(self, Klass)
         return super().proxy()
+
+    @property
+    def name(self):
+        return force_str(super().name)
 
     @property
     def type_name(self):
