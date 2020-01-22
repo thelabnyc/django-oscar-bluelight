@@ -528,7 +528,7 @@ class CompoundBenefit(Benefit):
             else:
                 raise ValueError(_("Can not combine offer benefits of differing types"))
 
-        if result.discount > 0:
+        if combined_result.discount > 0:
             if consume_items:
                 consume_items(offer, basket, affected_lines)
             else:

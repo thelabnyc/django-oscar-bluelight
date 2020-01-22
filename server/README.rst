@@ -109,6 +109,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+0.14.1
+------------------
+- Fix bug in CompoundBenefit which caused lines to not be properly consumed by a condition if the last-to-be-applied child benefit didn't trigger a discount.
+
 0.14.0
 ------------------
 - Add support for django-oscar 2.x.

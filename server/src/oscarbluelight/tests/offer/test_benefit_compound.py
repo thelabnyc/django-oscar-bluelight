@@ -180,3 +180,51 @@ class TestCompoundBluelightPercentageBenefitDiscount(TestCase):
         self.assertEqual(line_discounts[3], D('316.00'))
 
         self.assertEqual(self.basket.total_excl_tax, D('5998.00'))
+
+
+    def test_consumes_items_correctly_when_all_child_benefits_satisfied(self):
+        # Add products
+        line_1, _ = self.basket.add_product(self.mattress, 1)
+        line_2, _ = self.basket.add_product(self.mattress_protector, 1)
+        line_3, _ = self.basket.add_product(self.slipper, 1)
+        line_4, _ = self.basket.add_product(self.pillow, 2)
+        # Mock the condition.consume_items so we can check it's input
+        self.condition.consume_items = mock.MagicMock()
+        self.condition.consume_items.assert_not_called()
+        # Check the condition is satisfied
+        self.assertEqual(self.condition.proxy().is_satisfied(self.offer, self.basket), True)
+        # Apply the benefit
+        result = self.benefit_compound.apply(self.basket, self.condition, self.offer)
+        # Check Result
+        self.assertEqual(result.is_successful, True)
+        self.assertEqual(result.is_final, False)
+        self.assertEqual(result.discount, D('385.00'))
+        # Check that lines were consumed correctly
+        self.condition.consume_items.assert_called_once_with(self.offer, self.basket, [
+            (line_2, D('149.00'), 1),
+            (line_3, D('78.00'), 1),
+            (line_4, D('158.00'), 2),
+        ])
+
+
+    def test_consumes_items_correctly_when_not_all_child_benefits_satisfied(self):
+        # Add products, but not a pillow (leaving part of the compound benefit unused)
+        line_1, _ = self.basket.add_product(self.mattress, 1)
+        line_2, _ = self.basket.add_product(self.mattress_protector, 1)
+        line_3, _ = self.basket.add_product(self.slipper, 1)
+        # Mock the condition.consume_items so we can check it's input
+        self.condition.consume_items = mock.MagicMock()
+        self.condition.consume_items.assert_not_called()
+        # Check the condition is satisfied
+        self.assertEqual(self.condition.proxy().is_satisfied(self.offer, self.basket), True)
+        # Apply the benefit
+        result = self.benefit_compound.apply(self.basket, self.condition, self.offer)
+        # Check Result
+        self.assertEqual(result.is_successful, True)
+        self.assertEqual(result.is_final, False)
+        self.assertEqual(result.discount, D('227.00'))
+        # Check that lines were consumed correctly
+        self.condition.consume_items.assert_called_once_with(self.offer, self.basket, [
+            (line_2, D('149.00'), 1),
+            (line_3, D('78.00'), 1),
+        ])
