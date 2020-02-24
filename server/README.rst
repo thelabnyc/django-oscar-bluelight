@@ -109,6 +109,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+1.0.0
+------------------
+- Add improved reporting formats for offers and vouchers.
+
 0.14.1
 ------------------
 - Fix bug in CompoundBenefit which caused lines to not be properly consumed by a condition if the last-to-be-applied child benefit didn't trigger a discount.
