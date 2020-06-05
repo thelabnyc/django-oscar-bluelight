@@ -6,7 +6,7 @@ billiard==3.5.0.2
 celery==4.0.2
 certifi==2017.4.17
 chardet==3.0.4
-Django==1.10.7
+Django==1.11.29
 django-extra-views==0.6.4
 django-haystack==2.5.1
 django-oscar==1.5rc1
