@@ -69,6 +69,27 @@ class Voucher(AbstractVoucher):
         offer = self.offers.first()
         return offer.benefit if offer else None
 
+    def revert_voucher_discount(self, discount):
+        """
+        Revert a discount applied by a voucher
+        """
+
+        if self.parent:
+            self.parent.total_discount -= discount['discount']
+            self.parent.save(update_children=False)
+        self.total_discount -= discount['discount']
+        self.save(update_children=False)
+
+    def decrease_num_orders(self):
+        """
+        Decrease num_orders for a voucher and it's parent
+        """
+
+        if self.parent:
+            self.parent.num_orders -= 1
+            self.parent.save()
+        self.num_orders -= 1
+        self.save(update_children=False)
 
     def is_available_to_user(self, user=None):
         # Parent vouchers can not be used directly

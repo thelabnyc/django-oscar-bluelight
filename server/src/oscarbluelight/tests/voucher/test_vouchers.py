@@ -343,3 +343,87 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(p.total_discount, D('10.00'))
         self.assertEqual(c1.total_discount, D('7.00'))
         self.assertEqual(c2.total_discount, D('3.00'))
+
+    def test_revert_voucher_discount(self):
+        p = Voucher.objects.create(
+            name='Test Voucher',
+            code='test-voucher',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False)
+        c1 = Voucher.objects.create(
+            parent=p,
+            name='Test Voucher',
+            code='test-voucher-1',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False)
+        c2 = Voucher.objects.create(
+            parent=p,
+            name='Test Voucher',
+            code='test-voucher-2',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False)
+
+        discount_amount = D('7.00')
+
+        self.assertEqual(p.total_discount, D('0.00'))
+        self.assertEqual(c1.total_discount, D('0.00'))
+        self.assertEqual(c2.total_discount, D('0.00'))
+
+        c1.record_discount({ 'discount': discount_amount })
+
+        self.assertEqual(p.total_discount, D('7.00'))
+        self.assertEqual(c1.total_discount, D('7.00'))
+        self.assertEqual(c2.total_discount, D('0.00'))
+
+        c1.revert_voucher_discount({ 'discount': discount_amount })
+
+        self.assertEqual(p.total_discount, D('0.00'))
+        self.assertEqual(c1.total_discount, D('0.00'))
+        self.assertEqual(c2.total_discount, D('0.00'))
+
+    def test_decrease_num_order(self):
+        p = Voucher.objects.create(
+            name='Test Voucher',
+            code='test-voucher',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+            num_orders=3,
+            )
+        c1 = Voucher.objects.create(
+            parent=p,
+            name='Test Voucher',
+            code='test-voucher-1',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+            num_orders=2,
+            )
+        c2 = Voucher.objects.create(
+            parent=p,
+            name='Test Voucher',
+            code='test-voucher-2',
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+            num_orders=1
+            )
+
+        self.assertEqual(p.num_orders, 3)
+        self.assertEqual(c1.num_orders, 2)
+        self.assertEqual(c2.num_orders, 1)
+
+        c1.decrease_num_orders()
+
+        self.assertEqual(p.num_orders, 2)
+        self.assertEqual(c1.num_orders, 1)
+        self.assertEqual(c2.num_orders, 1)
