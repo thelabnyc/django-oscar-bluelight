@@ -2,7 +2,6 @@ from decimal import Decimal as D, ROUND_UP
 from django.core import exceptions
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.utils import six
 from oscar.apps.offer import utils
 from oscar.apps.offer.conditions import CountCondition, CoverageCondition, ValueCondition
 from oscar.core.loading import get_model
@@ -31,7 +30,7 @@ class BluelightCountCondition(CountCondition):
     def name(self):
         return self._description % {
             'count': self.value,
-            'range': six.text_type(self.range).lower() if self.range else _('product range')}
+            'range': str(self.range).lower() if self.range else _('product range')}
 
     @property
     def description(self):
@@ -83,7 +82,7 @@ class BluelightCoverageCondition(CoverageCondition):
     def name(self):
         return self._description % {
             'count': self.value,
-            'range': six.text_type(self.range).lower() if self.range else _('product range')}
+            'range': str(self.range).lower() if self.range else _('product range')}
 
     @property
     def description(self):
@@ -145,7 +144,7 @@ class BluelightValueCondition(ValueCondition):
         return self._description % {
             'amount': currency(self.value),
             'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
-            'range': six.text_type(self.range).lower() if self.range else _('product range')}
+            'range': str(self.range).lower() if self.range else _('product range')}
 
     @property
     def description(self):
