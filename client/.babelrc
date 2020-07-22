@@ -8,10 +8,9 @@
             "corejs": 3,
             "targets": {
                 "browsers": [
-                    "defaults",
-                    "last 2 versions",
-                    "IE 11",
-                    "last 5 ios_saf versions"
+                    "> 1% in US",
+                    "not IE 11",
+                    "not dead"
                 ]
             }
         }],
