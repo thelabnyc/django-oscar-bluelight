@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from oscar.defaults import OSCAR_DASHBOARD_NAVIGATION
 
 
@@ -20,7 +20,6 @@ insert_nav_item('dashboard:benefit-list', _('Conditions'), 'dashboard:condition-
 # Media file path for offer images
 BLUELIGHT_OFFER_IMAGE_FOLDER = 'images/offers/'
 
-BLUELIGHT_RANGE_CACHE_TTL = 86400
 BLUELIGHT_COSMETIC_PRICE_CACHE_TTL = 86400
 
 BLUELIGHT_BENEFIT_CLASSES = [

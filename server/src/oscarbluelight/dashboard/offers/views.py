@@ -3,7 +3,7 @@ from django.core import serializers
 from django.urls import reverse_lazy, reverse
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers.views import *  # noqa

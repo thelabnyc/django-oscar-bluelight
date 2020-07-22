@@ -28,32 +28,12 @@ lint_typescript:
   stage: test
   tags:
     - django-oscar
-  image: node:8
+  image: node:12
   script:
     - cd client/
     - NODE_ENV=dev yarn
     - yarn run lint
     - NODE_ENV=production node_modules/.bin/webpack
-
-test_python35:
-  stage: test
-  tags:
-    - django-oscar
-  image: python:3.5
-  script:
-    - cd server/
-    - pip install tox
-    - tox -e 'py35-django{220}-drf{39,310}-oscar{20}'
-
-test_python36:
-  stage: test
-  tags:
-    - django-oscar
-  image: python:3.6
-  script:
-    - cd server/
-    - pip install tox
-    - tox -e 'py36-django{220}-drf{39,310}-oscar{20}'
 
 test_python37:
   stage: test
@@ -63,7 +43,7 @@ test_python37:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py37-django{220}-drf{39,310}-oscar{20}'
+    - tox -e 'py37-django{220,300}-drf{310,311}-oscar{21}'
 
 test_python38:
   stage: test
@@ -73,14 +53,14 @@ test_python38:
   script:
     - cd server/
     - pip install tox
-    - tox -e 'py38-django{220}-drf{39,310}-oscar{20}'
+    - tox -e 'py38-django{220,300}-drf{310,311}-oscar{21}'
 
-test_pypy35:
+test_pypy3:
   stage: test
   tags:
     - django-oscar
-  image: pypy:3-5
+  image: pypy:3
   script:
     - cd server/
     - pip install tox
-    - tox -e 'pypy3-django{220}-drf{39,310}-oscar{20}'
+    - tox -e 'pypy3-django{220,300}-drf{310,311}-oscar{21}'

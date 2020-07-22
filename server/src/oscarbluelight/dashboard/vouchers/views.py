@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.vouchers.views import *  # noqa

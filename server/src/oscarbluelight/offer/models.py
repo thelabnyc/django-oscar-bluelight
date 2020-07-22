@@ -3,9 +3,8 @@ from django.core import exceptions
 from django.core.cache import caches
 from django.db import models, IntegrityError
 from django.db.models import F
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
-from django_redis import get_redis_connection
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -25,7 +24,6 @@ from oscar.apps.offer.results import (
 from oscar.apps.offer.utils import load_proxy
 import copy
 import logging
-import random
 
 logger = logging.getLogger(__name__)
 
@@ -232,85 +230,11 @@ class Condition(AbstractCondition):
 
 
 class Range(AbstractRange):
-    cache_version = models.PositiveIntegerField(_("Cache Version"),
-        editable=False,
-        default=1)
-
     def delete(self, *args, **kwargs):
         # Disallow deleting a range with any dependents
         if self.benefit_set.exists() or self.condition_set.exists():
             raise IntegrityError(_('Can not delete range with a dependent benefit or condition.'))
         return super().delete(*args, **kwargs)
-
-    @property
-    def _cache_ttl(self):
-        center = getattr(settings, 'BLUELIGHT_RANGE_CACHE_TTL', 86400 * 7)
-        entropy = 86400 / 2
-        return random.randrange(
-            max(0, center - entropy),
-            (center + entropy))
-
-    @property
-    def _cache_key(self):
-        return cache.make_key('oscarbluelight.models.Range.{}-{}.products'.format(self.pk, self.cache_version))
-
-    _member_cache = None
-
-    def contains_product(self, product):
-        # If this range contains everything, short-circuit the normal (slower) logic
-        if self.includes_all_products:
-            excluded_product_ids = self._excluded_product_ids()
-            if product.id in excluded_product_ids:
-                return False
-            return True
-        key = self._cache_key
-        conn = get_redis_connection(settings.REDIS_CACHE_ALIAS)
-        # Populate redis cache if it doesn't exist, then get the set of included product IDs
-        if self._member_cache is None:
-            if conn.exists(key):
-                self._member_cache = { int(pk) for pk in conn.smembers(key) }
-            else:
-                self._member_cache = { int(pk) for pk in self.populate_member_cache() }
-        # Check if the given product is in the set of included product IDs
-        product_ids = { product.pk }
-        if product.is_child:
-            product_ids.add(product.parent.pk)
-        return len(self._member_cache & product_ids) > 0
-
-    # Shorter alias for contains_product
-    contains = contains_product
-
-    def populate_member_cache(self):
-        # Get all products for the set
-        product_ids = self.all_products().values_list('pk', flat=True)
-        if len(product_ids) <= 0:
-            product_ids = [0]
-        product_ids = set(product_ids)
-        # Store the product IDs as a SET datatype in Redis
-        key = self._cache_key
-        conn = get_redis_connection(settings.REDIS_CACHE_ALIAS)
-        pipe = conn.pipeline()
-        pipe.delete(key)
-        pipe.sadd(key, *product_ids)
-        pipe.expire(key, self._cache_ttl)
-        pipe.execute()
-        return product_ids
-
-    def invalidate_cached_ids(self):
-        self._member_cache = None
-        return super().invalidate_cached_ids()
-
-
-    def increment_cache_version(self):
-        self.__class__.objects.filter(pk=self.pk).update(cache_version=(F('cache_version') + 1))
-        self.invalidate_cached_ids()
-
-    def save(self, *args, **kwargs):
-        # Increment the cache_version number so that memoized functions (like contains_product) are automatically invalidated.
-        if self.pk:
-            self.cache_version = F('cache_version') + 1
-            self.invalidate_cached_ids()
-        return super().save(*args, **kwargs)
 
 
 class RangeProduct(AbstractRangeProduct):

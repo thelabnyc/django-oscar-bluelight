@@ -14,10 +14,6 @@ class TestWholeSiteRange(TestCase):
     def test_all_products_range(self):
         self.assertTrue(self.range.contains_product(self.prod))
 
-    def test_all_products_excludes_child_products(self):
-        child_product = create_product(structure='child', parent=self.prod)
-        self.assertTrue(child_product not in self.range.all_products())
-
     def test_whitelisting(self):
         self.range.add_product(self.prod)
         self.assertTrue(self.range.contains_product(self.prod))
@@ -206,11 +202,11 @@ class TestPartialRange(TestCase):
             product=product, category=included_category)
         self.range.included_categories.add(included_category)
 
-        self.range.invalidate_cached_ids()
+        self.range.invalidate_cached_queryset()
         self.assertFalse(self.range.is_reorderable)
 
         self.range.included_categories.remove(included_category)
-        self.range.invalidate_cached_ids()
+        self.range.invalidate_cached_queryset()
         self.assertTrue(self.range.is_reorderable)
 
 

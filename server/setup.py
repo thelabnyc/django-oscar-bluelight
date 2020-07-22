@@ -13,9 +13,10 @@ packages = find_packages('src')
 
 install_requires = [
     'celery>=4.3',
-    'django-oscar>=2.0.0',
+    'django>=2.2',
+    'django-oscar>=2.1',
     'django-redis>=4.8.0',
-    'djangorestframework>=3.9',
+    'djangorestframework>=3.10',
     'redis>=3.0.0',
 ]
 
@@ -52,15 +53,11 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: ISC License (ISCL)',
         'Operating System :: Unix',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
     ],
     author='Craig Weber',
     author_email='crgwbr@gmail.com',
