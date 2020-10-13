@@ -4,8 +4,6 @@ variables:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: ""
   POSTGRES_HOST_AUTH_METHOD: 'trust'
-  # Set SAST / DAST testing version
-  SP_VERSION: 11-10-stable
 
 stages:
   - test
@@ -19,10 +17,6 @@ cache:
   paths:
     - node_modules
     - $HOME/.cache/pip
-
-include:
-  - project: thelabnyc/gitlab-ci-templates
-    file: /ci/sast.gitlab-ci.yml
 
 lint_typescript:
   stage: test
