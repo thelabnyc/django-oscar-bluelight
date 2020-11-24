@@ -55,6 +55,7 @@ Add Bluelight to your installed apps (replacing the equivalent Django Oscar apps
         ...
         # Bluelight. Must come before `django-oscar` so that template inheritance / overrides work correctly.
         'oscarbluelight',
+        'django_pgviews',
 
         # django-oscar
         'oscar',
@@ -108,6 +109,14 @@ After installation, the new functionality will show up in the Oscar dashboard un
 
 Changelog
 =========
+
+3.0.0
+------------------
+- Use Postgres materialized views to improve performance of querying for products in a range.
+
+2.0.0
+------------------
+- Support django-oscar 2.1
 
 1.0.0
 ------------------
