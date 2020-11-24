@@ -1,10 +1,14 @@
 from django.conf import settings
+from django.dispatch import receiver
 from django.core import exceptions
 from django.core.cache import caches
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, connection
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
+from django.utils.functional import cached_property
+from django_pgviews.signals import view_synced
+from django_pgviews import view as pg
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -22,6 +26,7 @@ from oscar.apps.offer.results import (
     ShippingDiscount
 )
 from oscar.apps.offer.utils import load_proxy
+from .sql import SQL_RANGE_PRODUCTS, SQL_RANGE_PRODUCT_TRIGGERS
 import copy
 import logging
 
@@ -230,11 +235,26 @@ class Condition(AbstractCondition):
 
 
 class Range(AbstractRange):
+
+    @cached_property
+    def product_queryset(self):
+        Product = self.included_products.model
+        # Use the "Include All" escape hatch?
+        if self.includes_all_products:
+            # Filter out blacklisted products
+            return Product.objects.all().exclude(
+                id__in=self.excluded_products.values("id")
+            )
+        # Query the cache view
+        return Product.objects.all().filter(cached_ranges__range=self)
+
+
     def delete(self, *args, **kwargs):
         # Disallow deleting a range with any dependents
         if self.benefit_set.exists() or self.condition_set.exists():
             raise IntegrityError(_('Can not delete range with a dependent benefit or condition.'))
         return super().delete(*args, **kwargs)
+
 
 
 class RangeProduct(AbstractRangeProduct):
@@ -243,6 +263,21 @@ class RangeProduct(AbstractRangeProduct):
 
 class RangeProductFileUpload(AbstractRangeProductFileUpload):
     pass
+
+
+class RangeProductSet(pg.MaterializedView):
+    range = models.ForeignKey(Range,
+        related_name='cached_products',
+        on_delete=models.DO_NOTHING)
+    product = models.ForeignKey('catalogue.Product',
+        related_name='cached_ranges',
+        on_delete=models.DO_NOTHING)
+
+    concurrent_index = 'range_id, product_id'
+    sql = SQL_RANGE_PRODUCTS
+
+    class Meta:
+        managed = False
 
 
 # Make proxy_class field not unique.
@@ -265,3 +300,10 @@ from .conditions import __all__ as condition_classes  # NOQA
 
 __all__.extend(benefit_classes)
 __all__.extend(condition_classes)
+
+
+@receiver(view_synced, sender=RangeProductSet)
+def add_view_triggers(sender, **kwargs):
+    with connection.cursor() as cursor:
+        for sql in SQL_RANGE_PRODUCT_TRIGGERS:
+            cursor.execute(sql)

@@ -16,6 +16,7 @@ install_requires = [
     'django>=2.2',
     'django-oscar>=2.1',
     'django-redis>=4.8.0',
+    'django-pgviews>=0.5.7',
     'djangorestframework>=3.10',
     'redis>=3.0.0',
 ]
