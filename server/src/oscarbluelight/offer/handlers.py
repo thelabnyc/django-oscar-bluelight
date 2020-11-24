@@ -54,11 +54,13 @@ post_migrate.connect(post_migrate_ensure_all_system_groups_exist)
 # Update disable_triggers var based on Django settings when the DB connection is created
 @receiver(connection_created)
 def set_disable_triggers_on_connection_created(sender, **kwargs):
-    RangeProductSet.set_disable_triggers_for_session(settings.BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED)
+    value = getattr(settings, 'BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED', False)
+    if value:
+        RangeProductSet.set_disable_triggers_for_session(value)
 
 
 # Update disable_triggers var when Django settings are changed
 @receiver(setting_changed)
-def set_disable_triggers_on_settings_change(sender, setting, value, **kwargs):
+def set_disable_triggers_on_settings_change(sender, setting, value, enter, **kwargs):
     if setting == 'BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED':
         RangeProductSet.set_disable_triggers_for_session(value)

@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.dispatch import receiver
 from django.core import exceptions
-from django.core.cache import caches
 from django.db import models, IntegrityError, connection
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
@@ -31,8 +30,6 @@ import copy
 import logging
 
 logger = logging.getLogger(__name__)
-
-cache = caches[settings.REDIS_CACHE_ALIAS]
 
 
 def _init_proxy_class(obj, Klass):

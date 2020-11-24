@@ -40,6 +40,4 @@ BLUELIGHT_CONDITION_CLASSES = [
     ('oscarbluelight.offer.conditions.BluelightCoverageCondition', _("Needs to contain a set number of DISTINCT items from the condition range")),
 ]
 
-REDIS_CACHE_ALIAS = 'default'
-
 BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED = False
