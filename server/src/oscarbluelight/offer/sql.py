@@ -1,5 +1,3 @@
-from django.conf import settings
-
 # Basically copied from the query run by ``oscar.apps.offer.models.Range.product_queryset``
 # Just slightly altered to work as a materialized view, leading to better performance.
 # At time of writing this, calls to Range.contains_product took about 10ms. With the addition of the
@@ -110,24 +108,26 @@ WHERE p1.id IS NOT NULL
 ORDER BY range_id, product_id;
 """
 
-SQL_RANGE_PRODUCT_TRIGGERS = [
-    """
-    DROP FUNCTION IF EXISTS refresh_offer_rangeproductset() CASCADE;
-    """,
-    """
-    CREATE OR REPLACE FUNCTION refresh_offer_rangeproductset()
-        RETURNS trigger AS
-        $BODY$
-        BEGIN
-            REFRESH MATERIALIZED VIEW CONCURRENTLY offer_rangeproductset;
-            RETURN NULL;
-        END;
-        $BODY$
-        LANGUAGE PLPGSQL;
-    """,
-]
 
-if getattr(settings, 'BLUELIGHT_PG_VIEW_TRIGGERS_ENABLED', True):
+def get_sql_range_product_triggers():
+    sql_range_product_triggers = [
+        """
+        DROP FUNCTION IF EXISTS refresh_offer_rangeproductset() CASCADE;
+        """,
+        """
+        CREATE OR REPLACE FUNCTION refresh_offer_rangeproductset()
+            RETURNS trigger AS
+            $BODY$
+            BEGIN
+                if not COALESCE(current_setting('oscarbluelight.disable_triggers', true)::boolean, false) then
+                    REFRESH MATERIALIZED VIEW CONCURRENTLY offer_rangeproductset;
+                end if;
+                RETURN NULL;
+            END;
+            $BODY$
+            LANGUAGE PLPGSQL;
+        """,
+    ]
     range_product_trigger_tables = [
         "catalogue_category",
         "catalogue_product",
@@ -141,13 +141,13 @@ if getattr(settings, 'BLUELIGHT_PG_VIEW_TRIGGERS_ENABLED', True):
     ]
     for table_name in range_product_trigger_tables:
         for event in "INSERT", "UPDATE", "DELETE":
-            SQL_RANGE_PRODUCT_TRIGGERS.append("""
+            sql_range_product_triggers.append("""
                 DROP TRIGGER IF EXISTS refresh_refresh_offer_rangeproductset_{event} ON {table} CASCADE;
             """.format(
                 event=event,
                 table=table_name
             ))
-            SQL_RANGE_PRODUCT_TRIGGERS.append("""
+            sql_range_product_triggers.append("""
                 CREATE TRIGGER refresh_refresh_offer_rangeproductset_{event}
                 AFTER {event} ON {table}
                 FOR EACH STATEMENT
@@ -156,3 +156,4 @@ if getattr(settings, 'BLUELIGHT_PG_VIEW_TRIGGERS_ENABLED', True):
                 event=event,
                 table=table_name
             ))
+    return sql_range_product_triggers

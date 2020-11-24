@@ -26,7 +26,7 @@ from oscar.apps.offer.results import (
     ShippingDiscount
 )
 from oscar.apps.offer.utils import load_proxy
-from .sql import SQL_RANGE_PRODUCTS, SQL_RANGE_PRODUCT_TRIGGERS
+from .sql import SQL_RANGE_PRODUCTS, get_sql_range_product_triggers
 import copy
 import logging
 
@@ -279,6 +279,15 @@ class RangeProductSet(pg.MaterializedView):
     class Meta:
         managed = False
 
+    @classmethod
+    def set_disable_triggers_for_session(cls, disable_triggers):
+        if disable_triggers:
+            stmnt = "SET oscarbluelight.disable_triggers = true"
+        else:
+            stmnt = "SET oscarbluelight.disable_triggers = false"
+        with connection.cursor() as cursor:
+            cursor.execute(stmnt)
+
 
 # Make proxy_class field not unique.
 Condition._meta.get_field('proxy_class')._unique = False
@@ -305,5 +314,5 @@ __all__.extend(condition_classes)
 @receiver(view_synced, sender=RangeProductSet)
 def add_view_triggers(sender, **kwargs):
     with connection.cursor() as cursor:
-        for sql in SQL_RANGE_PRODUCT_TRIGGERS:
+        for sql in get_sql_range_product_triggers():
             cursor.execute(sql)
