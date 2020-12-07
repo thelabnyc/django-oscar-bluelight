@@ -10,7 +10,7 @@ Condition = get_model('offer', 'Condition')
 Range = get_model('offer', 'Range')
 OfferGroup = get_model('offer', 'OfferGroup')
 
-MAX_CHILDREN_CREATE = 1000
+MAX_CHILDREN_CREATE = 100_000
 
 
 class VoucherForm(forms.Form):

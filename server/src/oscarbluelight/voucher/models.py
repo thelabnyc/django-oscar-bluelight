@@ -96,12 +96,9 @@ class Voucher(AbstractVoucher):
             raise RuntimeError(_('Can not create children for a child voucher. Nesting should only be 1 level.'))
         if not self.id:
             self.save()
-        children = []
         for i in range(count):
             code = self._get_child_code(i, count)
-            child = self._create_child(i, code)
-            children.append(child)
-        return children
+            self._create_child(i, code)
 
 
     @transaction.atomic
