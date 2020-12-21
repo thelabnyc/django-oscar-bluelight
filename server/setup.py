@@ -23,6 +23,7 @@ install_requires = [
 
 extras_require = {
     'development': [
+        'coverage>=4.4.2',
         'flake8>=3.2.1',
         'hiredis>=0.2.0',
         'psycopg2cffi>=2.7.7',
