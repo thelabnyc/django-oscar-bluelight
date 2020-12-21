@@ -38,6 +38,12 @@ test:
     - cd server/
     - pip install tox
     - tox -e $TOX_ENVS
+  artifacts:
+    paths:
+      - server/junit-*/
+    reports:
+      junit:
+        - server/junit-*/TEST-*.xml
   parallel:
     matrix:
       - IMAGE: python:3.7
