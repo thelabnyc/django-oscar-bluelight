@@ -33,6 +33,8 @@ services:
       dockerfile: Dockerfile
       target: server
     command: python sandbox/manage.py runserver 0.0.0.0:8000
+    environment:
+      SKIP_SELENIUM_TESTS: 'yes'
     ports:
       - '8000:8000'
     depends_on:
