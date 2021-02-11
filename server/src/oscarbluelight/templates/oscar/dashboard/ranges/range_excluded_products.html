@@ -1,0 +1,43 @@
+{% extends 'oscar/dashboard/layout.html' %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Excluded Products" %} | {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a>
+        </li>
+        <li>
+            <a href="{% url 'dashboard:range-list' %}">{% trans "Ranges" %}</a>
+        </li>
+        <li>
+            <a href="{% url 'dashboard:range-update' pk=range.pk %}">{{ range.name }}</a>
+        </li>
+        <li class="active">{% trans "Excluded Products" %}</li>
+    </ul>
+{% endblock %}
+
+
+{% block header %}
+    <div class="page-header">
+        <h1>{% blocktrans with name=range.name %}Edit Products Excluded From {{ name }}{% endblocktrans %}</h1>
+    </div>
+{% endblock header %}
+
+
+{% block dashboard_content %}
+    <form method="post" class="form-stacked well wysiwyg">
+        {% csrf_token %}
+        {% include "oscar/dashboard/partials/form_fields.html" with form=form %}
+        {% block form_actions %}
+            <div class="form-actions">
+                <button class="btn btn-primary btn-lg" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button>
+                {% trans "or" %}
+                <a href="{% url 'dashboard:range-list' %}">{% trans "cancel" %}</a>
+            </div>
+        {% endblock form_actions %}
+    </form>
+{% endblock dashboard_content %}
