@@ -172,10 +172,19 @@ class RestrictionsForm(BaseRestrictionsForm):
 
     class Meta:
         model = ConditionalOffer
-        fields = ('start_datetime', 'end_datetime',
-                  'limit_by_group', 'groups',
-                  'max_basket_applications', 'max_user_applications',
-                  'max_global_applications', 'max_discount')
+        fields = list(BaseRestrictionsForm.Meta.fields) + [
+            'limit_by_group',
+            'groups',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['priority'].widget = forms.HiddenInput()
+        self.fields['priority'].disabled = True
+        self.fields['exclusive'].widget = forms.HiddenInput()
+        self.fields['exclusive'].disabled = True
+        self.fields['combinations'].widget = forms.HiddenInput()
+        self.fields['combinations'].disabled = True
 
     def clean(self):
         cleaned_data = super().clean()

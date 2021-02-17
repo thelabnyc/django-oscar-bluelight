@@ -32,7 +32,7 @@
     <p class="price_color">&nbsp;</p>
 {% endif %}
 <p class="{{ session.availability.code }} availability">
-    <i class="icon-{% if session.availability.is_available_to_buy %}ok{% else %}remove{% endif %}"></i>
+    <i class="fas {% if session.availability.is_available_to_buy %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
     {% if verbose %}
         {{ session.availability.message }}
     {% else %}

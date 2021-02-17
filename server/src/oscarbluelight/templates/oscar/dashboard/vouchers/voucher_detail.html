@@ -5,7 +5,7 @@
 
 {% block header %}
     <div class="page-header">
-        <div class="pull-right">
+        <div class="float-right">
             <a class="btn btn-primary" href="{% url 'dashboard:voucher-update' pk=voucher.id %}">{% trans "Edit" %}</a>
             <a class="btn btn-danger" href="{% url 'dashboard:voucher-delete' pk=voucher.id %}">{% trans "Delete" %}</a>
         </div>
@@ -39,16 +39,15 @@
                 <td>{{ children.count }}</td>
                 <td>
                     <div class="btn-toolbar">
-                        <div class="btn-group">
-                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {% trans "Actions" %}
-                                <span class="caret"></span>
                             </button>
-                            <ul class="dropdown-menu pull-right">
-                                <li><a href="{% url 'dashboard:voucher-add-children' pk=voucher.id %}">{% trans "Add more child codes" %}</a></li>
-                                <li><a href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}">{% trans "Export codes as CSV" %}</a></li>
-                                <li><a href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='json' %}">{% trans "Export codes as JSON" %}</a></li>
-                            </ul>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="{% url 'dashboard:voucher-add-children' pk=voucher.id %}">{% trans "Add more child codes" %}</a>
+                                <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}">{% trans "Export codes as CSV" %}</a>
+                                <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='json' %}">{% trans "Export codes as JSON" %}</a>
+                            </div>
                         </div>
                     </div>
                 </td>
@@ -145,7 +144,7 @@
 
 
     <h2>{% trans "Orders that used this voucher" %}</h2>
-    <div class="well">
+    <div class="card card-body">
         <form method="get" class="form">
             {% include 'oscar/dashboard/partials/form_fields.html' with form=form %}
             <button type="submit" class="btn btn-primary" data-loading-text="{% trans 'Searching...' %}">
@@ -153,14 +152,14 @@
             </button>
             <button
                 type="submit"
-                class="btn btn-default"
+                class="btn btn-secondary"
                 name="format"
                 value="csv"
             >
                 {% trans "Export to CSV" %}
             </button>
             {% if is_filtered %}
-                <a class="btn btn-default" href="{% url 'dashboard:voucher-stats' pk=voucher.id %}">
+                <a class="btn btn-secondary" href="{% url 'dashboard:voucher-stats' pk=voucher.id %}">
                     {% trans "Reset" %}
                 </a>
             {% endif %}

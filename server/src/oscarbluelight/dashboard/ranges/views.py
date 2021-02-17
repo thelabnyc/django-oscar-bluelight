@@ -71,8 +71,8 @@ class RangePriceListView(UpdateView):
         changes = {}
 
         def do_discount_preview(sr):
-            new_price = form.apply_discount(sr.price_retail, sr.price_excl_tax)
-            difference = (new_price - sr.price_excl_tax)
+            new_price = form.apply_discount(getattr(sr, 'price_retail', sr.price), sr.price)
+            difference = (new_price - sr.price)
             changes[sr.id] = {
                 'price': new_price,
                 'difference': abs(difference),
@@ -93,9 +93,9 @@ class RangePriceListView(UpdateView):
     def _apply_changes(self, rng, form):
 
         def do_discount(sr):
-            old_price = sr.price_excl_tax
-            new_price = form.apply_discount(sr.price_retail, sr.price_excl_tax)
-            sr.price_excl_tax = new_price
+            old_price = sr.price
+            new_price = form.apply_discount(getattr(sr, 'price_retail', sr.price), sr.price)
+            sr.price = new_price
             sr.save()
             logger.info('User %s adjusted price of StockRecord[%s] from %s to %s' % (self.request.user, sr.pk, old_price, new_price))
 

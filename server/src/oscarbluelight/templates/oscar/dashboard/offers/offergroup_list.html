@@ -14,18 +14,18 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    <ul class="breadcrumb">
-        <li>
-            <a href="{{ homepage_url }}">{% trans "Dashboard" %}</a>
-        </li>
-        <li class="active">{% trans "Offer Groups" %}</li>
-    </ul>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% trans "Offer Groups" %}</li>
+        </ol>
+    </nav>
 {% endblock %}
 
 {% block header %}
     <div class="page-header">
-        <p class="pull-right">
-            <a href="{% url 'dashboard:offergroup-create' %}" class="btn btn-primary btn-lg"><i class="icon-plus"></i> {% trans "Create new Offer Group" %}</a>
+        <p class="float-right">
+            <a href="{% url 'dashboard:offergroup-create' %}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> {% trans "Create new Offer Group" %}</a>
         </p>
         <h1>{% trans "Offer Groups" %}</h1>
     </div>

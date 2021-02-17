@@ -55,20 +55,25 @@ class OfferGroupTable extends React.Component<IProps, IState> {
 
         return (
             <div className="btn-toolbar">
-                <div className="btn-group">
-                    <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true">
-                        {gettext("Actions")} <span className="caret"></span>
+                <div className="dropdown">
+                    <button className="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {gettext("Actions")}
                     </button>
-                    <ul className="dropdown-menu pull-right">
-                        <li>
-                            <a href={group.update_link}
-                               title={interpolate(gettext("Edit the details of the %s offer group"), [group.name])}>
-                                {gettext("Edit")}
-                            </a>
-                        </li>
-                        <li className={deleteClass} title={deleteTitle}>
-                            <a href={deleteLink}>{gettext("Delete")}</a>
-                        </li>
+                    <ul className="dropdown-menu dropdown-menu-right">
+                        <a
+                            className="dropdown-item"
+                            href={group.update_link}
+                               title={interpolate(gettext("Edit the details of the %s offer group"), [group.name])}
+                        >
+                            {gettext("Edit")}
+                        </a>
+                        <a
+                            className={`dropdown-item ${deleteClass}`}
+                            title={deleteTitle}
+                            href={deleteLink}
+                        >
+                            {gettext("Delete")}
+                        </a>
                     </ul>
                 </div>
             </div>
@@ -216,7 +221,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         return (
             <table className="table table-bordered">
                 <caption>
-                    <i className="icon-gift icon-large"></i>
+                    <i className="fas fa-gift"></i>
                 </caption>
                 <tbody>
                     <tr>
