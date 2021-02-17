@@ -15,7 +15,7 @@
         {% csrf_token %}
         <table class="table table-striped table-bordered">
             <caption>
-                <i class="fas fa-gift"></i></i>{{ queryset_description }}
+                <i class="fas fa-gift"></i>{{ queryset_description }}
                 {% if is_filtered %}
                     <a href="{% url 'dashboard:offer-list' %}" >{% trans "Reset" %}</a>
                 {% endif %}
