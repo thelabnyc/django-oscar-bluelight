@@ -104,9 +104,9 @@
                 <th>{% trans "Usage is limited to specific user groups?" %}</th>
                 <td>
                     {% if voucher.limit_usage_by_group %}
-                        <span class="label label-success">{% trans "Yes" %}</span>
+                        <span class="badge badge-success">{% trans "Yes" %}</span>
                     {% else %}
-                        <span class="label label-danger">{% trans "No" %}</span>
+                        <span class="badge badge-danger">{% trans "No" %}</span>
                     {% endif %}
                 </td>
                 <td></td>
@@ -116,7 +116,7 @@
                     <th>{% trans "Whitelisted User Groups" %}</th>
                     <td>
                         {% for group in voucher.groups.all %}
-                            <span class="label label-info">{{ group.name }}</span>
+                            <span class="badge badge-info">{{ group.name }}</span>
                         {% endfor %}
                     </td>
                     <td></td>

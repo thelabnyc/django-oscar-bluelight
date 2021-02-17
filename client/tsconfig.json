@@ -1,8 +1,4 @@
 {
-    "awesomeTypescriptLoaderOptions": {
-        "useBabel": true,
-        "babelCore": "@babel/core"
-    },
     "compilerOptions": {
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
@@ -30,7 +26,6 @@
         "noImplicitThis": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "outDir": "../server/src/oscarbluelight/static/oscarbluelight/",
         "preserveConstEnums": true,
         "pretty": true,
         "removeComments": false,
@@ -38,8 +33,5 @@
         "strict": true,
         "strictNullChecks": true,
         "target": "es6"
-    },
-    "include": [
-        "./src/**/*"
-    ]
+    }
 }

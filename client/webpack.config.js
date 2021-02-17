@@ -13,25 +13,23 @@ const IS_PROD = (process.env.NODE_ENV === 'production');
 const rules = [
     {
         test: /\.[tj]sx?$/,
-        include: APP_DIR,
-        loader: 'awesome-typescript-loader',
-        enforce: 'pre',
-    },
-    {
-        test: /\.[tj]sx?/,
-        loader: "source-map-loader",
-        enforce: "pre",
-    },
-    {
-        test: /\.js$/,
-        include: path.resolve(__dirname, 'node_modules/'),
-        exclude: path.resolve(__dirname, 'node_modules/core-js/'),
-        use: {
-            loader: 'babel-loader',
-            options: Object.assign({}, JSON.parse(fs.readFileSync('.babelrc', 'utf8')), {
-                cacheDirectory: true,
-            }),
-        }
+        exclude: [
+            path.resolve(__dirname, 'node_modules/core-js/'),
+        ],
+        use: [
+            {
+                loader: 'babel-loader',
+                options: Object.assign({}, JSON.parse(fs.readFileSync('.babelrc', 'utf8')), {
+                    cacheDirectory: true,
+                }),
+            },
+            {
+                loader: "source-map-loader",
+            },
+            {
+                loader: "ts-loader",
+            },
+        ],
     },
     {
         test: /\.scss$/,

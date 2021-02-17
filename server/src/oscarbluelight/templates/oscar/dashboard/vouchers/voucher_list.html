@@ -25,22 +25,22 @@
     <tr> <!-- name -->
         <td><a href="{% url 'dashboard:voucher-stats' voucher.id %}">{{ voucher.name }}</a></td>
         <td> <!-- code -->
-            <span class="label label-info">{{ voucher.code }}</span>
+            <span class="badge badge-info">{{ voucher.code }}</span>
         </td>
         <td> <!-- status -->
             {% if voucher.is_active %}
-                <span class="label label-success">{% trans "Active" %}</span>
+                <span class="badge badge-success">{% trans "Active" %}</span>
             {% else %}
-                <span class="label label-danger">{% trans "Inactive" %}</span>
+                <span class="badge badge-danger">{% trans "Inactive" %}</span>
             {% endif %}
         </td>
         <td> <!-- user groups -->
             {% if voucher.limit_usage_by_group %}
                 {% for group in voucher.groups.all %}
-                    <span class="label label-info">{{ group.name }}</span>
+                    <span class="badge badge-info">{{ group.name }}</span>
                 {% endfor %}
             {% else %}
-                <span class="label label-warning">{% trans "No" %}</span>
+                <span class="badge badge-warning">{% trans "No" %}</span>
             {% endif %}
         </td>
         <td>

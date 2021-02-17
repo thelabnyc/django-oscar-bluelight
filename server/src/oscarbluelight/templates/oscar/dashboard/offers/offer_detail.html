@@ -7,9 +7,9 @@
         <tr>
             <td>
                 {% if offer.is_available %}
-                    <span class="label label-success">{% trans "Offer currently available" %}</span>
+                    <span class="badge badge-success">{% trans "Offer currently available" %}</span>
                 {% else %}
-                    <span class="label label-danger">{% trans "Offer not available due to restrictions!" %}</span>
+                    <span class="badge badge-danger">{% trans "Offer not available due to restrictions!" %}</span>
                 {% endif %}
             </td>
             <td>{% trans "Total cost:" %} <strong>{{ offer.total_discount|currency }}</strong></td>
@@ -60,7 +60,7 @@
                 <td>
                     {% for restriction in offer.availability_restrictions %}
                         {% if not restriction.is_satisfied %}
-                            <span class="label label-danger">
+                            <span class="badge badge-danger">
                                 {{ restriction.description }}
                             </span><br/>
                         {% else %}
