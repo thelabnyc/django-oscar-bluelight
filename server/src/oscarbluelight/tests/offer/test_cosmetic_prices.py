@@ -55,7 +55,7 @@ class CosmeticPricingCalculationTest(TransactionTestCase):
 
         # Change the product price. This should invalidate the cache.
         sr = self.product_main.stockrecords.first()
-        sr.price_excl_tax = D('4000.00')
+        sr.price = D('4000.00')
         sr.save()
 
         # Check price again, make sure it's not stale.

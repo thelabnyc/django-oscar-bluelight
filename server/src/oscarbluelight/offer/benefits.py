@@ -89,7 +89,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
             if quantity_affected <= 0:
                 continue
 
-            line_discount = self.round(discount_percent / D('100.0') * price * int(quantity_affected))
+            line_discount = self.round(discount_percent / D('100.0') * price * int(quantity_affected), currency=basket.currency)
 
             if discount_amount_available is not None:
                 line_discount = min(line_discount, discount_amount_available)
@@ -194,7 +194,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                 line_discount = discount - applied_discount
             else:
                 # Calculate a weighted discount for the line
-                line_discount = self.round(((price * qty) / affected_items_total) * discount)
+                line_discount = self.round(((price * qty) / affected_items_total) * discount, currency=basket.currency)
             line.discount(line_discount, qty, incl_tax=False, offer=offer)
             affected_lines.append((line, line_discount, qty))
             applied_discount += line_discount
@@ -278,7 +278,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 line_discount = discount - discount_applied
             else:
                 line_discount = self.round(
-                    discount * (price * quantity) / value_affected)
+                    discount * (price * quantity) / value_affected, currency=basket.currency)
             line.discount(line_discount, quantity, incl_tax=False, offer=offer)
             discount_applied += line_discount
         return BasketDiscount(discount)
@@ -558,10 +558,10 @@ class CompoundBenefit(Benefit):
         if errors:
             raise exceptions.ValidationError(errors)
 
-    def shipping_discount(self, charge):
+    def shipping_discount(self, charge, currency=None):
         discount = D('0.00')
         for child in self.children:
-            discount += child.shipping_discount(charge - discount)
+            discount += child.shipping_discount(charge - discount, currency=currency)
         return discount
 
     def _human_readable_conjoin(self, strings, empty=None):
