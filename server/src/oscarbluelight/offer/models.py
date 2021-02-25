@@ -115,6 +115,14 @@ class ConditionalOffer(AbstractConditionalOffer):
             "offers are applied in and which offers may be combined together."
         ),
     )
+    affects_cosmetic_pricing = models.BooleanField(
+        _("Affects Cosmetic Pricing?"),
+        default=True,
+        help_text=_(
+            "Controls whether or not this offer will affect advertised product prices. Turn off "
+            "for offers which should only apply once the product is in a customer's basket."
+        ),
+    )
 
     class Meta:
         ordering = ("-offer_group__priority", "-priority", "pk")

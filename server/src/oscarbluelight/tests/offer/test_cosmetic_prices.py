@@ -49,6 +49,14 @@ class CosmeticPricingCalculationTest(TransactionTestCase):
         )
         self.assertEqual(cosmetic_price, D("4500.00"))
 
+    def test_calculate_cosmetic_price_when_offer_doesnt_affect_cosmetics(self):
+        ConditionalOffer.objects.all().update(affects_cosmetic_pricing=False)
+        # Cosmetic price should not reflect discount
+        cosmetic_price = Applicator().get_cosmetic_price(
+            self.basket.strategy, self.product_main, quantity=1
+        )
+        self.assertEqual(cosmetic_price, D("5000.00"))
+
     def test_cosmetic_price_cache_invalidation(self):
         # Populate the cache
         cosmetic_price = Applicator().get_cosmetic_price(

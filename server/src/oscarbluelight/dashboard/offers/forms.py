@@ -163,7 +163,14 @@ class MetaDataForm(BaseMetaDataForm):
     )
 
     class Meta(BaseMetaDataForm.Meta):
-        fields = ("name", "short_name", "description", "offer_group", "priority")
+        fields = (
+            "name",
+            "short_name",
+            "description",
+            "offer_group",
+            "affects_cosmetic_pricing",
+            "priority",
+        )
 
 
 class BenefitSelectionForm(forms.ModelForm):

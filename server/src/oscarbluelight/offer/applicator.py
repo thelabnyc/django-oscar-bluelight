@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
@@ -49,6 +50,7 @@ def group_offers(offers):
 
 
 class Applicator(BaseApplicator):
+    _is_applying_cosmetic_prices = False
     _offer_select_related_fields = [
         "offer_group",
         "benefit",
@@ -116,6 +118,10 @@ class Applicator(BaseApplicator):
         pre_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
         applications = results.OfferApplications()
 
+        # If this is a cosmetic application, filter out offers that shouldn't apply.
+        if self._is_applying_cosmetic_prices:
+            offers = [offer for offer in offers if offer.affects_cosmetic_pricing]
+
         for group_priority, offers_in_group in group_offers(offers):
             # Get the OfferGroup object from the list of offers
             offers_in_group = list(offers_in_group)
@@ -165,6 +171,14 @@ class Applicator(BaseApplicator):
         basket.offer_applications = applications
         post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
+    @contextmanager
+    def _cosmetic_pricing(self):
+        self._is_applying_cosmetic_prices = True
+        try:
+            yield
+        finally:
+            self._is_applying_cosmetic_prices = False
+
     def get_cosmetic_price(self, strategy, product, quantity=1):
         price_cache = cosmetic_price_cache.concrete(
             product=product.pk, quantity=quantity
@@ -178,15 +192,16 @@ class Applicator(BaseApplicator):
             total_excl_tax_after = None
             try:
                 with transaction.atomic():
-                    basket = Basket()
-                    basket.strategy = strategy
-                    # Capture the total_excl_tax before altering the basket line
-                    total_excl_tax_before = basket.total_excl_tax
-                    # Add the product to the basket and re-apply offers and coupons.
-                    line, _ = basket.add_product(product, quantity=quantity)
-                    self.apply(basket)
-                    # Get the price difference
-                    total_excl_tax_after = basket.total_excl_tax
+                    with self._cosmetic_pricing():
+                        basket = Basket()
+                        basket.strategy = strategy
+                        # Capture the total_excl_tax before altering the basket line
+                        total_excl_tax_before = basket.total_excl_tax
+                        # Add the product to the basket and re-apply offers and coupons.
+                        line, _ = basket.add_product(product, quantity=quantity)
+                        self.apply(basket)
+                        # Get the price difference
+                        total_excl_tax_after = basket.total_excl_tax
                     # Intentionally rollback the transaction to that the line item isn't actually saved
                     raise RuntimeError("rollback")
             except RuntimeError:

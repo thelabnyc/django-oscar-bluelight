@@ -70,6 +70,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.short_name = session_offer.short_name
         offer.description = session_offer.description
         offer.offer_group = session_offer.offer_group
+        offer.affects_cosmetic_pricing = session_offer.affects_cosmetic_pricing
         offer.priority = session_offer.priority
 
         # Save the related models and assign to the offer
