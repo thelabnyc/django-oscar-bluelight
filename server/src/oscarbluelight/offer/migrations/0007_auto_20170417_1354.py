@@ -8,29 +8,50 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0006_bluelightabsolutediscountbenefit_bluelightcountcondition_bluelightcoveragecondition_bluelightfixedpr'),
+        (
+            "offer",
+            "0006_bluelightabsolutediscountbenefit_bluelightcountcondition_bluelightcoveragecondition_bluelightfixedpr",
+        ),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BlackList',
+            name="BlackList",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classname', models.CharField(blank=True, max_length=128)),
-                ('instance_id', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("classname", models.CharField(blank=True, max_length=128)),
+                ("instance_id", models.PositiveIntegerField()),
             ],
         ),
         migrations.CreateModel(
-            name='BlackListObject',
+            name="BlackListObject",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classname', models.CharField(max_length=128)),
-                ('instance_id', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("classname", models.CharField(max_length=128)),
+                ("instance_id", models.PositiveIntegerField()),
             ],
         ),
         migrations.AddField(
-            model_name='blacklist',
-            name='blacklist',
-            field=models.ManyToManyField(related_name='blackisted_objects', to='offer.BlackListObject'),
+            model_name="blacklist",
+            name="blacklist",
+            field=models.ManyToManyField(
+                related_name="blackisted_objects", to="offer.BlackListObject"
+            ),
         ),
     ]

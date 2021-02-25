@@ -10,28 +10,37 @@ class OfferApplications(BaseOfferApplications):
         # applications occurred.
         self.applications = OrderedDict()
 
-
     def add(self, offer, result):
         super().add(offer, result)
-        self.applications[offer.id]['is_hidden'] = getattr(result, 'is_hidden', False)
+        self.applications[offer.id]["is_hidden"] = getattr(result, "is_hidden", False)
         # Add the discount index (application order) as a key. Useful for merging the
         # basket.voucher_discounts and basket.offer_discounts lists together for display
         # in the correct order.
-        self.applications[offer.id]['index'] = list(self.applications.keys()).index(offer.id)
+        self.applications[offer.id]["index"] = list(self.applications.keys()).index(
+            offer.id
+        )
 
     @property
     def offer_post_order_actions(self):
         """
         Return successful offer applications which didn't lead to a discount
         """
-        return [application for application in self.post_order_actions if not application['voucher']]
+        return [
+            application
+            for application in self.post_order_actions
+            if not application["voucher"]
+        ]
 
     @property
     def voucher_post_order_actions(self):
         """
         Return successful voucher applications which didn't lead to a discount
         """
-        return [application for application in self.post_order_actions if application['voucher']]
+        return [
+            application
+            for application in self.post_order_actions
+            if application["voucher"]
+        ]
 
 
 class BasketDiscount(results.BasketDiscount):
@@ -50,6 +59,7 @@ class HiddenPostOrderAction(results.PostOrderAction):
     """
     Just like a normal PostOrderAction, but it's hidden from the user interface.
     """
+
     is_hidden = True
 
 

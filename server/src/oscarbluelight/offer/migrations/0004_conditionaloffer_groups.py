@@ -8,14 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0007_alter_validators_add_error_messages'),
-        ('offer', '0003_merge'),
+        ("auth", "0007_alter_validators_add_error_messages"),
+        ("offer", "0003_merge"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='groups',
-            field=models.ManyToManyField(blank=True, to='auth.Group', verbose_name='User Groups'),
+            model_name="conditionaloffer",
+            name="groups",
+            field=models.ManyToManyField(
+                blank=True, to="auth.Group", verbose_name="User Groups"
+            ),
         ),
     ]

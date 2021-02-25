@@ -6,7 +6,6 @@ export interface IVoucher {
     details_link: string;
 }
 
-
 export interface IOffer {
     id: number;
     name: string;
@@ -16,7 +15,6 @@ export interface IOffer {
     vouchers: IVoucher[];
     details_link: string;
 }
-
 
 export interface IOfferGroup {
     id: number;

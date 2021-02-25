@@ -10,39 +10,55 @@ import oscar.models.fields.autoslugfield
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0010_auto_20170613_1245'),
+        ("offer", "0010_auto_20170613_1245"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='offergroup',
-            name='is_system_group',
+            model_name="offergroup",
+            name="is_system_group",
             field=models.BooleanField(default=False, editable=False),
         ),
         migrations.AddField(
-            model_name='offergroup',
-            name='slug',
-            field=oscar.models.fields.autoslugfield.AutoSlugField(blank=True, default=None, editable=False, null=True, populate_from='name', unique=True),
+            model_name="offergroup",
+            name="slug",
+            field=oscar.models.fields.autoslugfield.AutoSlugField(
+                blank=True,
+                default=None,
+                editable=False,
+                null=True,
+                populate_from="name",
+                unique=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='conditionaloffer',
-            name='benefit',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='offers', to='offer.Benefit', verbose_name='Benefit'),
+            model_name="conditionaloffer",
+            name="benefit",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="offers",
+                to="offer.Benefit",
+                verbose_name="Benefit",
+            ),
         ),
         migrations.AlterField(
-            model_name='conditionaloffer',
-            name='condition',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='offers', to='offer.Condition', verbose_name='Condition'),
+            model_name="conditionaloffer",
+            name="condition",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="offers",
+                to="offer.Condition",
+                verbose_name="Condition",
+            ),
         ),
         migrations.CreateModel(
-            name='BluelightTaxInclusiveValueCondition',
-            fields=[
-            ],
+            name="BluelightTaxInclusiveValueCondition",
+            fields=[],
             options={
-                'verbose_name': 'Tax-Inclusive Value Condition',
-                'verbose_name_plural': 'Tax-Inclusive Value Conditions',
-                'proxy': True,
+                "verbose_name": "Tax-Inclusive Value Condition",
+                "verbose_name_plural": "Tax-Inclusive Value Conditions",
+                "proxy": True,
             },
-            bases=('offer.bluelightvaluecondition',),
+            bases=("offer.bluelightvaluecondition",),
         ),
     ]

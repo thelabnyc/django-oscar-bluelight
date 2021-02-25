@@ -8,17 +8,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0008_auto_20170512_1049'),
+        ("offer", "0008_auto_20170512_1049"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='offergroup',
-            options={'ordering': ['-priority'], 'verbose_name': 'OfferGroup'},
+            name="offergroup",
+            options={"ordering": ["-priority"], "verbose_name": "OfferGroup"},
         ),
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='apply_to_displayed_prices',
-            field=models.BooleanField(default=False, help_text='If enabled, cosmetic product prices displayed on product display pages will be discounted by this offer’s benefit.'),
+            model_name="conditionaloffer",
+            name="apply_to_displayed_prices",
+            field=models.BooleanField(
+                default=False,
+                help_text="If enabled, cosmetic product prices displayed on product display pages will be discounted by this offer’s benefit.",
+            ),
         ),
     ]

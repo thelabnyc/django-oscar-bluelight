@@ -16,16 +16,25 @@ def insupd_system_offer_group(slug, default_name=None):
     Get or create a system offer group with the given ``slug``. If creating, assign the name from ``default_name``.
     """
     from .models import OfferGroup
-    max_priority = OfferGroup.objects.all().aggregate(Max('priority')).get('priority__max')
+
+    max_priority = (
+        OfferGroup.objects.all().aggregate(Max("priority")).get("priority__max")
+    )
     max_priority = max_priority or 999
     default_priority = max_priority + 1
     defaults = {
-        'name': default_name or slug,
-        'priority': default_priority,
+        "name": default_name or slug,
+        "priority": default_priority,
     }
-    group, created = OfferGroup.objects.get_or_create(slug=slug, is_system_group=True, defaults=defaults)
+    group, created = OfferGroup.objects.get_or_create(
+        slug=slug, is_system_group=True, defaults=defaults
+    )
     if created:
-        logger.info('Create system offer group: {}, priority {}'.format(group.slug, group.priority))
+        logger.info(
+            "Create system offer group: {}, priority {}".format(
+                group.slug, group.priority
+            )
+        )
     return group
 
 
@@ -48,7 +57,7 @@ def ensure_all_system_groups_exist():
     """
     while len(_system_group_registry) > 0:
         group = _system_group_registry.popleft()
-        if hasattr(group, '_setup'):
+        if hasattr(group, "_setup"):
             group._setup()
 
 
@@ -58,7 +67,9 @@ def pre_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
     Handler will only be called when ``pre_offer_group_apply`` is sent with an offer_group object matching the
     group provided as a parameter. You should only use signals with system offer groups.
     """
-    return _offer_group_receiver(pre_offer_group_apply, offer_group_slug, **decorator_kwargs)
+    return _offer_group_receiver(
+        pre_offer_group_apply, offer_group_slug, **decorator_kwargs
+    )
 
 
 def post_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
@@ -67,13 +78,16 @@ def post_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
     Handler will only be called when ``post_offer_group_apply`` is sent with an offer_group object matching the
     group provided as a parameter. You should only use signals with system offer groups.
     """
-    return _offer_group_receiver(post_offer_group_apply, offer_group_slug, **decorator_kwargs)
+    return _offer_group_receiver(
+        post_offer_group_apply, offer_group_slug, **decorator_kwargs
+    )
 
 
 def _offer_group_receiver(signal, offer_group_slug, **decorator_kwargs):
     """
     Private function used to implement the pre_offer_group_apply_receiver and post_offer_group_apply_receiver decorators.
     """
+
     def _decorator(func):
         from .models import OfferGroup
 
@@ -82,11 +96,19 @@ def _offer_group_receiver(signal, offer_group_slug, **decorator_kwargs):
             ensure_all_system_groups_exist()
             offer_group = OfferGroup.objects.filter(slug=offer_group_slug).first()
             if not offer_group:
-                logger.error('Listener is attached to offer group {}, but no such offer group exists!'.format(offer_group_slug))
+                logger.error(
+                    "Listener is attached to offer group {}, but no such offer group exists!".format(
+                        offer_group_slug
+                    )
+                )
                 return
             if not offer_group.is_system_group:
-                logger.warning('You should not attach listens to non-system offer group {}.'.format(offer_group_slug))
-            if kwargs.get('group') and kwargs['group'].pk == offer_group.pk:
+                logger.warning(
+                    "You should not attach listens to non-system offer group {}.".format(
+                        offer_group_slug
+                    )
+                )
+            if kwargs.get("group") and kwargs["group"].pk == offer_group.pk:
                 return func(sender, **kwargs)
             return None
 

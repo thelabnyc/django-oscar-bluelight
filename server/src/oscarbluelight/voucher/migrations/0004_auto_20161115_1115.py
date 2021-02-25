@@ -8,13 +8,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('voucher', '0003_voucher_parent'),
+        ("voucher", "0003_voucher_parent"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='voucher',
-            name='groups',
-            field=models.ManyToManyField(blank=True, to='auth.Group', verbose_name='User Groups'),
+            model_name="voucher",
+            name="groups",
+            field=models.ManyToManyField(
+                blank=True, to="auth.Group", verbose_name="User Groups"
+            ),
         ),
     ]

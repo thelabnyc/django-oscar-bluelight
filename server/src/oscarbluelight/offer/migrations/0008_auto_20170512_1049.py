@@ -9,39 +9,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0007_auto_20170417_1354'),
+        ("offer", "0007_auto_20170417_1354"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='OfferGroup',
+            name="OfferGroup",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=64)),
-                ('priority', models.IntegerField(unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=64)),
+                ("priority", models.IntegerField(unique=True)),
             ],
             options={
-                'verbose_name': 'OfferGroup',
-                'ordering': ['priority'],
+                "verbose_name": "OfferGroup",
+                "ordering": ["priority"],
             },
         ),
         migrations.RemoveField(
-            model_name='blacklist',
-            name='blacklist',
+            model_name="blacklist",
+            name="blacklist",
         ),
         migrations.AlterModelOptions(
-            name='conditionaloffer',
-            options={'ordering': ['priority']},
+            name="conditionaloffer",
+            options={"ordering": ["priority"]},
         ),
         migrations.DeleteModel(
-            name='BlackList',
+            name="BlackList",
         ),
         migrations.DeleteModel(
-            name='BlackListObject',
+            name="BlackListObject",
         ),
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='offer_group',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='offers', to='offer.OfferGroup'),
+            model_name="conditionaloffer",
+            name="offer_group",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="offers",
+                to="offer.OfferGroup",
+            ),
         ),
     ]

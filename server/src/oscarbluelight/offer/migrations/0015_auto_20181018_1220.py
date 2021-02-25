@@ -6,18 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0014_auto_20181017_1151'),
+        ("offer", "0014_auto_20181017_1151"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='conditionaloffer',
-            name='desktop_image',
-            field=models.ImageField(blank=True, help_text='Desktop image used for promo display.', null=True, upload_to='images/offers/'),
+            model_name="conditionaloffer",
+            name="desktop_image",
+            field=models.ImageField(
+                blank=True,
+                help_text="Desktop image used for promo display.",
+                null=True,
+                upload_to="images/offers/",
+            ),
         ),
         migrations.AlterField(
-            model_name='conditionaloffer',
-            name='mobile_image',
-            field=models.ImageField(blank=True, help_text='Mobile image used for promo display.', null=True, upload_to='images/offers/'),
+            model_name="conditionaloffer",
+            name="mobile_image",
+            field=models.ImageField(
+                blank=True,
+                help_text="Mobile image used for promo display.",
+                null=True,
+                upload_to="images/offers/",
+            ),
         ),
     ]

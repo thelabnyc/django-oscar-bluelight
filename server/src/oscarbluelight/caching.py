@@ -9,34 +9,28 @@ class ConcreteFluentCache(object):
         self.version = version
 
     def get(self, default=None):
-        return self.cache.get(self.key,
-            default=default,
-            version=self.version)
+        return self.cache.get(self.key, default=default, version=self.version)
 
     def set(self, value):
-        return self.cache.set(self.key, value,
-            timeout=self.timeout,
-            version=self.version)
+        return self.cache.set(
+            self.key, value, timeout=self.timeout, version=self.version
+        )
 
     def add(self, value):
-        return self.cache.add(self.key, value,
-            timeout=self.timeout,
-            version=self.version)
+        return self.cache.add(
+            self.key, value, timeout=self.timeout, version=self.version
+        )
 
     def get_or_set(self, default):
-        return self.cache.get_or_set(self.key, default,
-            timeout=self.timeout,
-            version=self.version)
+        return self.cache.get_or_set(
+            self.key, default, timeout=self.timeout, version=self.version
+        )
 
     def delete(self):
-        return self.cache.delete(self.key,
-            version=self.version)
+        return self.cache.delete(self.key, version=self.version)
 
     def touch(self):
-        return self.cache.touch(self.key,
-            timeout=self.timeout,
-            version=self.version)
-
+        return self.cache.touch(self.key, timeout=self.timeout, version=self.version)
 
 
 class CacheNamespace(object):
@@ -46,7 +40,7 @@ class CacheNamespace(object):
 
     @property
     def key(self):
-        return 'oscarbluelight.cache-ns:{}'.format(self.name)
+        return "oscarbluelight.cache-ns:{}".format(self.name)
 
     @property
     def value(self):
@@ -60,7 +54,6 @@ class CacheNamespace(object):
             self.cache.set(key, 1, timeout=None)
 
 
-
 class FluentCache(object):
     def __init__(self, cache, key_base, timeout=None, version=None):
         self.cache = cache
@@ -70,40 +63,37 @@ class FluentCache(object):
         self._namespaces = []
         self._key_parts = []
 
-
     def timeout(self, ttl):
         self._timeout = ttl
         return self
-
 
     def namespaces(self, *args):
         self._namespaces = args
         return self
 
-
     def key_parts(self, *args):
         self._key_parts = args
         return self
 
-
     def concrete(self, **kwargs):
         key = self.build_key(**kwargs)
-        return ConcreteFluentCache(self.cache, key,
-            timeout=self._timeout,
-            version=self._version)
-
+        return ConcreteFluentCache(
+            self.cache, key, timeout=self._timeout, version=self._version
+        )
 
     def build_key(self, **kwargs):
         key_fragments = [self._key_base]
         # Add in serialized namespaces
         for namespace in self._namespaces:
-            fragment = 'ns:{}:{}'.format(namespace.name, namespace.value)
+            fragment = "ns:{}:{}".format(namespace.name, namespace.value)
             key_fragments.append(fragment)
         # Add in key parts
         for key_part in self._key_parts:
             if key_part not in kwargs:
-                raise ValueError(_('Cache key is missing value for key part: %s') % key_part)
+                raise ValueError(
+                    _("Cache key is missing value for key part: %s") % key_part
+                )
             val = kwargs[key_part]
-            fragment = 'p:{}:{}'.format(key_part, val)
+            fragment = "p:{}:{}".format(key_part, val)
             key_fragments.append(fragment)
-        return '.'.join(key_fragments)
+        return ".".join(key_fragments)

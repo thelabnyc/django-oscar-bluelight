@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0009_auto_20200801_0817'),
+        ("offer", "0009_auto_20200801_0817"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='combinations',
-            field=models.ManyToManyField(blank=True, help_text='Select other non-exclusive offers that this offer can be combined with on the same items', limit_choices_to={'exclusive': False}, related_name='in_combination', to='offer.ConditionalOffer'),
+            model_name="conditionaloffer",
+            name="combinations",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Select other non-exclusive offers that this offer can be combined with on the same items",
+                limit_choices_to={"exclusive": False},
+                related_name="in_combination",
+                to="offer.ConditionalOffer",
+            ),
         ),
     ]

@@ -7,20 +7,20 @@ class OrderDiscountCSVFormatter(reports.OrderDiscountCSVFormatter):
     def generate_csv(self, response, order_discounts):
         writer = self.get_csv_writer(response)
         header_row = [
-            _('Order number'),
-            _('Order status'),
-            _('Order date'),
-            _('Order total'),
-            _('Cost'),
-            _('Products'),
-            _('UPCs'),
-            _('SKUs'),
-            _('Payment methods'),
+            _("Order number"),
+            _("Order status"),
+            _("Order date"),
+            _("Order total"),
+            _("Cost"),
+            _("Products"),
+            _("UPCs"),
+            _("SKUs"),
+            _("Payment methods"),
         ]
         writer.writerow(header_row)
-        order_discounts = order_discounts\
-            .prefetch_related('order__lines', 'order__sources')\
-            .all()
+        order_discounts = order_discounts.prefetch_related(
+            "order__lines", "order__sources"
+        ).all()
         for order_discount in order_discounts:
             order = order_discount.order
             product_names = set([])
@@ -39,9 +39,9 @@ class OrderDiscountCSVFormatter(reports.OrderDiscountCSVFormatter):
                 self.format_datetime(order.date_placed),
                 order.total_incl_tax,
                 order_discount.amount,
-                '\n'.join(sorted(list(product_names))),
-                '\n'.join(sorted(list(upcs))),
-                '\n'.join(sorted(list(skus))),
-                '\n'.join(sorted(list(payment_methods))),
+                "\n".join(sorted(list(product_names))),
+                "\n".join(sorted(list(upcs))),
+                "\n".join(sorted(list(skus))),
+                "\n".join(sorted(list(payment_methods))),
             ]
             writer.writerow(row)

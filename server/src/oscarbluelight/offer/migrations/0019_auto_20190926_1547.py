@@ -6,18 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0018_merge_20190705_1247'),
+        ("offer", "0018_merge_20190705_1247"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='conditionaloffer',
-            name='priority',
-            field=models.IntegerField(db_index=True, default=0, help_text='The highest priority offers are applied first', verbose_name='Priority'),
+            model_name="conditionaloffer",
+            name="priority",
+            field=models.IntegerField(
+                db_index=True,
+                default=0,
+                help_text="The highest priority offers are applied first",
+                verbose_name="Priority",
+            ),
         ),
         migrations.AlterField(
-            model_name='rangeproductfileupload',
-            name='date_uploaded',
-            field=models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Date Uploaded'),
+            model_name="rangeproductfileupload",
+            name="date_uploaded",
+            field=models.DateTimeField(
+                auto_now_add=True, db_index=True, verbose_name="Date Uploaded"
+            ),
         ),
     ]

@@ -1,4 +1,4 @@
-.PHONY: statics screenshots translations
+.PHONY: statics screenshots translations fmt fmt_client fmt_server
 
 DOCKERCOMPOSE = docker-compose
 
@@ -18,3 +18,12 @@ translations:
 	cd ../../server/src/oscarbluelight && \
 	django-admin makemessages --locale=es && \
 	django-admin compilemessages
+
+fmt_client:
+	cd client && \
+	yarn prettier --no-color --write .
+
+fmt_server:
+	black server/
+
+fmt: fmt_client fmt_server

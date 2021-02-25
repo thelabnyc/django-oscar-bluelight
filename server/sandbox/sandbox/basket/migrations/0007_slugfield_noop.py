@@ -9,13 +9,15 @@ import oscar.models.fields.slugfield
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('basket', '0006_auto_20160111_1108'),
+        ("basket", "0006_auto_20160111_1108"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='line',
-            name='line_reference',
-            field=oscar.models.fields.slugfield.SlugField(max_length=128, verbose_name='Line Reference'),
+            model_name="line",
+            name="line_reference",
+            field=oscar.models.fields.slugfield.SlugField(
+                max_length=128, verbose_name="Line Reference"
+            ),
         ),
     ]

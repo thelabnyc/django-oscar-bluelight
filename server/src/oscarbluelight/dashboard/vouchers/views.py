@@ -13,7 +13,7 @@ from oscar.apps.dashboard.vouchers.views import (
     VoucherListView as DefaultVoucherListView,
     VoucherCreateView as DefaultVoucherCreateView,
     VoucherStatsView as DefaultVoucherStatsView,
-    VoucherUpdateView as DefaultVoucherUpdateView
+    VoucherUpdateView as DefaultVoucherUpdateView,
 )
 from oscarbluelight.voucher import tasks
 import csv
@@ -24,18 +24,17 @@ try:
 except ImportError:
     import json as simplejson
 
-Benefit = get_model('offer', 'Benefit')
-Condition = get_model('offer', 'Condition')
-ConditionalOffer = get_model('offer', 'ConditionalOffer')
-Voucher = get_model('voucher', 'Voucher')
-OrderDiscount = get_model('order', 'OrderDiscount')
+Benefit = get_model("offer", "Benefit")
+Condition = get_model("offer", "Condition")
+ConditionalOffer = get_model("offer", "ConditionalOffer")
+Voucher = get_model("voucher", "Voucher")
+OrderDiscount = get_model("order", "OrderDiscount")
 
-AddChildCodesForm = get_class('vouchers_dashboard.forms', 'AddChildCodesForm')
-VoucherForm = get_class('vouchers_dashboard.forms', 'VoucherForm')
-OrderDiscountSearchForm = get_class('offers_dashboard.forms', 'OrderDiscountSearchForm')
+AddChildCodesForm = get_class("vouchers_dashboard.forms", "AddChildCodesForm")
+VoucherForm = get_class("vouchers_dashboard.forms", "VoucherForm")
+OrderDiscountSearchForm = get_class("offers_dashboard.forms", "OrderDiscountSearchForm")
 
-BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER')
-
+BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER")
 
 
 class VoucherListView(DefaultVoucherListView):
@@ -44,55 +43,60 @@ class VoucherListView(DefaultVoucherListView):
         return qs.exclude_children()
 
 
-
 class VoucherCreateView(DefaultVoucherCreateView):
     form_class = VoucherForm
 
     def form_valid(self, form):
         with transaction.atomic():
             # Create offer and benefit
-            benefit = form.cleaned_data['benefit']
-            condition = form.cleaned_data['condition']
+            benefit = form.cleaned_data["benefit"]
+            condition = form.cleaned_data["condition"]
             if not condition:
                 condition = Condition.objects.create(
                     range=benefit.range,
-                    proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
-                    value=1)
-            name = form.cleaned_data['name']
+                    proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+                    value=1,
+                )
+            name = form.cleaned_data["name"]
             offer = ConditionalOffer.objects.create(
                 name=_("Offer for voucher '%s'") % name,
-                short_name=form.cleaned_data['code'],
-                description=form.cleaned_data['description'],
+                short_name=form.cleaned_data["code"],
+                description=form.cleaned_data["description"],
                 offer_type=ConditionalOffer.VOUCHER,
                 benefit=benefit,
                 condition=condition,
-                mobile_image=form.cleaned_data['mobile_image'],
-                desktop_image=form.cleaned_data['desktop_image'],
-                offer_group=form.cleaned_data['offer_group'],
-                priority=form.cleaned_data['priority'],
-                max_global_applications=form.cleaned_data['max_global_applications'],
-                max_user_applications=form.cleaned_data['max_user_applications'],
-                max_basket_applications=form.cleaned_data['max_basket_applications'],
-                max_discount=form.cleaned_data['max_discount'])
+                mobile_image=form.cleaned_data["mobile_image"],
+                desktop_image=form.cleaned_data["desktop_image"],
+                offer_group=form.cleaned_data["offer_group"],
+                priority=form.cleaned_data["priority"],
+                max_global_applications=form.cleaned_data["max_global_applications"],
+                max_user_applications=form.cleaned_data["max_user_applications"],
+                max_basket_applications=form.cleaned_data["max_basket_applications"],
+                max_discount=form.cleaned_data["max_discount"],
+            )
             voucher = Voucher.objects.create(
                 name=name,
-                code=form.cleaned_data['code'],
-                usage=form.cleaned_data['usage'],
-                start_datetime=form.cleaned_data['start_datetime'],
-                end_datetime=form.cleaned_data['end_datetime'],
-                limit_usage_by_group=form.cleaned_data['limit_usage_by_group'],
+                code=form.cleaned_data["code"],
+                usage=form.cleaned_data["usage"],
+                start_datetime=form.cleaned_data["start_datetime"],
+                end_datetime=form.cleaned_data["end_datetime"],
+                limit_usage_by_group=form.cleaned_data["limit_usage_by_group"],
             )
-            voucher.groups.set(form.cleaned_data['groups'])
+            voucher.groups.set(form.cleaned_data["groups"])
             voucher.save()
             voucher.offers.add(offer)
 
         # Create child codes
-        if form.cleaned_data['create_children']:
-            tasks.add_child_codes.apply_async(args=(voucher.pk, form.cleaned_data['child_count']), countdown=1)
-            messages.success(self.request, _("Creating %s child codes…") % form.cleaned_data['child_count'])
+        if form.cleaned_data["create_children"]:
+            tasks.add_child_codes.apply_async(
+                args=(voucher.pk, form.cleaned_data["child_count"]), countdown=1
+            )
+            messages.success(
+                self.request,
+                _("Creating %s child codes…") % form.cleaned_data["child_count"],
+            )
 
         return HttpResponseRedirect(self.get_success_url())
-
 
 
 class VoucherStatsView(DefaultVoucherStatsView):
@@ -100,9 +104,9 @@ class VoucherStatsView(DefaultVoucherStatsView):
 
     def get_related_order_discounts(self):
         ids = [self.object.id] + [c.id for c in self.object.children.all()]
-        qs = OrderDiscount.objects\
-            .filter(voucher_id__in=ids)\
-            .order_by('-order__date_placed')
+        qs = OrderDiscount.objects.filter(voucher_id__in=ids).order_by(
+            "-order__date_placed"
+        )
         self.form = self.form_class(self.request.GET)
         qs, is_filtered = self.form.filter_queryset(qs)
         self.is_filtered = is_filtered
@@ -111,26 +115,27 @@ class VoucherStatsView(DefaultVoucherStatsView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         # Child vouchers
-        ctx['children'] = self.object.children.order_by('code')
+        ctx["children"] = self.object.children.order_by("code")
         # Related orders
         discounts = self.get_related_order_discounts()
         paginator = Paginator(discounts, settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE)
-        ctx['is_paginated'] = True
-        ctx['paginator'] = paginator
-        ctx['page_obj'] = paginator.get_page(self.request.GET.get('page', 1))
-        ctx['discounts'] = ctx['page_obj']
-        ctx['form'] = self.form
-        ctx['is_filtered'] = self.is_filtered
+        ctx["is_paginated"] = True
+        ctx["paginator"] = paginator
+        ctx["page_obj"] = paginator.get_page(self.request.GET.get("page", 1))
+        ctx["discounts"] = ctx["page_obj"]
+        ctx["form"] = self.form
+        ctx["is_filtered"] = self.is_filtered
         return ctx
 
     def render_to_response(self, context):
-        if self.request.GET.get('format') == 'csv':
-            OrderDiscountCSVFormatter = get_class('offers_dashboard.reports', 'OrderDiscountCSVFormatter')
+        if self.request.GET.get("format") == "csv":
+            OrderDiscountCSVFormatter = get_class(
+                "offers_dashboard.reports", "OrderDiscountCSVFormatter"
+            )
             formatter = OrderDiscountCSVFormatter()
-            qs = self.get_related_order_discounts().order_by('order__date_placed')
+            qs = self.get_related_order_discounts().order_by("order__date_placed")
             return formatter.generate_response(qs, offer=self.object.offers.first())
         return super().render_to_response(context)
-
 
 
 class VoucherUpdateView(DefaultVoucherUpdateView):
@@ -139,67 +144,71 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
     def get_initial(self):
         voucher = self.get_voucher()
         initial = {
-            'name': voucher.name,
-            'code': voucher.code,
-            'start_datetime': voucher.start_datetime,
-            'end_datetime': voucher.end_datetime,
-            'usage': voucher.usage,
-            'limit_usage_by_group': voucher.limit_usage_by_group,
-            'groups': voucher.groups.all(),
+            "name": voucher.name,
+            "code": voucher.code,
+            "start_datetime": voucher.start_datetime,
+            "end_datetime": voucher.end_datetime,
+            "usage": voucher.usage,
+            "limit_usage_by_group": voucher.limit_usage_by_group,
+            "groups": voucher.groups.all(),
         }
 
         offer = voucher.offers.first()
         if offer:
-            initial['priority'] = offer.priority
-            initial['offer_group'] = offer.offer_group
-            initial['max_global_applications'] = offer.max_global_applications
-            initial['max_user_applications'] = offer.max_user_applications
-            initial['max_basket_applications'] = offer.max_basket_applications
-            initial['max_discount'] = offer.max_discount
-            initial['desktop_image'] = offer.desktop_image
-            initial['mobile_image'] = offer.mobile_image
-            initial['condition'] = offer.condition
-            initial['benefit'] = offer.benefit
-            initial['description'] = offer.description
+            initial["priority"] = offer.priority
+            initial["offer_group"] = offer.offer_group
+            initial["max_global_applications"] = offer.max_global_applications
+            initial["max_user_applications"] = offer.max_user_applications
+            initial["max_basket_applications"] = offer.max_basket_applications
+            initial["max_discount"] = offer.max_discount
+            initial["desktop_image"] = offer.desktop_image
+            initial["mobile_image"] = offer.mobile_image
+            initial["condition"] = offer.condition
+            initial["benefit"] = offer.benefit
+            initial["description"] = offer.description
 
         return initial
 
     @transaction.atomic
     def form_valid(self, form):
         voucher = self.get_voucher()
-        voucher.name = form.cleaned_data['name']
-        voucher.code = form.cleaned_data['code']
-        voucher.usage = form.cleaned_data['usage']
-        voucher.start_datetime = form.cleaned_data['start_datetime']
-        voucher.end_datetime = form.cleaned_data['end_datetime']
-        voucher.limit_usage_by_group = form.cleaned_data['limit_usage_by_group']
-        voucher.groups.set(form.cleaned_data['groups'])
+        voucher.name = form.cleaned_data["name"]
+        voucher.code = form.cleaned_data["code"]
+        voucher.usage = form.cleaned_data["usage"]
+        voucher.start_datetime = form.cleaned_data["start_datetime"]
+        voucher.end_datetime = form.cleaned_data["end_datetime"]
+        voucher.limit_usage_by_group = form.cleaned_data["limit_usage_by_group"]
+        voucher.groups.set(form.cleaned_data["groups"])
         voucher.save()
 
-        benefit = form.cleaned_data['benefit']
-        condition = form.cleaned_data['condition']
+        benefit = form.cleaned_data["benefit"]
+        condition = form.cleaned_data["condition"]
         if not condition:
             condition = Condition.objects.get_or_create(
                 range=benefit.range,
-                proxy_class='oscarbluelight.offer.conditions.BluelightCountCondition',
-                value=1)[0]
+                proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+                value=1,
+            )[0]
 
         offer = voucher.offers.first()
         if not offer:
-            offer = ConditionalOffer(name=_("Offer for voucher '%s'") % voucher.name, offer_type=ConditionalOffer.VOUCHER)
+            offer = ConditionalOffer(
+                name=_("Offer for voucher '%s'") % voucher.name,
+                offer_type=ConditionalOffer.VOUCHER,
+            )
 
-        offer.desktop_image = form.cleaned_data['desktop_image']
-        offer.mobile_image = form.cleaned_data['mobile_image']
-        offer.short_name = form.cleaned_data['code']
-        offer.description = form.cleaned_data['description']
+        offer.desktop_image = form.cleaned_data["desktop_image"]
+        offer.mobile_image = form.cleaned_data["mobile_image"]
+        offer.short_name = form.cleaned_data["code"]
+        offer.description = form.cleaned_data["description"]
         offer.condition = condition
         offer.benefit = benefit
-        offer.offer_group = form.cleaned_data['offer_group']
-        offer.priority = form.cleaned_data['priority']
-        offer.max_global_applications = form.cleaned_data['max_global_applications']
-        offer.max_user_applications = form.cleaned_data['max_user_applications']
-        offer.max_basket_applications = form.cleaned_data['max_basket_applications']
-        offer.max_discount = form.cleaned_data['max_discount']
+        offer.offer_group = form.cleaned_data["offer_group"]
+        offer.priority = form.cleaned_data["priority"]
+        offer.max_global_applications = form.cleaned_data["max_global_applications"]
+        offer.max_user_applications = form.cleaned_data["max_user_applications"]
+        offer.max_basket_applications = form.cleaned_data["max_basket_applications"]
+        offer.max_discount = form.cleaned_data["max_discount"]
         offer.save()
 
         voucher.offers.add(offer)
@@ -207,30 +216,33 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-
 class AddChildCodesView(generic.FormView):
-    template_name = 'oscar/dashboard/vouchers/voucher_add_children.html'
+    template_name = "oscar/dashboard/vouchers/voucher_add_children.html"
     model = Voucher
     form_class = AddChildCodesForm
 
     def get_voucher(self):
-        return get_object_or_404(Voucher, id=self.kwargs['pk'])
+        return get_object_or_404(Voucher, id=self.kwargs["pk"])
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['voucher'] = self.get_voucher()
+        ctx["voucher"] = self.get_voucher()
         return ctx
 
     @transaction.atomic
     def form_valid(self, form):
         voucher = self.get_voucher()
-        tasks.add_child_codes.apply_async(args=(voucher.pk, form.cleaned_data['child_count']), countdown=1)
-        messages.success(self.request, _("Creating %s child codes…") % form.cleaned_data['child_count'])
+        tasks.add_child_codes.apply_async(
+            args=(voucher.pk, form.cleaned_data["child_count"]), countdown=1
+        )
+        messages.success(
+            self.request,
+            _("Creating %s child codes…") % form.cleaned_data["child_count"],
+        )
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('dashboard:voucher-stats', args=(self.kwargs['pk'], ))
-
+        return reverse("dashboard:voucher-stats", args=(self.kwargs["pk"],))
 
 
 class ExportChildCodesView(generic.DetailView):
@@ -238,32 +250,30 @@ class ExportChildCodesView(generic.DetailView):
 
     def get(self, request, format, *args, **kwargs):
         formats = {
-            'csv': self._render_csv,
-            'json': self._render_json,
+            "csv": self._render_csv,
+            "json": self._render_json,
         }
         if format not in formats:
             raise Http404()
 
         voucher = self.get_object()
-        filename = re.sub(r'[^a-z0-9\_\-]+', '_', voucher.name.lower())
-        children = voucher.children.order_by('code')
+        filename = re.sub(r"[^a-z0-9\_\-]+", "_", voucher.name.lower())
+        children = voucher.children.order_by("code")
         return formats[format](filename, children)
 
-
     def _render_csv(self, filename, children):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="%s.csv"' % filename
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
         writer = csv.writer(response)
-        writer.writerow([_('Codes')])
+        writer.writerow([_("Codes")])
         for child in children.all():
             writer.writerow([child.code])
         return response
 
-
     def _render_json(self, filename, children):
-        response = HttpResponse(content_type='application/json')
-        response['Content-Disposition'] = 'attachment; filename="%s.json"' % filename
+        response = HttpResponse(content_type="application/json")
+        response["Content-Disposition"] = 'attachment; filename="%s.json"' % filename
         codes = [c.code for c in children.all()]
-        data = simplejson.dumps({ 'codes': codes })
+        data = simplejson.dumps({"codes": codes})
         response.write(data)
         return response

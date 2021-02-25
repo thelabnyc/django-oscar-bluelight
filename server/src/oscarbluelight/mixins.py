@@ -5,19 +5,24 @@ from oscar.core.utils import round_half_up
 import itertools
 
 
-PriceBreakdownStackEntry = namedtuple('PriceBreakdownStackEntry', (
-    'quantity_with_discount',
-    'discount_delta_unit',
-))
+PriceBreakdownStackEntry = namedtuple(
+    "PriceBreakdownStackEntry",
+    (
+        "quantity_with_discount",
+        "discount_delta_unit",
+    ),
+)
 
-LineDiscountDescription = namedtuple('LineDiscountDescription', (
-    'amount',
-    'offer_name',
-    'offer_description',
-    'voucher_name',
-    'voucher_code',
-))
-
+LineDiscountDescription = namedtuple(
+    "LineDiscountDescription",
+    (
+        "amount",
+        "offer_name",
+        "offer_description",
+        "voucher_name",
+        "voucher_code",
+    ),
+)
 
 
 class BluelightBasketMixin(object):
@@ -36,21 +41,19 @@ class BluelightBasketMixin(object):
         return self.offer_applications.voucher_post_order_actions
 
 
-
 class BluelightBasketLineMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Keep track of the discount amount at the start of offer group application, so that we can tell what
         # the current offer group has accomplished, versus previous offer groups.
-        self._offer_group_starting_discount = Decimal('0.00')
+        self._offer_group_starting_discount = Decimal("0.00")
 
         # Used to record a "stack" of prices as they decrease via offer group application, used when calculating the price breakdown.
         self._price_breakdown_stack = []
 
         # Used to track descriptions of why discounts where applied to the line.
         self._discount_descriptions = []
-
 
     @property
     def unit_effective_price(self):
@@ -105,12 +108,14 @@ class BluelightBasketLineMixin(object):
         In order for point 2.1 to work that way and subtract $100 instead of $200, it must start with the already
         discounted line price of $100, which equates to a unit_effective_price of $50.
         """
-        if self._discount_incl_tax > Decimal('0.00'):
-            raise RuntimeError(_('Bluelight does not support tax-inclusive discounting.'))
+        if self._discount_incl_tax > Decimal("0.00"):
+            raise RuntimeError(
+                _("Bluelight does not support tax-inclusive discounting.")
+            )
 
         # Protect against divide by 0 errors
         if self.quantity == 0:
-            return Decimal('0.00')
+            return Decimal("0.00")
 
         # Cannot compare None with Decimal below, so return None
         if self.purchase_info.price.effective_price is None:
@@ -123,23 +128,20 @@ class BluelightBasketLineMixin(object):
         unit_price_discounted = unit_price_full - per_unit_discount
         return unit_price_discounted
 
-
     @property
     def line_price_incl_tax_incl_discounts(self):
         if self.line_price_incl_tax is not None:
             return max(0, round_half_up(self.line_price_incl_tax - self.discount_value))
         return None
 
-
     def clear_discount(self):
         """
         Remove any discounts from this line.
         """
         super().clear_discount()
-        self._offer_group_starting_discount = Decimal('0.00')
+        self._offer_group_starting_discount = Decimal("0.00")
         self._price_breakdown_stack = []
         self._discount_descriptions = []
-
 
     def discount(self, discount_value, affected_quantity, incl_tax=True, offer=None):
         """
@@ -149,11 +151,19 @@ class BluelightBasketLineMixin(object):
         to the challenges of OfferGroup compounding offers.
         """
         if incl_tax:
-            raise RuntimeError(_("Attempting to discount the tax-inclusive price of a line "
-                                 "when tax-exclusive discounts are already applied"))
+            raise RuntimeError(
+                _(
+                    "Attempting to discount the tax-inclusive price of a line "
+                    "when tax-exclusive discounts are already applied"
+                )
+            )
         if self._discount_incl_tax > 0:
-            raise RuntimeError(_("Attempting to discount the tax-exclusive price of a line "
-                                 "when tax-inclusive discounts are already applied"))
+            raise RuntimeError(
+                _(
+                    "Attempting to discount the tax-exclusive price of a line "
+                    "when tax-inclusive discounts are already applied"
+                )
+            )
 
         # Increase the total line discount amount
         self._discount_excl_tax += discount_value
@@ -170,13 +180,12 @@ class BluelightBasketLineMixin(object):
                 offer_name=offer.name,
                 offer_description=offer.description,
                 voucher_name=voucher.name if voucher else None,
-                voucher_code=voucher.code if voucher else None)
+                voucher_code=voucher.code if voucher else None,
+            )
             self._discount_descriptions.append(descr)
-
 
     def get_discount_descriptions(self):
         return self._discount_descriptions
-
 
     def begin_offer_group_application(self):
         """
@@ -190,7 +199,6 @@ class BluelightBasketLineMixin(object):
         self.consumer.begin_offer_group_application()
         self._offer_group_starting_discount = self.discount_value
 
-
     def end_offer_group_application(self):
         """
         Signal that the Applicator has finished applying a group of offers.
@@ -201,10 +209,10 @@ class BluelightBasketLineMixin(object):
             delta_unit = delta_line / discounted_quantity
             item = PriceBreakdownStackEntry(
                 quantity_with_discount=discounted_quantity,
-                discount_delta_unit=delta_unit)
+                discount_delta_unit=delta_unit,
+            )
             self._price_breakdown_stack.append(item)
             self.consumer.end_offer_group_application()
-
 
     def finalize_offer_group_applications(self):
         """
@@ -213,7 +221,6 @@ class BluelightBasketLineMixin(object):
         self.consumer.finalize_offer_group_applications()
         self._offer_group_starting_discount = self.discount_value
 
-
     def get_price_breakdown(self):
         """
         Return a breakdown of line prices after discounts have been applied.
@@ -221,7 +228,9 @@ class BluelightBasketLineMixin(object):
         Returns a list of (unit_price_incl_tax, unit_price_excl_tax, quantity) tuples.
         """
         if not self.is_tax_known:
-            raise RuntimeError(_("A price breakdown can only be determined when taxes are known"))
+            raise RuntimeError(
+                _("A price breakdown can only be determined when taxes are known")
+            )
 
         # Create an array of the pre-discount unit prices with length equal to the line quantity
         item_prices = []
@@ -261,15 +270,19 @@ class BluelightBasketLineMixin(object):
         line_tax = self.line_tax
 
         # Avoid a divide by 0 error when the line is completely free, but still has tax applied to it.
-        free = Decimal('0.00')
+        free = Decimal("0.00")
         if line_price_excl_tax_incl_discounts <= free:
             prices.append((line_tax, free, self.quantity))
             return prices
 
         # When the line isn't free, distribute tax evenly based on what share of the total line price this unit prices accounts for.
         for unit_price_excl_tax, quantity in price_qtys:
-            unit_tax = (unit_price_excl_tax / line_price_excl_tax_incl_discounts) * line_tax
-            unit_price_incl_tax = (unit_price_excl_tax + unit_tax).quantize(unit_price_excl_tax)
+            unit_tax = (
+                unit_price_excl_tax / line_price_excl_tax_incl_discounts
+            ) * line_tax
+            unit_price_incl_tax = (unit_price_excl_tax + unit_tax).quantize(
+                unit_price_excl_tax
+            )
             prices.append((unit_price_incl_tax, unit_price_excl_tax, quantity))
 
         return prices

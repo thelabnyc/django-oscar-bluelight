@@ -6,17 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0020_remove_range_cache_version'),
+        ("offer", "0020_remove_range_cache_version"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RangeProductSet',
+            name="RangeProductSet",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
             options={
-                'managed': False,
+                "managed": False,
             },
         ),
     ]

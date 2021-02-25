@@ -5,6 +5,7 @@ class BluelightLineOfferConsumer(object):
     """
     Version of ``oscar.app.basket.utils.LineOfferConsumer`` which supports OfferGroups.
     """
+
     def __init__(self, line):
         self.__line = line
         self.__offers = dict()
@@ -20,17 +21,14 @@ class BluelightLineOfferConsumer(object):
         # This property refers to the affected quantity global of OfferGroups
         self.__global_affected_quantity = 0
 
-
     def __cache(self, offer):
         self.__offers[offer.pk] = offer
-
 
     def __update_affected_quantity(self, quantity):
         available_in_group = int(self.__line.quantity - self.__affected_quantity)
         available_global = int(self.__line.quantity - self.__global_affected_quantity)
         self.__affected_quantity += min(available_in_group, quantity)
         self.__global_affected_quantity += min(available_global, quantity)
-
 
     def consume(self, quantity, offer=None):
         """
@@ -45,7 +43,6 @@ class BluelightLineOfferConsumer(object):
             available = self.available(offer)
             self.__consumptions[offer.pk] += min(available, quantity)
 
-
     def consumed(self, offer=None):
         """
         Check how many items on this line have been consumed by an offer in the current offer group.
@@ -55,7 +52,6 @@ class BluelightLineOfferConsumer(object):
         if not offer:
             return self.__affected_quantity
         return int(self.__consumptions[offer.pk])
-
 
     def available(self, offer=None):
         """
@@ -73,20 +69,17 @@ class BluelightLineOfferConsumer(object):
         consumed = self.consumed(offer)
         return int(self.__line.quantity - consumed)
 
-
     def discount(self, quantity):
         """
         Update the discounted quantity.
         """
         self.__discounted_quantity += quantity
 
-
     def discounted(self):
         """
         Get the number of items that have been discounted in the current offer group.
         """
         return self.__discounted_quantity
-
 
     def begin_offer_group_application(self):
         """
@@ -99,16 +92,16 @@ class BluelightLineOfferConsumer(object):
         self.__affected_quantity = 0
         self.__discounted_quantity = 0
 
-
     def end_offer_group_application(self):
         """
         Signal that the Applicator has finished applying a group of offers.
         """
         self.__discounted_quantity = 0
 
-
     def finalize_offer_group_applications(self):
         """
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
-        self.__affected_quantity = min(self.__line.quantity, self.__global_affected_quantity)
+        self.__affected_quantity = min(
+            self.__line.quantity, self.__global_affected_quantity
+        )

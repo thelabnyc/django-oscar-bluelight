@@ -1,27 +1,31 @@
-const webpack = require('webpack');
-const path = require('path');
-const fs = require('fs');
-const BundleTracker = require('webpack-bundle-tracker');
+const webpack = require("webpack");
+const path = require("path");
+const fs = require("fs");
+const BundleTracker = require("webpack-bundle-tracker");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const BUILD_DIR = path.resolve(__dirname, '../server/src/oscarbluelight/static/oscarbluelight/');
-const APP_DIR = path.resolve(__dirname, './src/');
-const IS_PROD = (process.env.NODE_ENV === 'production');
-
+const BUILD_DIR = path.resolve(
+    __dirname,
+    "../server/src/oscarbluelight/static/oscarbluelight/"
+);
+const APP_DIR = path.resolve(__dirname, "./src/");
+const IS_PROD = process.env.NODE_ENV === "production";
 
 // Rules
 const rules = [
     {
         test: /\.[tj]sx?$/,
-        exclude: [
-            path.resolve(__dirname, 'node_modules/core-js/'),
-        ],
+        exclude: [path.resolve(__dirname, "node_modules/core-js/")],
         use: [
             {
-                loader: 'babel-loader',
-                options: Object.assign({}, JSON.parse(fs.readFileSync('.babelrc', 'utf8')), {
-                    cacheDirectory: true,
-                }),
+                loader: "babel-loader",
+                options: Object.assign(
+                    {},
+                    JSON.parse(fs.readFileSync(".babelrc", "utf8")),
+                    {
+                        cacheDirectory: true,
+                    }
+                ),
             },
             {
                 loader: "source-map-loader",
@@ -37,16 +41,16 @@ const rules = [
         use: [
             MiniCssExtractPlugin.loader,
             {
-                loader: 'css-loader',
+                loader: "css-loader",
                 options: {
-                    importLoaders: 2
+                    importLoaders: 2,
                 },
             },
             {
-                loader: 'postcss-loader',
+                loader: "postcss-loader",
             },
             {
-                loader: 'sass-loader',
+                loader: "sass-loader",
             },
         ],
     },
@@ -56,54 +60,52 @@ const rules = [
         use: [
             MiniCssExtractPlugin.loader,
             {
-                loader: 'css-loader',
+                loader: "css-loader",
                 options: {
-                    importLoaders: 1
+                    importLoaders: 1,
                 },
             },
             {
-                loader: 'postcss-loader',
+                loader: "postcss-loader",
             },
         ],
     },
 ];
 
-
 // Transformation Plugins
 let plugins = [
     new BundleTracker({
         path: BUILD_DIR,
-        filename: 'webpack-stats.json'
+        filename: "webpack-stats.json",
     }),
     new webpack.DefinePlugin({
-        'process.env':{
-            'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-        }
+        "process.env": {
+            NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+        },
     }),
     new MiniCssExtractPlugin({
         filename: "[name].css",
-        chunkFilename: "[id].css"
+        chunkFilename: "[id].css",
     }),
 ];
 
-
 const config = {
-    mode: IS_PROD ? 'production' : 'development',
+    mode: IS_PROD ? "production" : "development",
     devtool: "source-map",
     resolve: {
-        modules: ['node_modules'],
+        modules: ["node_modules"],
         extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     },
     entry: {
-        offergroups: path.join(APP_DIR, 'offergroups.tsx'),
+        offergroups: path.join(APP_DIR, "offergroups.tsx"),
     },
     output: {
         path: BUILD_DIR,
-        filename: '[name].js'
+        filename: "[name].js",
     },
     plugins: plugins,
     module: {
-        rules: rules
+        rules: rules,
     },
     optimization: {
         splitChunks: {

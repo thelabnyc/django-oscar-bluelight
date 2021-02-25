@@ -7,42 +7,60 @@ from itertools import groupby, chain
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 from oscar.apps.offer import results
-from .signals import pre_offers_apply, post_offers_apply, pre_offer_group_apply, post_offer_group_apply
+from .signals import (
+    pre_offers_apply,
+    post_offers_apply,
+    pre_offer_group_apply,
+    post_offer_group_apply,
+)
 from ..caching import CacheNamespace, FluentCache
 
 
-pricing_cache_ns = CacheNamespace(cache, 'oscarbluelight.pricing')
-cosmetic_price_cache = FluentCache(cache, 'oscarbluelight.applicator.cosmetic_price')\
-    .timeout(getattr(settings, 'BLUELIGHT_COSMETIC_PRICE_CACHE_TTL', 86400))\
-    .namespaces(pricing_cache_ns)\
-    .key_parts('product', 'quantity')
+pricing_cache_ns = CacheNamespace(cache, "oscarbluelight.pricing")
+cosmetic_price_cache = (
+    FluentCache(cache, "oscarbluelight.applicator.cosmetic_price")
+    .timeout(getattr(settings, "BLUELIGHT_COSMETIC_PRICE_CACHE_TTL", 86400))
+    .namespaces(pricing_cache_ns)
+    .key_parts("product", "quantity")
+)
 
 
 def group_offers(offers):
     # Figure out the priority for the "null-group", the implicit group of offers which don't belong to
     # any other group. This group is applied last, and is therefore given the lowest priority.
-    offer_group_priorities = [o.offer_group.priority for o in offers if o.offer_group is not None]
-    min_offer_group_priority = min(offer_group_priorities) if len(offer_group_priorities) else 0
+    offer_group_priorities = [
+        o.offer_group.priority for o in offers if o.offer_group is not None
+    ]
+    min_offer_group_priority = (
+        min(offer_group_priorities) if len(offer_group_priorities) else 0
+    )
     null_group_priority = min_offer_group_priority - 1
 
     def get_offer_group_priority(offer):
         return offer.offer_group.priority if offer.offer_group else null_group_priority
 
     # Sort the list of offers by their offer group's priority, descending
-    offers = sorted(offers, key=lambda offer: (-get_offer_group_priority(offer), -offer.priority))
+    offers = sorted(
+        offers, key=lambda offer: (-get_offer_group_priority(offer), -offer.priority)
+    )
 
     # Group the sorted list by the offer group priority
     return groupby(offers, key=get_offer_group_priority)
 
 
 class Applicator(BaseApplicator):
-    _offer_select_related_fields = ['offer_group', 'benefit', 'benefit__range', 'condition', 'condition__range']
+    _offer_select_related_fields = [
+        "offer_group",
+        "benefit",
+        "benefit__range",
+        "condition",
+        "condition__range",
+    ]
 
     def get_site_offers(self):
-        ConditionalOffer = get_model('offer', 'ConditionalOffer')
+        ConditionalOffer = get_model("offer", "ConditionalOffer")
         qs = ConditionalOffer.active.filter(offer_type=ConditionalOffer.SITE)
         return qs.select_related(*self._offer_select_related_fields)
-
 
     def get_basket_offers(self, basket, user):
         offers = []
@@ -52,14 +70,13 @@ class Applicator(BaseApplicator):
         for voucher in basket.vouchers.all():
             available_to_user, __ = voucher.is_available_to_user(user=user)
             if voucher.is_active() and available_to_user:
-                basket_offers = voucher.offers\
-                                       .select_related(*self._offer_select_related_fields)\
-                                       .all()
+                basket_offers = voucher.offers.select_related(
+                    *self._offer_select_related_fields
+                ).all()
                 for offer in basket_offers:
                     offer.set_voucher(voucher)
                 offers = list(chain(offers, basket_offers))
         return offers
-
 
     def get_user_offers(self, user):
         """
@@ -67,7 +84,7 @@ class Applicator(BaseApplicator):
         """
         if not user or user.is_anonymous:
             return []
-        ConditionalOffer = get_model('offer', 'ConditionalOffer')
+        ConditionalOffer = get_model("offer", "ConditionalOffer")
         cutoff = now()
         date_based = Q(
             Q(start_datetime__lte=cutoff),
@@ -80,13 +97,12 @@ class Applicator(BaseApplicator):
             date_based | nondate_based,
             offer_type=ConditionalOffer.USER,
             groups__in=groups,
-            status=ConditionalOffer.OPEN)
+            status=ConditionalOffer.OPEN,
+        )
         return qs.select_related(*self._offer_select_related_fields)
-
 
     def get_session_offers(self, request):
         return []
-
 
     def apply_offers(self, basket, offers):
         """
@@ -106,7 +122,12 @@ class Applicator(BaseApplicator):
             group = offers_in_group[0].offer_group if len(offers_in_group) > 0 else None
 
             # Signal the lines that we're about to start applying an offer group
-            pre_offer_group_apply.send(sender=self.__class__, basket=basket, group=group, offers=offers_in_group)
+            pre_offer_group_apply.send(
+                sender=self.__class__,
+                basket=basket,
+                group=group,
+                offers=offers_in_group,
+            )
             for line in basket.all_lines():
                 line.begin_offer_group_application()
 
@@ -129,7 +150,12 @@ class Applicator(BaseApplicator):
             # Signal the lines that we've finished applying an offer group
             for line in basket.all_lines():
                 line.end_offer_group_application()
-            post_offer_group_apply.send(sender=self.__class__, basket=basket, group=group, offers=offers_in_group)
+            post_offer_group_apply.send(
+                sender=self.__class__,
+                basket=basket,
+                group=group,
+                offers=offers_in_group,
+            )
 
         # Signal the lines that we've finished applying all offer groups
         for line in basket.all_lines():
@@ -139,12 +165,13 @@ class Applicator(BaseApplicator):
         basket.offer_applications = applications
         post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
-
     def get_cosmetic_price(self, strategy, product, quantity=1):
-        price_cache = cosmetic_price_cache.concrete(product=product.pk, quantity=quantity)
+        price_cache = cosmetic_price_cache.concrete(
+            product=product.pk, quantity=quantity
+        )
 
         def _inner():
-            Basket = get_model('basket', 'Basket')
+            Basket = get_model("basket", "Basket")
             # Calculate the price by simulating adding the product to the basket and comparing
             # the basket's total price before and after the new line item
             total_excl_tax_before = None
@@ -161,11 +188,13 @@ class Applicator(BaseApplicator):
                     # Get the price difference
                     total_excl_tax_after = basket.total_excl_tax
                     # Intentionally rollback the transaction to that the line item isn't actually saved
-                    raise RuntimeError('rollback')
+                    raise RuntimeError("rollback")
             except RuntimeError:
                 pass
             # Use the before/after price difference to calculate the unit price for the product
-            unit_cosmetic_excl_tax = (total_excl_tax_after - total_excl_tax_before) / quantity
+            unit_cosmetic_excl_tax = (
+                total_excl_tax_after - total_excl_tax_before
+            ) / quantity
             return unit_cosmetic_excl_tax
 
         return price_cache.get_or_set(_inner)

@@ -8,12 +8,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('voucher', '0004_auto_20161115_1115'),
+        ("voucher", "0004_auto_20161115_1115"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='voucher',
-            options={'ordering': ('-offers__offer_group__priority', '-offers__priority', 'pk')},
+            name="voucher",
+            options={
+                "ordering": (
+                    "-offers__offer_group__priority",
+                    "-offers__priority",
+                    "pk",
+                )
+            },
         ),
     ]

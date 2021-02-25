@@ -15,14 +15,14 @@ from oscar.apps.offer.abstract_models import (
     AbstractConditionalOffer,
     AbstractRange,
     AbstractRangeProduct,
-    AbstractRangeProductFileUpload
+    AbstractRangeProductFileUpload,
 )
 from oscar.apps.offer.results import (
     SHIPPING_DISCOUNT,
     ZERO_DISCOUNT,
     BasketDiscount,
     PostOrderAction,
-    ShippingDiscount
+    ShippingDiscount,
 )
 from oscar.apps.offer.utils import load_proxy
 from .sql import SQL_RANGE_PRODUCTS, get_sql_range_product_triggers
@@ -52,17 +52,18 @@ class OfferGroup(models.Model):
     """
     Ordered group of Offers
     """
+
     name = models.CharField(max_length=64, null=False)
-    slug = AutoSlugField(populate_from='name', unique=True, null=True, default=None)
+    slug = AutoSlugField(populate_from="name", unique=True, null=True, default=None)
     priority = models.IntegerField(null=False, unique=True)
     is_system_group = models.BooleanField(default=False, editable=False)
 
     class Meta:
-        verbose_name = _('OfferGroup')
-        ordering = ('-priority', )
+        verbose_name = _("OfferGroup")
+        ordering = ("-priority",)
 
     def __str__(self):
-        return '{} (priority {})'.format(self.name, self.priority)
+        return "{} (priority {})".format(self.name, self.priority)
 
 
 class ConditionalOffer(AbstractConditionalOffer):
@@ -75,43 +76,59 @@ class ConditionalOffer(AbstractConditionalOffer):
     to consume OfferGroup -> only move to next (greater priority val) when previous
     offerGroup is consumed
     """
-    short_name = models.CharField(_("Short Name"),
-        max_length=50,
-        help_text=_("Abbreviated version of offer name"))
-    desktop_image = models.ImageField(_("Ad Image (Desktop)"),
+
+    short_name = models.CharField(
+        _("Short Name"), max_length=50, help_text=_("Abbreviated version of offer name")
+    )
+    desktop_image = models.ImageField(
+        _("Ad Image (Desktop)"),
         null=True,
         blank=True,
-        upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'),
-        help_text=_("Desktop image used for promo display."))
-    mobile_image = models.ImageField(_("Ad Image (Mobile)"),
+        upload_to=getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER"),
+        help_text=_("Desktop image used for promo display."),
+    )
+    mobile_image = models.ImageField(
+        _("Ad Image (Mobile)"),
         null=True,
         blank=True,
-        upload_to=getattr(settings, 'BLUELIGHT_OFFER_IMAGE_FOLDER'),
-        help_text=_("Mobile image used for promo display."))
+        upload_to=getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER"),
+        help_text=_("Mobile image used for promo display."),
+    )
     # When offer_type == "User", we use groups to determine which users get the offer
-    groups = models.ManyToManyField('auth.Group',
+    groups = models.ManyToManyField(
+        "auth.Group",
         verbose_name=_("User Groups"),
         blank=True,
-        help_text=_("Select which User Groups are eligible for this offer. If none are selected, all "
-                    "users are eligible."))
-    offer_group = models.ForeignKey(OfferGroup,
+        help_text=_(
+            "Select which User Groups are eligible for this offer. If none are selected, all "
+            "users are eligible."
+        ),
+    )
+    offer_group = models.ForeignKey(
+        OfferGroup,
         verbose_name=_("Offer Group"),
-        related_name='offers',
+        related_name="offers",
         null=True,
         on_delete=models.CASCADE,
-        help_text=_("Select the Offer Group that this offer belongs to. Offer Group controls the order "
-                    "offers are applied in and which offers may be combined together."))
+        help_text=_(
+            "Select the Offer Group that this offer belongs to. Offer Group controls the order "
+            "offers are applied in and which offers may be combined together."
+        ),
+    )
 
     class Meta:
-        ordering = ('-offer_group__priority', '-priority', 'pk')
+        ordering = ("-offer_group__priority", "-priority", "pk")
 
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
         if self.offer_type == self.USER:
-            restrictions.append({
-                'description': _("Offer is limited to user groups: %s") % ', '.join(g.name for g in self.groups.all()),
-                'is_satisfied': True,
-            })
+            restrictions.append(
+                {
+                    "description": _("Offer is limited to user groups: %s")
+                    % ", ".join(g.name for g in self.groups.all()),
+                    "is_satisfied": True,
+                }
+            )
         return restrictions
 
     def apply_benefit(self, basket):
@@ -122,11 +139,12 @@ class ConditionalOffer(AbstractConditionalOffer):
             return ZERO_DISCOUNT
 
     def record_usage(self, discount):
-        ConditionalOffer.objects\
-                        .filter(pk=self.pk)\
-                        .update(num_applications=(F('num_applications') + discount['freq']),
-                                total_discount=(F('total_discount') + discount['discount']),
-                                num_orders=(F('num_orders') + 1))
+        ConditionalOffer.objects.filter(pk=self.pk).update(
+            num_applications=(F("num_applications") + discount["freq"]),
+            total_discount=(F("total_discount") + discount["discount"]),
+            num_orders=(F("num_orders") + 1),
+        )
+
     record_usage.alters_data = True
 
 
@@ -143,9 +161,9 @@ class Benefit(AbstractBenefit):
 
     @property
     def type_name(self):
-        benefit_classes = getattr(settings, 'BLUELIGHT_BENEFIT_CLASSES', [])
+        benefit_classes = getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])
         names = dict(benefit_classes)
-        names['oscarbluelight.offer.benefits.CompoundBenefit'] = _("Compound benefit")
+        names["oscarbluelight.offer.benefits.CompoundBenefit"] = _("Compound benefit")
         return names.get(self.proxy_class, self.proxy_class)
 
     @property
@@ -162,9 +180,11 @@ class Benefit(AbstractBenefit):
 
     def clean(self):
         if self.type:
-            raise exceptions.ValidationError(_("Benefit should not have a type field. Use proxy class instead."))
+            raise exceptions.ValidationError(
+                _("Benefit should not have a type field. Use proxy class instead.")
+            )
         proxy_instance = self.proxy()
-        cleaner = getattr(proxy_instance, '_clean', None)
+        cleaner = getattr(proxy_instance, "_clean", None)
         if cleaner and callable(cleaner):
             return cleaner()
         return super().clean()
@@ -174,7 +194,11 @@ class Benefit(AbstractBenefit):
         # If the elected proxy_class isn't a proxy model, it has it's own table where a row needs to exist.
         if self.proxy_class:
             Klass = load_proxy(self.proxy_class)
-            if self.__class__ != Klass and not Klass._meta.proxy and not Klass.objects.filter(pk=self.pk).exists():
+            if (
+                self.__class__ != Klass
+                and not Klass._meta.proxy
+                and not Klass.objects.filter(pk=self.pk).exists()
+            ):
                 proxy = copy.deepcopy(self)
                 proxy.__class__ = Klass
                 proxy.save()
@@ -194,9 +218,11 @@ class Condition(AbstractCondition):
 
     @property
     def type_name(self):
-        condition_classes = getattr(settings, 'BLUELIGHT_CONDITION_CLASSES', [])
+        condition_classes = getattr(settings, "BLUELIGHT_CONDITION_CLASSES", [])
         names = dict(condition_classes)
-        names['oscarbluelight.offer.conditions.CompoundCondition'] = _("Compound condition")
+        names["oscarbluelight.offer.conditions.CompoundCondition"] = _(
+            "Compound condition"
+        )
         return names.get(self.proxy_class, self.proxy_class)
 
     @property
@@ -213,9 +239,11 @@ class Condition(AbstractCondition):
 
     def clean(self):
         if self.type:
-            raise exceptions.ValidationError(_("Condition should not have a type field. Use proxy class instead."))
+            raise exceptions.ValidationError(
+                _("Condition should not have a type field. Use proxy class instead.")
+            )
         proxy_instance = self.proxy()
-        cleaner = getattr(proxy_instance, '_clean', None)
+        cleaner = getattr(proxy_instance, "_clean", None)
         if cleaner and callable(cleaner):
             return cleaner()
 
@@ -224,7 +252,11 @@ class Condition(AbstractCondition):
         # If the elected proxy_class isn't a proxy model, it has it's own table where a row needs to exist.
         if self.proxy_class:
             Klass = load_proxy(self.proxy_class)
-            if self.__class__ != Klass and not Klass._meta.proxy and not Klass.objects.filter(pk=self.pk).exists():
+            if (
+                self.__class__ != Klass
+                and not Klass._meta.proxy
+                and not Klass.objects.filter(pk=self.pk).exists()
+            ):
                 proxy_instance = copy.deepcopy(self)
                 proxy_instance.__class__ = Klass
                 proxy_instance.save(force_insert=True)
@@ -232,7 +264,6 @@ class Condition(AbstractCondition):
 
 
 class Range(AbstractRange):
-
     @cached_property
     def product_queryset(self):
         Product = self.included_products.model
@@ -245,13 +276,13 @@ class Range(AbstractRange):
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
 
-
     def delete(self, *args, **kwargs):
         # Disallow deleting a range with any dependents
         if self.benefit_set.exists() or self.condition_set.exists():
-            raise IntegrityError(_('Can not delete range with a dependent benefit or condition.'))
+            raise IntegrityError(
+                _("Can not delete range with a dependent benefit or condition.")
+            )
         return super().delete(*args, **kwargs)
-
 
 
 class RangeProduct(AbstractRangeProduct):
@@ -263,14 +294,14 @@ class RangeProductFileUpload(AbstractRangeProductFileUpload):
 
 
 class RangeProductSet(pg.MaterializedView):
-    range = models.ForeignKey(Range,
-        related_name='cached_products',
-        on_delete=models.DO_NOTHING)
-    product = models.ForeignKey('catalogue.Product',
-        related_name='cached_ranges',
-        on_delete=models.DO_NOTHING)
+    range = models.ForeignKey(
+        Range, related_name="cached_products", on_delete=models.DO_NOTHING
+    )
+    product = models.ForeignKey(
+        "catalogue.Product", related_name="cached_ranges", on_delete=models.DO_NOTHING
+    )
 
-    concurrent_index = 'range_id, product_id'
+    concurrent_index = "range_id, product_id"
     sql = SQL_RANGE_PRODUCTS
 
     class Meta:
@@ -287,14 +318,22 @@ class RangeProductSet(pg.MaterializedView):
 
 
 # Make proxy_class field not unique.
-Condition._meta.get_field('proxy_class')._unique = False
+Condition._meta.get_field("proxy_class")._unique = False
 
 
 __all__ = [
-    'BasketDiscount', 'ShippingDiscount', 'PostOrderAction',
-    'SHIPPING_DISCOUNT', 'ZERO_DISCOUNT', 'ConditionalOffer',
-    'Benefit', 'Condition', 'Range', 'RangeProduct',
-    'RangeProductFileUpload', 'OfferGroup',
+    "BasketDiscount",
+    "ShippingDiscount",
+    "PostOrderAction",
+    "SHIPPING_DISCOUNT",
+    "ZERO_DISCOUNT",
+    "ConditionalOffer",
+    "Benefit",
+    "Condition",
+    "Range",
+    "RangeProduct",
+    "RangeProductFileUpload",
+    "OfferGroup",
 ]
 
 

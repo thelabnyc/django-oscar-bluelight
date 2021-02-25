@@ -3,11 +3,15 @@ from django.core import exceptions
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from oscar.apps.offer import utils
-from oscar.apps.offer.conditions import CountCondition, CoverageCondition, ValueCondition
+from oscar.apps.offer.conditions import (
+    CountCondition,
+    CoverageCondition,
+    ValueCondition,
+)
 from oscar.core.loading import get_model
 from oscar.templatetags.currency_filters import currency
 
-Condition = get_model('offer', 'Condition')
+Condition = get_model("offer", "Condition")
 
 
 def _default_clean(self):
@@ -21,7 +25,7 @@ class BluelightCountCondition(CountCondition):
     _description = _("Basket includes %(count)d item(s) from %(range)s")
 
     class Meta:
-        app_label = 'offer'
+        app_label = "offer"
         proxy = True
         verbose_name = _("Count condition")
         verbose_name_plural = _("Count conditions")
@@ -29,14 +33,18 @@ class BluelightCountCondition(CountCondition):
     @property
     def name(self):
         return self._description % {
-            'count': self.value,
-            'range': str(self.range).lower() if self.range else _('product range')}
+            "count": self.value,
+            "range": str(self.range).lower() if self.range else _("product range"),
+        }
 
     @property
     def description(self):
         return self._description % {
-            'count': self.value,
-            'range': utils.range_anchor(self.range) if self.range else _('product range')}
+            "count": self.value,
+            "range": utils.range_anchor(self.range)
+            if self.range
+            else _("product range"),
+        }
 
     def _clean(self):
         return _default_clean(self)
@@ -46,7 +54,9 @@ class BluelightCountCondition(CountCondition):
         Same as CountCondition.consume_items, except that it returns a list of consumed items. This
         is needed for CompoundCondition to be able to correctly consume items.
         """
-        applicable_lines = self.get_applicable_lines(offer, basket, most_expensive_first=True)
+        applicable_lines = self.get_applicable_lines(
+            offer, basket, most_expensive_first=True
+        )
         applicable_line_ids = set(line.id for __, line in applicable_lines)
 
         num_consumed = 0
@@ -73,7 +83,7 @@ class BluelightCoverageCondition(CoverageCondition):
     _description = _("Basket includes %(count)d distinct item(s) from %(range)s")
 
     class Meta:
-        app_label = 'offer'
+        app_label = "offer"
         proxy = True
         verbose_name = _("Coverage Condition")
         verbose_name_plural = _("Coverage Conditions")
@@ -81,14 +91,18 @@ class BluelightCoverageCondition(CoverageCondition):
     @property
     def name(self):
         return self._description % {
-            'count': self.value,
-            'range': str(self.range).lower() if self.range else _('product range')}
+            "count": self.value,
+            "range": str(self.range).lower() if self.range else _("product range"),
+        }
 
     @property
     def description(self):
         return self._description % {
-            'count': self.value,
-            'range': utils.range_anchor(self.range) if self.range else _('product range')}
+            "count": self.value,
+            "range": utils.range_anchor(self.range)
+            if self.range
+            else _("product range"),
+        }
 
     def _clean(self):
         return _default_clean(self)
@@ -98,7 +112,9 @@ class BluelightCoverageCondition(CoverageCondition):
         Same as CoverageCondition.consume_items, except that it returns a list of consumed items. This
         is needed for CompoundCondition to be able to correctly consume items.
         """
-        applicable_lines = self.get_applicable_lines(offer, basket, most_expensive_first=True)
+        applicable_lines = self.get_applicable_lines(
+            offer, basket, most_expensive_first=True
+        )
         applicable_line_ids = set(line.id for __, line in applicable_lines)
 
         consumed_products = []
@@ -134,7 +150,7 @@ class BluelightValueCondition(ValueCondition):
     _tax_inclusive = False
 
     class Meta:
-        app_label = 'offer'
+        app_label = "offer"
         proxy = True
         verbose_name = _("Value condition")
         verbose_name_plural = _("Value conditions")
@@ -142,16 +158,20 @@ class BluelightValueCondition(ValueCondition):
     @property
     def name(self):
         return self._description % {
-            'amount': currency(self.value),
-            'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
-            'range': str(self.range).lower() if self.range else _('product range')}
+            "amount": currency(self.value),
+            "tax": _("tax-inclusive") if self._tax_inclusive else _("tax-exclusive"),
+            "range": str(self.range).lower() if self.range else _("product range"),
+        }
 
     @property
     def description(self):
         return self._description % {
-            'amount': currency(self.value),
-            'tax': _('tax-inclusive') if self._tax_inclusive else _('tax-exclusive'),
-            'range': utils.range_anchor(self.range) if self.range else _('product range')}
+            "amount": currency(self.value),
+            "tax": _("tax-inclusive") if self._tax_inclusive else _("tax-exclusive"),
+            "range": utils.range_anchor(self.range)
+            if self.range
+            else _("product range"),
+        }
 
     def _clean(self):
         return _default_clean(self)
@@ -160,9 +180,9 @@ class BluelightValueCondition(ValueCondition):
         """
         Determine whether a given basket meets this condition
         """
-        value_of_matches = D('0.00')
+        value_of_matches = D("0.00")
         for line in basket.all_lines():
-            if (self.can_apply_condition(line) and line.quantity_without_discount > 0):
+            if self.can_apply_condition(line) and line.quantity_without_discount > 0:
                 price = self._get_unit_price(offer, line)
                 value_of_matches += price * int(line.quantity_without_discount)
             if value_of_matches >= self.value:
@@ -170,11 +190,11 @@ class BluelightValueCondition(ValueCondition):
         return False
 
     def _get_value_of_matches(self, offer, basket):
-        if hasattr(self, '_value_of_matches'):
-            return getattr(self, '_value_of_matches')
-        value_of_matches = D('0.00')
+        if hasattr(self, "_value_of_matches"):
+            return getattr(self, "_value_of_matches")
+        value_of_matches = D("0.00")
         for line in basket.all_lines():
-            if (self.can_apply_condition(line) and line.quantity_without_discount > 0):
+            if self.can_apply_condition(line) and line.quantity_without_discount > 0:
                 price = self._get_unit_price(offer, line)
                 value_of_matches += price * int(line.quantity_without_discount)
         self._value_of_matches = value_of_matches
@@ -191,10 +211,12 @@ class BluelightValueCondition(ValueCondition):
         Same as ValueCondition.consume_items, except that it returns a list of consumed items. This
         is needed for CompoundCondition to be able to correctly consume items.
         """
-        applicable_lines = self.get_applicable_lines(offer, basket, most_expensive_first=True)
+        applicable_lines = self.get_applicable_lines(
+            offer, basket, most_expensive_first=True
+        )
         applicable_line_ids = set(line.id for __, line in applicable_lines)
 
-        value_consumed = D('0.00')
+        value_consumed = D("0.00")
         affected_lines = list(affected_lines)
         for line, __, qty in affected_lines:
             if line.id in applicable_line_ids:
@@ -207,7 +229,9 @@ class BluelightValueCondition(ValueCondition):
 
         for price, line in applicable_lines:
             quantity_to_consume = (to_consume / price).quantize(D(1), ROUND_UP)
-            quantity_to_consume = min(line.quantity_without_discount, quantity_to_consume)
+            quantity_to_consume = min(
+                line.quantity_without_discount, quantity_to_consume
+            )
             line.consume(quantity_to_consume)
             affected_lines.append((line, 0, quantity_to_consume))
             to_consume -= price * quantity_to_consume
@@ -220,7 +244,7 @@ class BluelightTaxInclusiveValueCondition(BluelightValueCondition):
     _tax_inclusive = True
 
     class Meta:
-        app_label = 'offer'
+        app_label = "offer"
         proxy = True
         verbose_name = _("Tax-Inclusive Value Condition")
         verbose_name_plural = _("Tax-Inclusive Value Conditions")
@@ -231,60 +255,73 @@ class CompoundCondition(Condition):
     An offer condition that aggregates together multiple other conditions,
     allowing the creation of compound rules for offers.
     """
+
     AND, OR = ("AND", "OR")
     CONJUNCTION_TYPE_CHOICES = (
         (AND, _("Logical AND")),
         (OR, _("Logical OR")),
     )
-    conjunction = models.CharField(_("Sub-Condition conjunction type"),
+    conjunction = models.CharField(
+        _("Sub-Condition conjunction type"),
         choices=CONJUNCTION_TYPE_CHOICES,
         default=AND,
         max_length=10,
-        help_text="Select the conjunction which will be used to logically join the sub-conditions together.")
+        help_text="Select the conjunction which will be used to logically join the sub-conditions together.",
+    )
 
-    subconditions = models.ManyToManyField('offer.Condition',
-        related_name='parent_conditions',
+    subconditions = models.ManyToManyField(
+        "offer.Condition",
+        related_name="parent_conditions",
         verbose_name=_("Sub-Conditions"),
-        help_text=_("Select the sub-conditions that this compound-condition will combine."))
+        help_text=_(
+            "Select the sub-conditions that this compound-condition will combine."
+        ),
+    )
 
     class Meta:
-        app_label = 'offer'
+        app_label = "offer"
         verbose_name = _("Compound condition")
         verbose_name_plural = _("Compound conditions")
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.proxy_class = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
+        self.proxy_class = "%s.%s" % (
+            CompoundCondition.__module__,
+            CompoundCondition.__name__,
+        )
 
     @property
     def children(self):
         if self.pk is None:
             return []
-        chil = [c for c in self.subconditions.order_by('id').all() if c.id != self.id]
+        chil = [c for c in self.subconditions.order_by("id").all() if c.id != self.id]
         return chil
 
     @property
     def name(self):
         names = (c.name for c in self.children)
-        return self._human_readable_conjoin(names, _('Empty Condition'))
+        return self._human_readable_conjoin(names, _("Empty Condition"))
 
     @property
     def description(self):
         descrs = (c.description for c in self.children)
-        return self._human_readable_conjoin(descrs, _('Empty Condition'))
+        return self._human_readable_conjoin(descrs, _("Empty Condition"))
 
     def _clean(self):
         if self.range:
-            raise exceptions.ValidationError(_("Compound conditions should not have a range."))
+            raise exceptions.ValidationError(
+                _("Compound conditions should not have a range.")
+            )
         if self.value:
-            raise exceptions.ValidationError(_("Compound conditions should not have a value."))
+            raise exceptions.ValidationError(
+                _("Compound conditions should not have a value.")
+            )
 
     def is_satisfied(self, *args):
-        return self._reduce_results(self.conjunction, 'is_satisfied', *args)
+        return self._reduce_results(self.conjunction, "is_satisfied", *args)
 
     def is_partially_satisfied(self, *args):
-        return self._reduce_results(self.OR, 'is_partially_satisfied', *args)
+        return self._reduce_results(self.OR, "is_partially_satisfied", *args)
 
     def get_upsell_message(self, offer, basket):
         messages = []
@@ -306,8 +343,8 @@ class CompoundCondition(Condition):
 
     def _human_readable_conjoin(self, strings, empty=None):
         labels = {
-            self.AND: _(' and '),
-            self.OR: _(' or '),
+            self.AND: _(" and "),
+            self.OR: _(" or "),
         }
         strings = list(strings)
         if len(strings) <= 0 and empty is not None:
@@ -339,8 +376,8 @@ class CompoundCondition(Condition):
 
 
 __all__ = [
-    'BluelightCountCondition',
-    'BluelightCoverageCondition',
-    'BluelightValueCondition',
-    'CompoundCondition',
+    "BluelightCountCondition",
+    "BluelightCoverageCondition",
+    "BluelightValueCondition",
+    "CompoundCondition",
 ]

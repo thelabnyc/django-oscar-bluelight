@@ -6,18 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0013_conditionaloffer_exclusive'),
+        ("offer", "0013_conditionaloffer_exclusive"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='desktop_image',
-            field=models.ImageField(blank=True, help_text='Desktop image used for promo display.', null=True, upload_to=''),
+            model_name="conditionaloffer",
+            name="desktop_image",
+            field=models.ImageField(
+                blank=True,
+                help_text="Desktop image used for promo display.",
+                null=True,
+                upload_to="",
+            ),
         ),
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='mobile_image',
-            field=models.ImageField(blank=True, help_text='Mobile image used for promo display.', null=True, upload_to=''),
+            model_name="conditionaloffer",
+            name="mobile_image",
+            field=models.ImageField(
+                blank=True,
+                help_text="Mobile image used for promo display.",
+                null=True,
+                upload_to="",
+            ),
         ),
     ]

@@ -1,24 +1,21 @@
-import React from 'react';
-import classNames from 'classnames';
-import {listOfferGroups} from '../utils/api';
-import {IOfferGroup, IOffer} from '../utils/api.interfaces';
+import React from "react";
+import classNames from "classnames";
+import { listOfferGroups } from "../utils/api";
+import { IOfferGroup, IOffer } from "../utils/api.interfaces";
 
-import './OfferGroupTable.scss';
-
+import "./OfferGroupTable.scss";
 
 export interface IProps {
     endpoint: string;
 }
-
 
 export interface IState {
     isLoading: boolean;
     groups: IOfferGroup[];
 }
 
-
 class OfferGroupTable extends React.Component<IProps, IState> {
-    constructor (props: IProps) {
+    constructor(props: IProps) {
         super(props);
         this.state = {
             isLoading: true,
@@ -26,8 +23,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         };
     }
 
-
-    async componentDidMount () {
+    async componentDidMount() {
         const groups = await listOfferGroups(this.props.endpoint);
         this.setState({
             isLoading: false,
@@ -35,35 +31,49 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         });
     }
 
-
-    private buildGroupActions (group: IOfferGroup) {
+    private buildGroupActions(group: IOfferGroup) {
         const hasOffers = group.offers.length > 0;
         const isSystemGroup = group.is_system_group;
 
-        const deleteClass = (hasOffers || isSystemGroup) ? 'disabled' : '';
+        const deleteClass = hasOffers || isSystemGroup ? "disabled" : "";
 
         let deleteTitle: string;
         let deleteLink: string | undefined = undefined;
         if (isSystemGroup) {
-            deleteTitle = gettext('System groups can not be deleted.');
+            deleteTitle = gettext("System groups can not be deleted.");
         } else if (hasOffers) {
-            deleteTitle = gettext('Remove all offers from this group to delete it.');
+            deleteTitle = gettext(
+                "Remove all offers from this group to delete it."
+            );
         } else {
-            deleteTitle = interpolate(gettext("Delete the %s offer group"), [group.name]);
+            deleteTitle = interpolate(gettext("Delete the %s offer group"), [
+                group.name,
+            ]);
             deleteLink = group.delete_link;
         }
 
         return (
             <div className="btn-toolbar">
                 <div className="dropdown">
-                    <button className="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button
+                        className="btn btn-secondary dropdown-toggle"
+                        type="button"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
                         {gettext("Actions")}
                     </button>
                     <ul className="dropdown-menu dropdown-menu-right">
                         <a
                             className="dropdown-item"
                             href={group.update_link}
-                               title={interpolate(gettext("Edit the details of the %s offer group"), [group.name])}
+                            title={interpolate(
+                                gettext(
+                                    "Edit the details of the %s offer group"
+                                ),
+                                [group.name]
+                            )}
                         >
                             {gettext("Edit")}
                         </a>
@@ -80,24 +90,20 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         );
     }
 
-
-    private buildBooleanLabel (truthy: boolean, dangerousNo = false) {
+    private buildBooleanLabel(truthy: boolean, dangerousNo = false) {
         if (truthy) {
             return (
                 <span className="label label-success">{gettext("Yes")}</span>
             );
         }
-        const intent = dangerousNo ? 'label-danger' : 'label-default';
-        return (
-            <span className={`label ${intent}`}>{gettext("No")}</span>
-        );
+        const intent = dangerousNo ? "label-danger" : "label-default";
+        return <span className={`label ${intent}`}>{gettext("No")}</span>;
     }
 
-
-    private buildOfferRow (index: number, offer: IOffer) {
+    private buildOfferRow(index: number, offer: IOffer) {
         const itemClasses = classNames({
-            'offergroup__offer': true,
-            'offergroup__offer--inactive': !offer.is_available,
+            "offergroup__offer": true,
+            "offergroup__offer--inactive": !offer.is_available,
         });
         return (
             <tr key={`offer-${offer.id}`} className={itemClasses}>
@@ -117,12 +123,11 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         );
     }
 
-
-    private buildVoucherRow (index: number, offer: IOffer) {
+    private buildVoucherRow(index: number, offer: IOffer) {
         const elems = offer.vouchers.map((voucher) => {
             const itemClasses = classNames({
-                'offergroup__voucher': true,
-                'offergroup__voucher--inactive': !voucher.is_active,
+                "offergroup__voucher": true,
+                "offergroup__voucher--inactive": !voucher.is_active,
             });
             return (
                 <tr key={`voucher-${voucher.id}`} className={itemClasses}>
@@ -136,7 +141,9 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                         {offer.priority}
                     </td>
                     <td className="offergroup__voucher__type">
-                        <span className="label label-success">{gettext("Voucher")}</span>
+                        <span className="label label-success">
+                            {gettext("Voucher")}
+                        </span>
                     </td>
                 </tr>
             );
@@ -144,20 +151,22 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         return elems;
     }
 
-
-    private buildOfferList (group: IOfferGroup) {
+    private buildOfferList(group: IOfferGroup) {
         const self = this;
         const rows = group.offers
             .filter((offer) => {
                 // Don't display voucher offers who's voucher has been deleted
-                if (offer.offer_type === "Voucher" && offer.vouchers.length <= 0) {
+                if (
+                    offer.offer_type === "Voucher" &&
+                    offer.vouchers.length <= 0
+                ) {
                     return false;
                 }
                 return true;
             })
             .map((offer, i) => {
-                const index = (i + 1);
-                return (offer.vouchers.length > 0)
+                const index = i + 1;
+                return offer.vouchers.length > 0
                     ? self.buildVoucherRow(index, offer)
                     : self.buildOfferRow(index, offer);
             });
@@ -166,21 +175,26 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                 <caption>{group.name}</caption>
                 <thead>
                     <tr>
-                        <th className="offergroup__offer__index">{gettext("#")}</th>
-                        <th className="offergroup__offer__name">{gettext("Name")}</th>
-                        <th className="offergroup__offer__priority">{gettext("Priority")}</th>
-                        <th className="offergroup__offer__type">{gettext("Type")}</th>
+                        <th className="offergroup__offer__index">
+                            {gettext("#")}
+                        </th>
+                        <th className="offergroup__offer__name">
+                            {gettext("Name")}
+                        </th>
+                        <th className="offergroup__offer__priority">
+                            {gettext("Priority")}
+                        </th>
+                        <th className="offergroup__offer__type">
+                            {gettext("Type")}
+                        </th>
                     </tr>
                 </thead>
-                <tbody>
-                   {rows}
-                </tbody>
+                <tbody>{rows}</tbody>
             </table>
         );
     }
 
-
-    private buildGroupRows () {
+    private buildGroupRows() {
         const self = this;
         const numCols = 5;
         if (this.state.isLoading) {
@@ -216,8 +230,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         });
     }
 
-
-    render () {
+    render() {
         return (
             <table className="table table-bordered">
                 <caption>

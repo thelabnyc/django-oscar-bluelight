@@ -1,1 +1,1 @@
-default_app_config = 'oscarbluelight.dashboard.ranges.apps.RangesDashboardConfig'
+default_app_config = "oscarbluelight.dashboard.ranges.apps.RangesDashboardConfig"

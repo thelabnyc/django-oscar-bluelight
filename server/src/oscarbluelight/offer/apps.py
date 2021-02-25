@@ -2,7 +2,7 @@ from oscar.apps.offer import apps
 
 
 class OfferConfig(apps.OfferConfig):
-    name = 'oscarbluelight.offer'
+    name = "oscarbluelight.offer"
 
     def ready(self):
         super().ready()

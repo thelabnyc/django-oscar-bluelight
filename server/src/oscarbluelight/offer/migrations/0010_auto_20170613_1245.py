@@ -8,22 +8,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('offer', '0009_auto_20170517_1605'),
+        ("offer", "0009_auto_20170517_1605"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='conditionaloffer',
-            options={'ordering': ('-offer_group__priority', '-priority', 'pk')},
+            name="conditionaloffer",
+            options={"ordering": ("-offer_group__priority", "-priority", "pk")},
         ),
         migrations.AlterModelOptions(
-            name='offergroup',
-            options={'ordering': ('-priority',), 'verbose_name': 'OfferGroup'},
+            name="offergroup",
+            options={"ordering": ("-priority",), "verbose_name": "OfferGroup"},
         ),
         migrations.AddField(
-            model_name='conditionaloffer',
-            name='short_name',
-            field=models.CharField(default='', help_text='Abbreviated version of offer name', max_length=50, verbose_name='Short Name'),
+            model_name="conditionaloffer",
+            name="short_name",
+            field=models.CharField(
+                default="",
+                help_text="Abbreviated version of offer name",
+                max_length=50,
+                verbose_name="Short Name",
+            ),
             preserve_default=False,
         ),
     ]

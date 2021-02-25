@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('basket', '0008_auto_20190926_1547'),
+        ("basket", "0008_auto_20190926_1547"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='line',
-            name='date_updated',
-            field=models.DateTimeField(auto_now=True, db_index=True, verbose_name='Date Updated'),
+            model_name="line",
+            name="date_updated",
+            field=models.DateTimeField(
+                auto_now=True, db_index=True, verbose_name="Date Updated"
+            ),
         ),
     ]

@@ -1,1 +1,1 @@
-default_app_config = 'oscarbluelight.voucher.apps.VoucherConfig'
+default_app_config = "oscarbluelight.voucher.apps.VoucherConfig"

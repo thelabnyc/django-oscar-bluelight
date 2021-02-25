@@ -8,10 +8,10 @@ from django_redis import get_redis_connection
 class BaseTest(TestCase):
     def setUp(self):
         # Flush the cache
-        conn = get_redis_connection('redis')
+        conn = get_redis_connection("redis")
         conn.flushall()
 
-    def _build_basket(self, item_price=D('10.00'), item_quantity=5):
+    def _build_basket(self, item_price=D("10.00"), item_quantity=5):
         basket = create_basket(empty=True)
         product = create_product()
         create_stockrecord(product, item_price, num_in_stock=item_quantity * 2)
@@ -28,7 +28,9 @@ class BaseTest(TestCase):
         condition.range = all_products
         condition.save()
         benefit = Benefit()
-        benefit.proxy_class = 'oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit'
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit"
+        )
         benefit.value = 0
         benefit.save()
         offer = ConditionalOffer()

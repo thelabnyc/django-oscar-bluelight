@@ -1,1 +1,1 @@
-default_app_config = 'sandbox.partner.apps.PartnerConfig'
+default_app_config = "sandbox.partner.apps.PartnerConfig"

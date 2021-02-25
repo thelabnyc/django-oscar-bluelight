@@ -1,19 +1,16 @@
 {
-    "plugins": [
-        "@babel/plugin-syntax-dynamic-import"
-    ],
+    "plugins": ["@babel/plugin-syntax-dynamic-import"],
     "presets": [
-        ["@babel/preset-env", {
-            "useBuiltIns": "entry",
-            "corejs": 3,
-            "targets": {
-                "browsers": [
-                    "> 1% in US",
-                    "not IE 11",
-                    "not dead"
-                ]
+        [
+            "@babel/preset-env",
+            {
+                "useBuiltIns": "entry",
+                "corejs": 3,
+                "targets": {
+                    "browsers": ["> 1% in US", "not IE 11", "not dead"]
+                }
             }
-        }],
+        ],
         "@babel/preset-react"
     ]
 }
