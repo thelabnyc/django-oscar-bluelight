@@ -113,6 +113,7 @@ Changelog
 4.0.0
 ------------------
 - Oscar 3.0 Compatibility
+- Add checkbox for excluding offer from cosmetic pricing
 
 3.0.0
 ------------------
