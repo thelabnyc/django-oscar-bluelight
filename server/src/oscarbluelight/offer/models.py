@@ -284,6 +284,22 @@ class Range(AbstractRange):
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
 
+    def add_product_batch(self, products):
+        """
+        Same as Range.add_product, but works on a batch of products (in order to optimize the number
+        of queries run on the DB)
+        """
+        # Insert new rows into the included_products relationship
+        RangeProduct = self.included_products.through
+        rows = [RangeProduct(range=self, product=product) for product in products]
+        RangeProduct.objects.bulk_create(rows, ignore_conflicts=True)
+        # Remove product from excluded products if it was removed earlier and
+        # re-added again, thus it returns back to the range product list.
+        ExcludedProduct = self.excluded_products.through
+        ExcludedProduct.objects.filter(product__in=products).all().delete()
+        # Invalidate cache because queryset has changed
+        self.invalidate_cached_queryset()
+
     def delete(self, *args, **kwargs):
         # Disallow deleting a range with any dependents
         if self.benefit_set.exists() or self.condition_set.exists():

@@ -115,6 +115,10 @@ Changelog
 - Oscar 3.0 Compatibility
 - Add checkbox for excluding offer from cosmetic pricing
 
+3.0.1
+-------------------
+- Improve performance of the "Add Products to Range" functionality in the dashboard by utilizing batch inserts.
+
 3.0.0
 ------------------
 - Use Postgres materialized views to improve performance of querying for products in a range.

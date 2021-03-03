@@ -221,3 +221,39 @@ class TestRangeModel(TestCase):
         first_range.name = "Bar"
         first_range.save()
         models.Range.objects.create(name="Foo")
+
+
+class TestRangeAddProductBatch(TestCase):
+    def test_add_product_batch(self):
+        rng = models.Range.objects.create(name="Range", includes_all_products=False)
+        product1 = create_product()
+        product2 = create_product()
+        product3 = create_product()
+        product4 = create_product()
+        # Add p2 to excluded products
+        rng.excluded_products.add(product2)
+        # Check starting point
+        self.assertFalse(rng.contains_product(product1))
+        self.assertFalse(rng.contains_product(product2))
+        self.assertFalse(rng.contains_product(product3))
+        self.assertFalse(rng.contains_product(product4))
+        # Add p1, p2, and p3 to the range. Should add all 3 products and remove p2 from the exclude list.
+        rng.add_product_batch(
+            [
+                product1,
+                product2,
+                product3,
+            ]
+        )
+        # Check results
+        self.assertTrue(rng.contains_product(product1))
+        self.assertTrue(rng.contains_product(product2))
+        self.assertTrue(rng.contains_product(product3))
+        self.assertFalse(rng.contains_product(product4))
+        # Add p2 back to excluded products
+        rng.excluded_products.add(product2)
+        # Check results
+        self.assertTrue(rng.contains_product(product1))
+        self.assertFalse(rng.contains_product(product2))
+        self.assertTrue(rng.contains_product(product3))
+        self.assertFalse(rng.contains_product(product4))
