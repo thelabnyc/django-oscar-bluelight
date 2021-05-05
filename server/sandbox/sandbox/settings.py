@@ -2,10 +2,20 @@ from django.utils.translation import gettext_lazy as _
 from oscar.defaults import *  # noqa
 from oscarbluelight.defaults import *  # NOQA
 from psycopg2cffi import compat
+from fnmatch import fnmatch
 import os
 import sys
 
 compat.register()
+
+
+class glob_list(list):
+    def __contains__(self, key):
+        for elt in self:
+            if fnmatch(key, elt):
+                return True
+        return False
+
 
 IS_UNIT_TEST = "test" in sys.argv
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +27,8 @@ SECRET_KEY = "li0$-gnv)76g$yf7p@(cg-^_q7j6df5cx$o-gsef5hd68phj!4"
 SITE_ID = 1
 ROOT_URLCONF = "sandbox.urls"
 ALLOWED_HOSTS = ["*"]
+
+INTERNAL_IPS = glob_list(["127.0.0.1", "172.17.*.*", "192.168.*.*", "10.0.*.*"])
 
 USE_I18N = True
 LANGUAGE_CODE = "en-us"
@@ -85,9 +97,12 @@ INSTALLED_APPS = [
     # 3rd-party apps we depend on
     "rest_framework",
     "django_pgviews",
+    # Dev/Debug stuff
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = (
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -125,6 +140,7 @@ TEMPLATES = [
     },
 ]
 
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",

@@ -1,4 +1,5 @@
-from django.conf.urls import url, include
+from django.urls import path
+from django.conf.urls import include
 from django.views.i18n import JavaScriptCatalog
 from rest_framework import routers
 from oscar.apps.dashboard.offers import apps
@@ -15,6 +16,9 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
         self.benefit_view = get_class("offers_dashboard.views", "OfferBenefitView")
         self.restrictions_view = get_class(
             "offers_dashboard.views", "OfferRestrictionsView"
+        )
+        self.image_update_view = get_class(
+            "offers_dashboard.views", "OfferImageUpdateView"
         )
         self.delete_view = get_class("offers_dashboard.views", "OfferDeleteView")
         self.detail_view = get_class("offers_dashboard.views", "OfferDetailView")
@@ -45,69 +49,73 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
 
         custom_urls = [
             # API
-            url(r"^api/", include(router.urls)),
+            path("api/", include(router.urls)),
             # i18n JS Catalogue
-            url(
-                r"^bluelight-i18n\.js$",
+            path(
+                "bluelight-i18n.js",
                 JavaScriptCatalog.as_view(packages=["oscarbluelight"]),
                 name="oscarbluelight-i18n-js",
             ),
+            # Offers
+            path(
+                "<int:pk>/images/",
+                self.image_update_view.as_view(),
+                name="offer-images",
+            ),
             # Benefits
-            url(r"^benefits/$", BenefitListView.as_view(), name="benefit-list"),
-            url(r"^benefits/new/$", BenefitCreateView.as_view(), name="benefit-create"),
-            url(
-                r"^benefits/new-compound/$",
+            path("benefits/", BenefitListView.as_view(), name="benefit-list"),
+            path("benefits/new/", BenefitCreateView.as_view(), name="benefit-create"),
+            path(
+                "benefits/new-compound/",
                 CompoundBenefitCreateView.as_view(),
                 name="benefit-create-compound",
             ),
-            url(
-                r"^benefits/(?P<pk>[0-9]+)/$",
+            path(
+                "benefits/<int:pk>/",
                 BenefitUpdateView.as_view(),
                 name="benefit-update",
             ),
-            url(
-                r"^benefits/(?P<pk>[0-9]+)/delete/$",
+            path(
+                "benefits/<int:pk>/delete/",
                 BenefitDeleteView.as_view(),
                 name="benefit-delete",
             ),
             # Conditions
-            url(r"^conditions/$", ConditionListView.as_view(), name="condition-list"),
-            url(
-                r"^conditions/new/$",
+            path("conditions/", ConditionListView.as_view(), name="condition-list"),
+            path(
+                "conditions/new/",
                 ConditionCreateView.as_view(),
                 name="condition-create",
             ),
-            url(
-                r"^conditions/new-compound/$",
+            path(
+                "conditions/new-compound/",
                 CompoundConditionCreateView.as_view(),
                 name="condition-create-compound",
             ),
-            url(
-                r"^conditions/(?P<pk>[0-9]+)/$",
+            path(
+                "conditions/<int:pk>/",
                 ConditionUpdateView.as_view(),
                 name="condition-update",
             ),
-            url(
-                r"^conditions/(?P<pk>[0-9]+)/delete/$",
+            path(
+                "conditions/<int:pk>/delete/",
                 ConditionDeleteView.as_view(),
                 name="condition-delete",
             ),
             # Offer Groups
-            url(
-                r"^offer_group/$", OfferGroupListView.as_view(), name="offergroup-list"
-            ),
-            url(
-                r"^offer_group/new/$",
+            path("offer_group/", OfferGroupListView.as_view(), name="offergroup-list"),
+            path(
+                "offer_group/new/",
                 OfferGroupCreateView.as_view(),
                 name="offergroup-create",
             ),
-            url(
-                r"^offer_group/(?P<pk>[0-9]+)/$",
+            path(
+                "offer_group/<int:pk>/",
                 OfferGroupUpdateView.as_view(),
                 name="offergroup-update",
             ),
-            url(
-                r"^offer_group/(?P<pk>[0-9]+)/delete/$",
+            path(
+                "offer_group/<int:pk>/delete/",
                 OfferGroupDeleteView.as_view(),
                 name="offergroup-delete",
             ),

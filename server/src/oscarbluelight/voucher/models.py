@@ -1,5 +1,6 @@
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
+from oscar.models.fields import NullCharField
 from oscar.apps.voucher.abstract_models import AbstractVoucher
 from . import tasks
 import time
@@ -27,6 +28,14 @@ class VoucherManager(models.Manager):
 
 
 class Voucher(AbstractVoucher):
+    name = NullCharField(
+        _("Name"),
+        max_length=128,
+        unique=True,
+        help_text=_(
+            "This will be shown in the checkout and basket once the voucher is entered"
+        ),
+    )
     parent = models.ForeignKey(
         "self",
         verbose_name=_("Parent Voucher"),
@@ -47,6 +56,14 @@ class Voucher(AbstractVoucher):
     class Meta:
         base_manager_name = "objects"
         ordering = ("-offers__offer_group__priority", "-offers__priority", "pk")
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        # Child codes always get the parent's name
+        if instance.parent:
+            instance.name = instance.parent.name
+        return instance
 
     @property
     def offer_group(self):
@@ -122,9 +139,18 @@ class Voucher(AbstractVoucher):
 
     @transaction.atomic
     def save(self, update_children=True, *args, **kwargs):
+        # Child codes use the parent's name and always store Null for their own name
+        _orig_name = self.name
+        if self.parent:
+            self.name = None
+        # Save the object
         rc = super().save(*args, **kwargs)
+        # Update children?
         if update_children:
             tasks.update_child_vouchers.apply_async(args=(self.id,), countdown=10)
+        # Restore the original name
+        if self.parent:
+            self.name = _orig_name
         return rc
 
     @transaction.atomic
@@ -173,8 +199,8 @@ class Voucher(AbstractVoucher):
 
     def _update_child(self, child):
         child.parent = self
+        child.name = None
         copy_fields = (
-            "name",
             "usage",
             "start_datetime",
             "end_datetime",
