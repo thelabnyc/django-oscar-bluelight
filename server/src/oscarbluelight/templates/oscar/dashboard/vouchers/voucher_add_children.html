@@ -43,4 +43,31 @@
             </div>
         {% endblock form_actions %}
     </form>
+
+    <script type="text/javascript">
+        var typeAuto = document.querySelector('input[name=creation_type][value=auto]');
+        var typeManual = document.querySelector('input[name=creation_type][value=manual]');
+        var autoGenerateCount = document.querySelector('input[name="auto_generate_count"]');
+        var customCodes = document.querySelector('textarea[name="custom_child_codes"]');
+
+        typeAuto.addEventListener('change', function(e) {
+            if (!e.currentTarget.checked) {
+                return;
+            }
+            autoGenerateCount.disabled = false;
+            customCodes.value = '';
+            customCodes.disabled = true;
+        });
+
+        typeManual.addEventListener('change', function(e) {
+            if (!e.currentTarget.checked) {
+                return;
+            }
+            customCodes.disabled = false;
+            autoGenerateCount.value = 0;
+            autoGenerateCount.disabled = true;
+        });
+
+        typeAuto.click()
+    </script>
 {% endblock dashboard_content %}

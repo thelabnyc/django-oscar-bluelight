@@ -151,7 +151,7 @@ class ParentChildVoucherTest(TestCase):
         )
         self.assertEqual(p.children.all().count(), 0)
 
-        p.create_children(10)
+        p.create_children(auto_generate_count=10)
         self.assertEqual(p.children.all().count(), 10)
 
         c1 = p.children.order_by("code").first()
@@ -173,7 +173,7 @@ class ParentChildVoucherTest(TestCase):
         )
         self.assertEqual(p.children.all().count(), 0)
 
-        p.create_children(1)
+        p.create_children(auto_generate_count=1)
         self.assertEqual(p.children.all().count(), 1)
 
         c1 = p.children.order_by("code").first()
