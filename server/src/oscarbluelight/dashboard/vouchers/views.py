@@ -89,11 +89,18 @@ class VoucherCreateView(DefaultVoucherCreateView):
         # Create child codes
         if form.cleaned_data["create_children"]:
             tasks.add_child_codes.apply_async(
-                args=(voucher.pk, form.cleaned_data["child_count"]), countdown=1
+                args=(voucher.pk,),
+                kwargs={
+                    "auto_generate_count": form.cleaned_data[
+                        "auto_generate_child_count"
+                    ],
+                },
+                countdown=1,
             )
             messages.success(
                 self.request,
-                _("Creating %s child codes…") % form.cleaned_data["child_count"],
+                _("Creating %s child codes…")
+                % form.cleaned_data["auto_generate_child_count"],
             )
 
         return HttpResponseRedirect(self.get_success_url())
@@ -221,6 +228,8 @@ class AddChildCodesView(generic.FormView):
     model = Voucher
     form_class = AddChildCodesForm
 
+    _bg_task_threshold = 1000
+
     def get_voucher(self):
         return get_object_or_404(Voucher, id=self.kwargs["pk"])
 
@@ -232,13 +241,41 @@ class AddChildCodesView(generic.FormView):
     @transaction.atomic
     def form_valid(self, form):
         voucher = self.get_voucher()
-        tasks.add_child_codes.apply_async(
-            args=(voucher.pk, form.cleaned_data["child_count"]), countdown=1
-        )
-        messages.success(
-            self.request,
-            _("Creating %s child codes…") % form.cleaned_data["child_count"],
-        )
+        # Start a background job to create the child codes
+        auto_generate_count = form.cleaned_data.get("auto_generate_count") or 0
+        custom_child_codes = form.cleaned_data.get("custom_child_codes") or []
+        # Add messages to inform the user what's happening
+        if auto_generate_count and auto_generate_count > 0:
+            messages.info(
+                self.request,
+                _("Auto-generating %s child codes…") % auto_generate_count,
+            )
+        if len(custom_child_codes) > 0:
+            messages.info(
+                self.request,
+                _("Saving %s custom child codes…") % len(custom_child_codes),
+            )
+        # Create the codes
+        create_args = (voucher.pk,)
+        create_kwargs = {
+            "auto_generate_count": auto_generate_count,
+            "custom_codes": custom_child_codes,
+        }
+        # Only start a bg task if a lot of codes were requested.
+        total_requested_codes = auto_generate_count + len(custom_child_codes)
+        if total_requested_codes >= self._bg_task_threshold:
+            tasks.add_child_codes.apply_async(
+                args=create_args, kwargs=create_kwargs, countdown=1
+            )
+        else:
+            errors, success_count = tasks.add_child_codes(*create_args, **create_kwargs)
+            for error in errors:
+                messages.error(self.request, error)
+            messages.success(
+                self.request,
+                _("Successfully saved %s new child codes!") % success_count,
+            )
+        # Redirect back to the voucher stats page
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):

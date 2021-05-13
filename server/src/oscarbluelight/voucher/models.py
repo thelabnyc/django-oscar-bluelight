@@ -88,7 +88,7 @@ class Voucher(AbstractVoucher):
         return super().is_available_to_user(user)
 
     @transaction.atomic
-    def create_children(self, count):
+    def create_children(self, auto_generate_count=0, custom_codes=[]):
         if self.parent is not None:
             raise RuntimeError(
                 _(
@@ -97,9 +97,23 @@ class Voucher(AbstractVoucher):
             )
         if not self.id:
             self.save()
-        for i in range(count):
-            code = self._get_child_code(i, count)
-            self._create_child(i, code)
+        errors = []
+        success_count = 0
+        # Generate auto codes
+        for i in range(auto_generate_count):
+            code = self._get_child_code(i, auto_generate_count)
+            self._create_child(code)
+            success_count += 1
+        # Save manual/custom codes
+        for code in custom_codes:
+            if not Voucher.objects.filter(code__iexact=code).exists():
+                self._create_child(code)
+                success_count += 1
+            else:
+                errors.append(
+                    _("Could not create code “%s” because it already exists.") % code
+                )
+        return errors, success_count
 
     @transaction.atomic
     def update_children(self):
@@ -151,7 +165,7 @@ class Voucher(AbstractVoucher):
 
     record_discount.alters_data = True
 
-    def _create_child(self, index, code):
+    def _create_child(self, code):
         child = self.__class__()
         child.code = code
         self._update_child(child)
