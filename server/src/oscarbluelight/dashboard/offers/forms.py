@@ -167,6 +167,7 @@ class MetaDataForm(BaseMetaDataForm):
             "name",
             "short_name",
             "description",
+            "offer_type",
             "offer_group",
             "affects_cosmetic_pricing",
             "priority",

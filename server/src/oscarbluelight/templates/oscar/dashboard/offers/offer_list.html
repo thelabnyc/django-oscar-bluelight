@@ -22,8 +22,14 @@
             </caption>
             {% if offers %}
                 <tr>
-                    <th>{% anchor 'name' _('Name') %}</th>
+                    <th>{% anchor 'name' _('Offer name') %}</th>
                     <th>{% trans "Short Name" %}</th>
+                    <th>{% anchor 'offer_type' _('Offer type') %}</th>
+                    {% if form.is_bound %}
+                        {% if form.is_voucher_offer_type or not form.cleaned_data.offer_type %}
+                            <th>{% trans "Num of vouchers" %}</th>
+                        {% endif %}
+                    {% endif %}
                     <th>{% anchor 'start_date' _('Start Date') %}</th>
                     <th>{% anchor 'end_date' _('End Date') %}</th>
                     <th>{% trans "Incentive" %}</th>
@@ -41,6 +47,12 @@
                     <tr>
                         <td><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></td>
                         <td>{{ offer.short_name }}</td>
+                        <td>{{ offer.offer_type }}</td>
+                        {% if form.is_bound %}
+                            {% if form.is_voucher_offer_type or not form.cleaned_data.offer_type %}
+                                <td>{{ offer.vouchers.count }}</td>
+                            {% endif %}
+                        {% endif %}
                         <td>{{ offer.start_date|default:"-" }}</td>
                         <td>{{ offer.end_date|default:"-" }}</td>
                         <td>{{ offer.benefit.description|safe }}</td>

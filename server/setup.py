@@ -14,7 +14,7 @@ packages = find_packages("src")
 install_requires = [
     "celery>=4.3",
     "django>=2.2",
-    "django-oscar>=3.0",
+    "django-oscar>=3.1b0",
     "django-redis>=4.8.0",
     "django-pgviews>=0.5.7",
     "djangorestframework>=3.10",
@@ -24,6 +24,7 @@ install_requires = [
 extras_require = {
     "development": [
         "coverage>=4.4.2",
+        "django-debug-toolbar>=3.2.1",
         "flake8>=3.2.1",
         "hiredis>=0.2.0",
         "psycopg2cffi>=2.7.7",

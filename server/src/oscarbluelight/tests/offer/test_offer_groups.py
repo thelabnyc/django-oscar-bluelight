@@ -528,7 +528,7 @@ class OfferGroupApplicatorTest(TestCase):
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
         self.assertEqual(lines[0].has_discount, False)
-        self.assertEqual(lines[0].is_available_for_discount, True)
+        self.assertEqual(lines[0].is_available_for_offer_discount(offer), True)
         self.assertEqual(lines[0].discount_value, D("0.00"))
         self.assertEqual(lines[0].unit_effective_price, D("200.00"))
         self.assertEqual(lines[0].unit_tax, D("0.00"))
@@ -752,7 +752,10 @@ class OfferGroupApplicatorTest(TestCase):
         self.assertEqual(lines[0].has_discount, True)
         self.assertEqual(lines[0].quantity_with_discount, 2)
         self.assertEqual(lines[0].quantity_without_discount, 0)
-        self.assertEqual(lines[0].is_available_for_discount, False)
+        self.assertEqual(lines[0].is_available_for_offer_discount(offer_bogo), False)
+        self.assertEqual(
+            lines[0].is_available_for_offer_discount(offer_300_dollars_off), False
+        )
         self.assertEqual(lines[0].discount_value, D("200.00"))
         self.assertEqual(lines[0].unit_effective_price, D("0.00"))
         self.assertEqual(lines[0].unit_tax, D("0.00"))
@@ -783,7 +786,10 @@ class OfferGroupApplicatorTest(TestCase):
         self.assertEqual(lines[0].has_discount, True)
         self.assertEqual(lines[0].quantity_with_discount, 2)
         self.assertEqual(lines[0].quantity_without_discount, 0)
-        self.assertEqual(lines[0].is_available_for_discount, False)
+        self.assertEqual(lines[0].is_available_for_offer_discount(offer_bogo), False)
+        self.assertEqual(
+            lines[0].is_available_for_offer_discount(offer_300_dollars_off), False
+        )
         self.assertEqual(lines[0].discount_value, D("200.00"))
         self.assertEqual(lines[0].unit_effective_price, D("0.00"))
         self.assertEqual(lines[0].unit_tax, D("1.00"))

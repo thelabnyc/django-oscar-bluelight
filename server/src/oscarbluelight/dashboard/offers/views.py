@@ -69,6 +69,8 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.name = session_offer.name
         offer.short_name = session_offer.short_name
         offer.description = session_offer.description
+        offer.desktop_image = session_offer.desktop_image
+        offer.mobile_image = session_offer.mobile_image
         offer.offer_group = session_offer.offer_group
         offer.affects_cosmetic_pricing = session_offer.affects_cosmetic_pricing
         offer.priority = session_offer.priority
@@ -182,6 +184,24 @@ class OfferRestrictionsView(OfferWizardStepView):
 
     def get_title(self):
         return _("Restrictions")
+
+
+class OfferImageUpdateView(UpdateView):
+    model = ConditionalOffer
+    fields = [
+        "desktop_image",
+        "mobile_image",
+    ]
+    context_object_name = "offer"
+    template_name = "oscar/dashboard/offers/image_form.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["title"] = _("Update Offer Images")
+        return ctx
+
+    def get_success_url(self):
+        return reverse("dashboard:offer-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
 class OfferDetailView(views.OfferDetailView):

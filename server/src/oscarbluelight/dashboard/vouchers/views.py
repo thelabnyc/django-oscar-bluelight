@@ -48,52 +48,15 @@ class VoucherCreateView(DefaultVoucherCreateView):
 
     def form_valid(self, form):
         with transaction.atomic():
-            # Create offer and benefit
-            benefit = form.cleaned_data["benefit"]
-            condition = form.cleaned_data["condition"]
-            if not condition:
-                condition = Condition.objects.create(
-                    range=benefit.range,
-                    proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
-                    value=1,
-                )
-            name = form.cleaned_data["name"]
-            offer = ConditionalOffer.objects.create(
-                name=_("Offer for voucher '%s'") % name,
-                short_name=form.cleaned_data["code"],
-                description=form.cleaned_data["description"],
-                offer_type=ConditionalOffer.VOUCHER,
-                benefit=benefit,
-                condition=condition,
-                mobile_image=form.cleaned_data["mobile_image"],
-                desktop_image=form.cleaned_data["desktop_image"],
-                offer_group=form.cleaned_data["offer_group"],
-                priority=form.cleaned_data["priority"],
-                max_global_applications=form.cleaned_data["max_global_applications"],
-                max_user_applications=form.cleaned_data["max_user_applications"],
-                max_basket_applications=form.cleaned_data["max_basket_applications"],
-                max_discount=form.cleaned_data["max_discount"],
-            )
-            voucher = Voucher.objects.create(
-                name=name,
-                code=form.cleaned_data["code"],
-                usage=form.cleaned_data["usage"],
-                start_datetime=form.cleaned_data["start_datetime"],
-                end_datetime=form.cleaned_data["end_datetime"],
-                limit_usage_by_group=form.cleaned_data["limit_usage_by_group"],
-            )
-            voucher.groups.set(form.cleaned_data["groups"])
-            voucher.save()
-            voucher.offers.add(offer)
-
+            response = super().form_valid(form)
+            self.object.groups.add(*form.cleaned_data["groups"])
         # Create child codes
-        if form.cleaned_data["create_children"]:
+        gen_count = form.cleaned_data.get("auto_generate_child_count", 0)
+        if form.cleaned_data["create_children"] and gen_count > 0:
             tasks.add_child_codes.apply_async(
-                args=(voucher.pk,),
+                args=(self.object.pk,),
                 kwargs={
-                    "auto_generate_count": form.cleaned_data[
-                        "auto_generate_child_count"
-                    ],
+                    "auto_generate_count": gen_count,
                 },
                 countdown=1,
             )
@@ -102,8 +65,7 @@ class VoucherCreateView(DefaultVoucherCreateView):
                 _("Creating %s child codes…")
                 % form.cleaned_data["auto_generate_child_count"],
             )
-
-        return HttpResponseRedirect(self.get_success_url())
+        return response
 
 
 class VoucherStatsView(DefaultVoucherStatsView):
@@ -149,78 +111,15 @@ class VoucherUpdateView(DefaultVoucherUpdateView):
     form_class = VoucherForm
 
     def get_initial(self):
-        voucher = self.get_voucher()
-        initial = {
-            "name": voucher.name,
-            "code": voucher.code,
-            "start_datetime": voucher.start_datetime,
-            "end_datetime": voucher.end_datetime,
-            "usage": voucher.usage,
-            "limit_usage_by_group": voucher.limit_usage_by_group,
-            "groups": voucher.groups.all(),
-        }
-
-        offer = voucher.offers.first()
-        if offer:
-            initial["priority"] = offer.priority
-            initial["offer_group"] = offer.offer_group
-            initial["max_global_applications"] = offer.max_global_applications
-            initial["max_user_applications"] = offer.max_user_applications
-            initial["max_basket_applications"] = offer.max_basket_applications
-            initial["max_discount"] = offer.max_discount
-            initial["desktop_image"] = offer.desktop_image
-            initial["mobile_image"] = offer.mobile_image
-            initial["condition"] = offer.condition
-            initial["benefit"] = offer.benefit
-            initial["description"] = offer.description
-
+        initial = super().get_initial()
+        initial["groups"] = self.object.groups.all()
         return initial
 
     @transaction.atomic
     def form_valid(self, form):
-        voucher = self.get_voucher()
-        voucher.name = form.cleaned_data["name"]
-        voucher.code = form.cleaned_data["code"]
-        voucher.usage = form.cleaned_data["usage"]
-        voucher.start_datetime = form.cleaned_data["start_datetime"]
-        voucher.end_datetime = form.cleaned_data["end_datetime"]
-        voucher.limit_usage_by_group = form.cleaned_data["limit_usage_by_group"]
-        voucher.groups.set(form.cleaned_data["groups"])
-        voucher.save()
-
-        benefit = form.cleaned_data["benefit"]
-        condition = form.cleaned_data["condition"]
-        if not condition:
-            condition = Condition.objects.get_or_create(
-                range=benefit.range,
-                proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
-                value=1,
-            )[0]
-
-        offer = voucher.offers.first()
-        if not offer:
-            offer = ConditionalOffer(
-                name=_("Offer for voucher '%s'") % voucher.name,
-                offer_type=ConditionalOffer.VOUCHER,
-            )
-
-        offer.desktop_image = form.cleaned_data["desktop_image"]
-        offer.mobile_image = form.cleaned_data["mobile_image"]
-        offer.short_name = form.cleaned_data["code"]
-        offer.description = form.cleaned_data["description"]
-        offer.condition = condition
-        offer.benefit = benefit
-        offer.offer_group = form.cleaned_data["offer_group"]
-        offer.priority = form.cleaned_data["priority"]
-        offer.max_global_applications = form.cleaned_data["max_global_applications"]
-        offer.max_user_applications = form.cleaned_data["max_user_applications"]
-        offer.max_basket_applications = form.cleaned_data["max_basket_applications"]
-        offer.max_discount = form.cleaned_data["max_discount"]
-        offer.save()
-
-        voucher.offers.add(offer)
-
-        return HttpResponseRedirect(self.get_success_url())
+        response = super().form_valid(form)
+        self.object.groups.set(form.cleaned_data["groups"])
+        return response
 
 
 class AddChildCodesView(generic.FormView):

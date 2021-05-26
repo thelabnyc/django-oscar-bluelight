@@ -316,7 +316,7 @@ class ParentChildVoucherTest(TestCase):
                 limit_usage_by_group=False,
             )
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             c1.record_discount({"discount": 5})
 
     def test_record_discount(self):

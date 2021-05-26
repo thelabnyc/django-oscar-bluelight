@@ -133,7 +133,7 @@ class BluelightCoverageCondition(CoverageCondition):
                 continue
             if product in consumed_products:
                 continue
-            if not line.is_available_for_discount:
+            if not line.is_available_for_offer_discount(offer):
                 continue
             # Only consume a quantity of 1 from each line
             line.consume(1)
