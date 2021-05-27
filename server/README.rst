@@ -110,6 +110,12 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+5.0.0
+------------------
+- Oscar 3.1 compatibility
+- Drops Oscar 3.0 compatibility (due to 3.1's significant changes to offers / vouchers).
+
+
 4.0.0
 ------------------
 - Oscar 3.0 Compatibility
