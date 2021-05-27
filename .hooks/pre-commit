@@ -16,10 +16,10 @@ fi
 
 # Check JS formatting
 pushd ./client/ &> /dev/null
-yarn prettier --check ./ || echo "Error: Format JS/TS code with prettier before committing."
+yarn prettier --check . || echo "Error: Format JS/TS code with prettier before committing."
 popd &> /dev/null
 
 # Check Python formatting
 pushd ./server/ &> /dev/null
-black --check ./ || echo "Error: Format Python code with black before committing."
+black --check . || echo "Error: Format Python code with black before committing."
 popd &> /dev/null
