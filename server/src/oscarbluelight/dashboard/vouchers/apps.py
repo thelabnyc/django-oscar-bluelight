@@ -32,9 +32,15 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
             AddChildCodesView,
             ExportChildCodesView,
             VoucherStatsView,
+            ChildCodesListView,
         )
 
         urls = [
+            url(
+                r"^stats/(?P<parent_pk>\d+)/children/$",
+                ChildCodesListView.as_view(),
+                name="voucher-list-children",
+            ),
             url(
                 r"^stats/(?P<pk>\d+)/add-children/$",
                 AddChildCodesView.as_view(),

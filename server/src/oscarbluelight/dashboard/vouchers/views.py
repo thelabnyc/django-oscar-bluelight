@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from oscar.views.generic import BulkEditMixin
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.vouchers.views import *  # noqa
 from oscar.apps.dashboard.vouchers.views import (
@@ -15,6 +16,8 @@ from oscar.apps.dashboard.vouchers.views import (
     VoucherStatsView as DefaultVoucherStatsView,
     VoucherUpdateView as DefaultVoucherUpdateView,
 )
+from oscar.apps.dashboard.vouchers.forms import VoucherSearchForm
+from oscar.views import sort_queryset
 from oscarbluelight.voucher import tasks
 import csv
 import re
@@ -314,3 +317,54 @@ class ExportChildCodesView(generic.DetailView):
         data = simplejson.dumps({"codes": codes})
         response.write(data)
         return response
+
+
+class ChildCodesListView(BulkEditMixin, generic.ListView):
+    model = Voucher
+    context_object_name = "vouchers"
+    template_name = "oscar/dashboard/vouchers/voucher_list_children.html"
+    form_class = VoucherSearchForm
+    paginate_by = settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE
+    actions = ("delete_selected_codes",)
+
+    def dispatch(self, request, parent_pk, *args, **kwargs):
+        self.parent = get_object_or_404(Voucher, pk=parent_pk)
+        return super().dispatch(request, parent_pk, *args, **kwargs)
+
+    def get_queryset(self):
+        self.search_filters = []
+        qs = super().get_queryset().filter(parent=self.parent)
+        qs = sort_queryset(
+            qs,
+            self.request,
+            ["num_basket_additions", "num_orders", "date_created"],
+            "-date_created",
+        )
+
+        if not self.request.GET:
+            self.form = self.form_class()
+            return qs
+
+        self.form = self.form_class(self.request.GET)
+        if not self.form.is_valid():
+            return qs
+
+        code = self.form.cleaned_data.get("code", None)
+        if code:
+            qs = qs.filter(code__icontains=code)
+            self.search_filters.append(_('Code matches "%s"') % code)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["parent_voucher"] = self.parent
+        ctx["form"] = self.form
+        ctx["search_filters"] = self.search_filters
+        return ctx
+
+    def delete_selected_codes(self, request, vouchers):
+        for voucher in vouchers:
+            voucher.delete()
+        msg = _("Deleted %s child voucher codes") % len(vouchers)
+        messages.info(request, msg)
+        return redirect("dashboard:voucher-list-children", parent_pk=self.parent.pk)
