@@ -21,4 +21,3 @@ python manage.py loaddata _fixtures/pages.json _fixtures/ranges.json _fixtures/o
 python manage.py loaddata _catalogue/orders.json
 python manage.py clear_index --noinput
 python manage.py update_index
-
