@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from oscar.views.generic import BulkEditMixin
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.vouchers.views import *  # noqa
 from oscar.apps.dashboard.vouchers.views import (
@@ -15,6 +16,8 @@ from oscar.apps.dashboard.vouchers.views import (
     VoucherStatsView as DefaultVoucherStatsView,
     VoucherUpdateView as DefaultVoucherUpdateView,
 )
+from oscar.apps.dashboard.vouchers.forms import VoucherSearchForm
+from oscar.views import sort_queryset
 from oscarbluelight.voucher import tasks
 import csv
 import re
@@ -35,6 +38,43 @@ VoucherForm = get_class("vouchers_dashboard.forms", "VoucherForm")
 OrderDiscountSearchForm = get_class("offers_dashboard.forms", "OrderDiscountSearchForm")
 
 BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER")
+CHILD_CODE_BG_TASK_THRESHOLD = 1000
+
+
+def _create_child_codes(request, voucher, auto_generate_count, custom_child_codes):
+    """
+    Create child codes for the given voucher and message the user about the process.
+    """
+    if auto_generate_count and auto_generate_count > 0:
+        messages.info(
+            request,
+            _("Auto-generating %s child codes…") % auto_generate_count,
+        )
+    if len(custom_child_codes) > 0:
+        messages.info(
+            request,
+            _("Saving %s custom child codes…") % len(custom_child_codes),
+        )
+    # Create the codes
+    create_args = (voucher.pk,)
+    create_kwargs = {
+        "auto_generate_count": auto_generate_count,
+        "custom_codes": custom_child_codes,
+    }
+    # Only start a bg task if a lot of codes were requested.
+    total_requested_codes = auto_generate_count + len(custom_child_codes)
+    if total_requested_codes >= CHILD_CODE_BG_TASK_THRESHOLD:
+        tasks.add_child_codes.apply_async(
+            args=create_args, kwargs=create_kwargs, countdown=1
+        )
+    else:
+        errors, success_count = tasks.add_child_codes(*create_args, **create_kwargs)
+        for error in errors:
+            messages.error(request, error)
+        messages.success(
+            request,
+            _("Successfully saved %s new child codes!") % success_count,
+        )
 
 
 class VoucherListView(DefaultVoucherListView):
@@ -51,19 +91,13 @@ class VoucherCreateView(DefaultVoucherCreateView):
             response = super().form_valid(form)
             self.object.groups.add(*form.cleaned_data["groups"])
         # Create child codes
-        gen_count = form.cleaned_data.get("auto_generate_child_count", 0)
-        if form.cleaned_data["create_children"] and gen_count > 0:
-            tasks.add_child_codes.apply_async(
-                args=(self.object.pk,),
-                kwargs={
-                    "auto_generate_count": gen_count,
-                },
-                countdown=1,
+        if form.cleaned_data.get("child_creation_type") != "none":
+            auto_generate_count = (
+                form.cleaned_data.get("auto_generate_child_count") or 0
             )
-            messages.success(
-                self.request,
-                _("Creating %s child codes…")
-                % form.cleaned_data["auto_generate_child_count"],
+            custom_child_codes = form.cleaned_data.get("custom_child_codes") or []
+            _create_child_codes(
+                self.request, self.object, auto_generate_count, custom_child_codes
             )
         return response
 
@@ -127,8 +161,6 @@ class AddChildCodesView(generic.FormView):
     model = Voucher
     form_class = AddChildCodesForm
 
-    _bg_task_threshold = 1000
-
     def get_voucher(self):
         return get_object_or_404(Voucher, id=self.kwargs["pk"])
 
@@ -143,37 +175,9 @@ class AddChildCodesView(generic.FormView):
         # Start a background job to create the child codes
         auto_generate_count = form.cleaned_data.get("auto_generate_count") or 0
         custom_child_codes = form.cleaned_data.get("custom_child_codes") or []
-        # Add messages to inform the user what's happening
-        if auto_generate_count and auto_generate_count > 0:
-            messages.info(
-                self.request,
-                _("Auto-generating %s child codes…") % auto_generate_count,
-            )
-        if len(custom_child_codes) > 0:
-            messages.info(
-                self.request,
-                _("Saving %s custom child codes…") % len(custom_child_codes),
-            )
-        # Create the codes
-        create_args = (voucher.pk,)
-        create_kwargs = {
-            "auto_generate_count": auto_generate_count,
-            "custom_codes": custom_child_codes,
-        }
-        # Only start a bg task if a lot of codes were requested.
-        total_requested_codes = auto_generate_count + len(custom_child_codes)
-        if total_requested_codes >= self._bg_task_threshold:
-            tasks.add_child_codes.apply_async(
-                args=create_args, kwargs=create_kwargs, countdown=1
-            )
-        else:
-            errors, success_count = tasks.add_child_codes(*create_args, **create_kwargs)
-            for error in errors:
-                messages.error(self.request, error)
-            messages.success(
-                self.request,
-                _("Successfully saved %s new child codes!") % success_count,
-            )
+        _create_child_codes(
+            self.request, voucher, auto_generate_count, custom_child_codes
+        )
         # Redirect back to the voucher stats page
         return HttpResponseRedirect(self.get_success_url())
 
@@ -213,3 +217,54 @@ class ExportChildCodesView(generic.DetailView):
         data = simplejson.dumps({"codes": codes})
         response.write(data)
         return response
+
+
+class ChildCodesListView(BulkEditMixin, generic.ListView):
+    model = Voucher
+    context_object_name = "vouchers"
+    template_name = "oscar/dashboard/vouchers/voucher_list_children.html"
+    form_class = VoucherSearchForm
+    paginate_by = settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE
+    actions = ("delete_selected_codes",)
+
+    def dispatch(self, request, parent_pk, *args, **kwargs):
+        self.parent = get_object_or_404(Voucher, pk=parent_pk)
+        return super().dispatch(request, parent_pk, *args, **kwargs)
+
+    def get_queryset(self):
+        self.search_filters = []
+        qs = super().get_queryset().filter(parent=self.parent)
+        qs = sort_queryset(
+            qs,
+            self.request,
+            ["num_basket_additions", "num_orders", "date_created"],
+            "-date_created",
+        )
+
+        if not self.request.GET:
+            self.form = self.form_class()
+            return qs
+
+        self.form = self.form_class(self.request.GET)
+        if not self.form.is_valid():
+            return qs
+
+        code = self.form.cleaned_data.get("code", None)
+        if code:
+            qs = qs.filter(code__icontains=code)
+            self.search_filters.append(_('Code matches "%s"') % code)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["parent_voucher"] = self.parent
+        ctx["form"] = self.form
+        ctx["search_filters"] = self.search_filters
+        return ctx
+
+    def delete_selected_codes(self, request, vouchers):
+        for voucher in vouchers:
+            voucher.delete()
+        msg = _("Deleted %s child voucher codes") % len(vouchers)
+        messages.info(request, msg)
+        return redirect("dashboard:voucher-list-children", parent_pk=self.parent.pk)

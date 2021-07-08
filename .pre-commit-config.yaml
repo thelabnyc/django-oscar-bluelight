@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: check-json
       - id: check-merge-conflict
+        exclude: '.+\.rst$'
       - id: check-symlinks
       - id: check-toml
       - id: check-yaml

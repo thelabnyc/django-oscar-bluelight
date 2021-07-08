@@ -66,6 +66,12 @@
                             </a>
                             <a
                                 class="dropdown-item"
+                                href="{% url 'dashboard:voucher-list-children' parent_pk=voucher.id %}"
+                            >
+                                {% trans "View child codes" %}
+                            </a>
+                            <a
+                                class="dropdown-item"
                                 href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}"
                             >
                                 {% trans "Export codes as CSV" %}
