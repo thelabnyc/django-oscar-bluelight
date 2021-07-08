@@ -98,7 +98,9 @@
                         {% endif %}
                     {% else %}
                         {% include "oscar/dashboard/partials/form_field.html" with field=form.create_children %}
-                        {% include "oscar/dashboard/partials/form_field.html" with field=form.child_count %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.child_creation_type %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.auto_generate_child_count %}
+                        {% include "oscar/dashboard/partials/form_field.html" with field=form.custom_child_codes %}
                     {% endif %}
                 </div>
 
@@ -136,12 +138,13 @@
 
 {% block extrascripts %}
     {{ block.super }}
-
     <script type="text/javascript">
-        var groupCheckbox = $('#id_limit_usage_by_group'),
-            groupSelect = $('#id_groups'),
-            childrenCheckbox = $('#id_create_children'),
-            childrenCount = $('#id_child_count');
+    (function() {
+        /**
+         * User Group Usage Constraint Functionality
+         */
+        var groupCheckbox = $('#id_limit_usage_by_group');
+        var groupSelect = $('#id_groups');
 
         if (groupCheckbox.length > 0 && groupSelect.length > 0) {
             groupSelect.prop("disabled", !groupCheckbox.get(0).checked);
@@ -149,12 +152,48 @@
                 groupSelect.prop("disabled", !this.checked);
             });
         }
+    })();
+    </script>
+    <script type="text/javascript">
+    (function() {
+        /**
+         * Child Code Functionality
+         */
+        var childModeNone = document.querySelector('input[name=child_creation_type][value=none]');
+        var childModeAuto = document.querySelector('input[name=child_creation_type][value=auto]');
+        var childModeManual = document.querySelector('input[name=child_creation_type][value=manual]');
+        var autoGenerateCount = document.querySelector('input[name="auto_generate_child_count"]');
+        var customCodes = document.querySelector('textarea[name="custom_child_codes"]');
 
-        if (childrenCheckbox.length > 0 && childrenCount.length > 0) {
-            childrenCount.prop("disabled", !childrenCheckbox.get(0).checked);
-            childrenCheckbox.on('change', function() {
-                childrenCount.prop("disabled", !this.checked);
-            });
-        }
+        childModeNone.addEventListener('change', function(e) {
+            if (!e.currentTarget.checked) {
+                return;
+            }
+            autoGenerateCount.value = 0;
+            autoGenerateCount.disabled = true;
+            customCodes.value = '';
+            customCodes.disabled = true;
+        });
+
+        childModeAuto.addEventListener('change', function(e) {
+            if (!e.currentTarget.checked) {
+                return;
+            }
+            autoGenerateCount.disabled = false;
+            customCodes.value = '';
+            customCodes.disabled = true;
+        });
+
+        childModeManual.addEventListener('change', function(e) {
+            if (!e.currentTarget.checked) {
+                return;
+            }
+            customCodes.disabled = false;
+            autoGenerateCount.value = 0;
+            autoGenerateCount.disabled = true;
+        });
+
+        childModeNone.click();
+    })();
     </script>
 {% endblock %}

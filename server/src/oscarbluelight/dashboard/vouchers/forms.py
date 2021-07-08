@@ -19,8 +19,18 @@ class VoucherForm(forms.Form):
         label=_("Description"), widget=forms.Textarea, required=False
     )
     code = forms.CharField(label=_("Code"))
-    create_children = forms.BooleanField(
-        label=_("Should child codes be created?"), required=False
+
+    # Child Codes
+    _child_creation_type_choices = [
+        ("none", _("Don't Create Child Codes")),
+        ("auto", _("Auto-Generate Child Codes")),
+        ("manual", _("Manually Enter Child Codes")),
+    ]
+    child_creation_type = forms.ChoiceField(
+        label=_("Create Child Codes?"),
+        help_text=_("What kind of child codes do you want to generate?"),
+        choices=_child_creation_type_choices,
+        widget=forms.RadioSelect,
     )
     auto_generate_child_count = forms.IntegerField(
         label=_("How many child codes should be created?"),
@@ -29,6 +39,21 @@ class VoucherForm(forms.Form):
         max_value=MAX_CHILDREN_CREATE,
         required=False,
     )
+    custom_child_codes = forms.CharField(
+        label=_("Custom Child Codes"),
+        help_text=_(
+            "Create custom child codes for this voucher by entering 1 code per line."
+        ),
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": "no-widget-init",  # Prevent Oscar Js from making this a TinyMCE WSSIWYG field
+                "cols": 20,
+                "rows": 5,
+            }
+        ),
+    )
+
     start_datetime = forms.DateTimeField(
         label=_("Start datetime"), widget=widgets.DateTimePickerInput()
     )
@@ -142,6 +167,11 @@ class VoucherForm(forms.Form):
         if qs.count() > 0:
             raise forms.ValidationError(_("The code '%s' is already in use") % code)
         return code
+
+    def clean_custom_child_codes(self):
+        code_txt = self.cleaned_data["custom_child_codes"]
+        codes = [code.strip() for code in code_txt.splitlines()]
+        return codes
 
     def clean(self):
         cleaned_data = super().clean()

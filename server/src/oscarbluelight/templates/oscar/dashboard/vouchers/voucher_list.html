@@ -71,6 +71,7 @@
                             <a class="dropdown-item" href="{% url 'dashboard:voucher-update' pk=voucher.id %}">{% trans "Edit" %}</a>
                             <a class="dropdown-item" href="{% url 'dashboard:voucher-delete' pk=voucher.id %}">{% trans "Delete" %}</a>
                             <a class="dropdown-item" href="{% url 'dashboard:voucher-add-children' pk=voucher.id %}">{% trans "Add more child codes" %}</a>
+                            <a class="dropdown-item" href="{% url 'dashboard:voucher-list-children' parent_pk=voucher.id %}">{% trans "View child codes" %}</a>
                             {% if voucher.children.exists %}
                                 <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}">{% trans "Export codes as CSV" %}</a>
                                 <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='json' %}">{% trans "Export codes as JSON" %}</a>
