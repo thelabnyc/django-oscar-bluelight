@@ -110,6 +110,11 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+4.1.0
+------------------
+- Add new dashboard view to view and delete voucher child codes.
+- Tweak voucher form to allow creating custom child codes on initial voucher creation.
+
 4.0.0
 ------------------
 - Oscar 3.0 Compatibility
