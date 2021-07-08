@@ -45,6 +45,7 @@
     </form>
 
     <script type="text/javascript">
+    (function() {
         var typeAuto = document.querySelector('input[name=creation_type][value=auto]');
         var typeManual = document.querySelector('input[name=creation_type][value=manual]');
         var autoGenerateCount = document.querySelector('input[name="auto_generate_count"]');
@@ -68,6 +69,7 @@
             autoGenerateCount.disabled = true;
         });
 
-        typeAuto.click()
+        typeAuto.click();
+    })();
     </script>
 {% endblock dashboard_content %}
