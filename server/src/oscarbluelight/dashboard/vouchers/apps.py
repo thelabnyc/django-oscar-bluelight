@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 from oscar.apps.dashboard.vouchers import apps
 from oscar.core.loading import get_class
 
@@ -36,22 +36,22 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
         )
 
         urls = [
-            url(
+            re_path(
                 r"^stats/(?P<parent_pk>\d+)/children/$",
                 ChildCodesListView.as_view(),
                 name="voucher-list-children",
             ),
-            url(
+            re_path(
                 r"^stats/(?P<pk>\d+)/add-children/$",
                 AddChildCodesView.as_view(),
                 name="voucher-add-children",
             ),
-            url(
+            re_path(
                 r"^stats/(?P<pk>\d+)/export-children.(?P<format>[\w]+)$",
                 ExportChildCodesView.as_view(),
                 name="voucher-export-children",
             ),
-            url(
+            re_path(
                 r"^stats/(?P<pk>\d+)/$",
                 VoucherStatsView.as_view(),
                 name="voucher-stats",
