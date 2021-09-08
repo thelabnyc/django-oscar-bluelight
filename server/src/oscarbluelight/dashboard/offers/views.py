@@ -69,6 +69,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.name = session_offer.name
         offer.short_name = session_offer.short_name
         offer.description = session_offer.description
+        offer.offer_type = session_offer.offer_type
         offer.desktop_image = session_offer.desktop_image
         offer.mobile_image = session_offer.mobile_image
         offer.offer_group = session_offer.offer_group
@@ -164,12 +165,6 @@ class OfferRestrictionsView(OfferWizardStepView):
         return kwargs
 
     def save_offer(self, offer, form):
-        # Update offer type
-        if form.cleaned_data["limit_by_group"]:
-            offer.offer_type = ConditionalOffer.USER
-        else:
-            offer.offer_type = ConditionalOffer.SITE
-
         # Save the offer
         super().save_offer(offer, form)
 
