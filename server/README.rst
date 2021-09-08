@@ -110,6 +110,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+5.0.1
+------------------
+- Fix bug in Offer Restrictions form which always reset voucher-type offers to site-type offers.
+
 5.0.0
 ------------------
 - Oscar 3.1 compatibility

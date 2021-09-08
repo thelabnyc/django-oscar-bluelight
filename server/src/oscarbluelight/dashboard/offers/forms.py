@@ -201,6 +201,7 @@ class RestrictionsForm(BaseRestrictionsForm):
     class Meta:
         model = ConditionalOffer
         fields = list(BaseRestrictionsForm.Meta.fields) + [
+            "offer_type",
             "limit_by_group",
             "groups",
         ]
@@ -214,9 +215,32 @@ class RestrictionsForm(BaseRestrictionsForm):
         self.fields["combinations"].widget = forms.HiddenInput()
         self.fields["combinations"].disabled = True
 
+    def clean_offer_type(self):
+        data = self.cleaned_data["offer_type"]
+        if (
+            (self.instance.pk is not None)
+            and (self.instance.offer_type == ConditionalOffer.VOUCHER)
+            and ("offer_type" in self.changed_data)
+            and self.instance.vouchers.exists()
+        ):
+            raise forms.ValidationError(
+                _("This can only be changed if it has no vouchers attached to it")
+            )
+        return data
+
     def clean(self):
         cleaned_data = super().clean()
         cleaned_data["limit_by_group"] = cleaned_data.get("limit_by_group", False)
+        # If `limit_by_group` isn't allowed to be enabled, the `offer_type` must be `USER`.
+        if (
+            cleaned_data["limit_by_group"]
+            and cleaned_data["offer_type"] != ConditionalOffer.USER
+        ):
+            err = _(
+                "“Limit By Group” can only be enabled when “Type” is set to “User offer”"
+            )
+            raise forms.ValidationError({"limit_by_group": err})
+        # If `limit_by_group` is disabled, make sure the `groups` field is empty.
         if not cleaned_data["limit_by_group"]:
             cleaned_data["groups"] = []
         return cleaned_data
