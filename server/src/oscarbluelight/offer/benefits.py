@@ -323,6 +323,85 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         return BasketDiscount(discount)
 
 
+class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
+    """
+    An offer benefit that gives the items in the range for a fixed price.
+
+    Oscar's default FixedPriceBenefit is unintuitive. It ignores the benefit range and
+    the max_affected_items and uses the products affected by the condition instead. This
+    changes the behavior to more closely follow how other benefits work. It applied, it
+    gives the basket items in the benefit range for a fixed price, not the basket items
+    in the condition range. It also respects the max_affected_items setting.
+    """
+
+    _description = _(
+        "The products in the range are sold for %(amount)s each; %(max_affected_items)s"
+    )
+
+    class Meta:
+        app_label = "offer"
+        proxy = True
+        verbose_name = _("Fixed price per item benefit")
+        verbose_name_plural = _("Fixed price per item benefits")
+
+    @property
+    def name(self):
+        return self._description % {
+            "amount": currency(self.value),
+            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
+            if self.max_affected_items
+            else _("no maximum"),
+        }
+
+    def _clean(self):
+        if not self.range:
+            raise exceptions.ValidationError(
+                _("Fixed price per item benefits require a product range.")
+            )
+
+    def apply(self, basket, condition, offer, consume_items=None):
+        self._clean()
+
+        # Fetch basket lines that are in the range and available to be used in an offer.
+        line_tuples = self.get_applicable_lines(offer, basket)
+        if not line_tuples:
+            return ZERO_DISCOUNT
+
+        # Sort from most-expensive to least-expensive
+        line_tuples = line_tuples[::-1]
+
+        # Determine the lines to consume
+        num_permitted = self._effective_max_affected_items()
+        num_affected = 0
+        covered_lines = []
+        for price, line in line_tuples:
+            if price <= self.value:
+                continue
+            quantity_affected = min(
+                line.quantity_without_discount, (num_permitted - num_affected)
+            )
+            if quantity_affected <= 0:
+                continue
+            num_affected += quantity_affected
+            covered_lines.append((price, line, quantity_affected))
+            if num_affected >= num_permitted:
+                break
+        if len(covered_lines) <= 0:
+            return ZERO_DISCOUNT
+
+        # Apply discount to the affected lines
+        discount_applied = D("0.00")
+        for price, line, quantity in covered_lines:
+            line_discount = self.round(
+                ((price - self.value) * quantity),
+                currency=basket.currency,
+            )
+            line.discount(line_discount, quantity, incl_tax=False, offer=offer)
+            discount_applied += line_discount
+
+        return BasketDiscount(discount_applied)
+
+
 class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
     _description = _("Second most expensive product from %(range)s is free")
 
@@ -621,6 +700,7 @@ class CompoundBenefit(Benefit):
 __all__ = [
     "BluelightAbsoluteDiscountBenefit",
     "BluelightFixedPriceBenefit",
+    "BluelightFixedPricePerItemBenefit",
     "BluelightMultibuyDiscountBenefit",
     "BluelightPercentageDiscountBenefit",
     "BluelightShippingAbsoluteDiscountBenefit",

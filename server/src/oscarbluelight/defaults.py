@@ -37,7 +37,11 @@ BLUELIGHT_BENEFIT_CLASSES = [
     ),
     (
         "oscarbluelight.offer.benefits.BluelightFixedPriceBenefit",
-        _("Get the products in the range for a fixed price"),
+        _("Get the products in the range for a fixed price total"),
+    ),
+    (
+        "oscarbluelight.offer.benefits.BluelightFixedPricePerItemBenefit",
+        _("Get the products in the range for a fixed price per item"),
     ),
     (
         "oscarbluelight.offer.benefits.BluelightShippingAbsoluteDiscountBenefit",
