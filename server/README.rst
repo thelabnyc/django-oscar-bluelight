@@ -110,14 +110,12 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
-5.0.1
-------------------
-- Fix bug in Offer Restrictions form which always reset voucher-type offers to site-type offers.
-
 5.0.0
 ------------------
 - Oscar 3.1 compatibility
 - Drops Oscar 3.0 compatibility (due to 3.1's significant changes to offers / vouchers).
+- Fix bug in Offer Restrictions form which always reset voucher-type offers to site-type offers.
+- Add new “Fixed Price Per Item” benefit type
 
 4.1.0
 ------------------
