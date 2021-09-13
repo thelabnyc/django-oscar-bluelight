@@ -4,12 +4,13 @@
     {{ block.super }}
 
     <script type="text/javascript">
-        var groupCheckbox = $('#id_limit_by_group'),
-            groupSelect = $('#id_groups');
+        function setGroupDisabledState() {
+            const userTypeIsSelected = document.querySelector('#id_offer_type').value === "User";
+            $('#id_groups').prop("disabled", !userTypeIsSelected);
+        }
 
-        groupSelect.prop("disabled", !groupCheckbox.get(0).checked);
-        groupCheckbox.on('change', function() {
-            groupSelect.prop("disabled", !this.checked);
-        });
+        setGroupDisabledState();
+
+        $('#id_offer_type').on('change', setGroupDisabledState);
     </script>
 {% endblock %}

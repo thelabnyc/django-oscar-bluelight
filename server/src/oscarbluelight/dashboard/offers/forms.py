@@ -5,7 +5,6 @@ from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from oscar.forms.widgets import DatePickerInput
 from oscar.apps.dashboard.offers.forms import (
-    MetaDataForm as BaseMetaDataForm,
     RestrictionsForm as BaseRestrictionsForm,
 )
 from django.forms import ModelMultipleChoiceField
@@ -155,18 +154,21 @@ class CompoundConditionForm(forms.ModelForm):
         fields = ["proxy_class", "conjunction", "subconditions"]
 
 
-class MetaDataForm(BaseMetaDataForm):
+class MetaDataForm(forms.ModelForm):
     offer_group = forms.ModelChoiceField(
         label=_("Offer Group"),
         queryset=OfferGroup.objects.get_queryset(),
         help_text=_("Offer group to which this offer belongs"),
     )
 
-    class Meta(BaseMetaDataForm.Meta):
+    class Meta:
+        model = ConditionalOffer
         fields = (
             "name",
             "short_name",
             "description",
+            # Oscar puts offer_type on the metadata form, but we put it on the restrictions
+            # form instead (due to it's ties to the user group limiting functionality).
             "offer_type",
             "offer_group",
             "affects_cosmetic_pricing",
@@ -187,10 +189,6 @@ class ConditionSelectionForm(forms.ModelForm):
 
 
 class RestrictionsForm(BaseRestrictionsForm):
-    limit_by_group = forms.BooleanField(
-        label=_("Limit offer to selected user groups"), required=False
-    )
-
     groups = forms.ModelMultipleChoiceField(
         label=_("User Groups"),
         queryset=Group.objects.get_queryset(),
@@ -202,7 +200,6 @@ class RestrictionsForm(BaseRestrictionsForm):
         model = ConditionalOffer
         fields = list(BaseRestrictionsForm.Meta.fields) + [
             "offer_type",
-            "limit_by_group",
             "groups",
         ]
 
@@ -230,18 +227,18 @@ class RestrictionsForm(BaseRestrictionsForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        cleaned_data["limit_by_group"] = cleaned_data.get("limit_by_group", False)
-        # If `limit_by_group` isn't allowed to be enabled, the `offer_type` must be `USER`.
-        if (
-            cleaned_data["limit_by_group"]
-            and cleaned_data["offer_type"] != ConditionalOffer.USER
-        ):
-            err = _(
-                "“Limit By Group” can only be enabled when “Type” is set to “User offer”"
-            )
-            raise forms.ValidationError({"limit_by_group": err})
-        # If `limit_by_group` is disabled, make sure the `groups` field is empty.
-        if not cleaned_data["limit_by_group"]:
+        # If offer_type is _User_, require at least 1 group to be selected
+        if cleaned_data["offer_type"] == ConditionalOffer.USER:
+            if len(cleaned_data["groups"]) <= 0:
+                raise forms.ValidationError(
+                    {
+                        "groups": _(
+                            "User offers must have at least 1 user group selected."
+                        )
+                    }
+                )
+        # If offer_type is anything other than _User_, clear the groups field.
+        else:
             cleaned_data["groups"] = []
         return cleaned_data
 

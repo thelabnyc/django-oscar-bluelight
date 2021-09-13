@@ -154,16 +154,6 @@ class OfferRestrictionsView(OfferWizardStepView):
     previous_view = OfferConditionView
     url_name = "dashboard:offer-restrictions"
 
-    def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(*args, **kwargs)
-        offer = kwargs.get("instance")
-        kwargs["initial"] = kwargs.get("initial", {})
-        if offer:
-            kwargs["initial"]["limit_by_group"] = (
-                offer.offer_type == ConditionalOffer.USER
-            )
-        return kwargs
-
     def save_offer(self, offer, form):
         # Save the offer
         super().save_offer(offer, form)

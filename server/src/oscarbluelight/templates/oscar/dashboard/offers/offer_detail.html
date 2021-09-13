@@ -51,10 +51,6 @@
                 <td>{{ offer.description|safe|default:"-" }}</td>
             </tr>
             <tr>
-                <th>{% trans "Type" %}</th>
-                <td>{{ offer.get_offer_type_display }}</td>
-            </tr>
-            <tr>
                 <th>{% trans "Offer Group" %}</th>
                 <td>{{ offer.offer_group }}</td>
             </tr>
@@ -108,6 +104,18 @@
                 </td>
             </tr>
             <tr>
+                <th>{% trans "Type" %}</th>
+                <td>{{ offer.get_offer_type_display }}</td>
+                <td rowspan="2">
+                    <a
+                        href="{% url 'dashboard:offer-restrictions' pk=offer.pk %}"
+                        class="btn btn-secondary"
+                    >
+                        {% trans "Edit" %}
+                    </a>
+                </td>
+            </tr>
+            <tr>
                 <th>{% trans "Restrictions" %}</th>
                 <td>
                     {% for restriction in offer.availability_restrictions %}
@@ -119,14 +127,6 @@
                             {{ restriction.description }}</br>
                         {% endif %}
                     {% endfor %}
-                </td>
-                <td>
-                    <a
-                        href="{% url 'dashboard:offer-restrictions' pk=offer.pk %}"
-                        class="btn btn-secondary"
-                    >
-                        {% trans "Edit" %}
-                    </a>
                 </td>
             </tr>
             {% if offer.is_voucher_offer_type %}
