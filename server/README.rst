@@ -110,6 +110,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+5.0.1
+------------------
+- Remove duplicate ``offer_type`` field from offer form.
+
 5.0.0
 ------------------
 - Oscar 3.1 compatibility
