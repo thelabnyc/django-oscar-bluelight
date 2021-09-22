@@ -169,7 +169,7 @@ class MetaDataForm(forms.ModelForm):
             "description",
             # Oscar puts offer_type on the metadata form, but we put it on the restrictions
             # form instead (due to it's ties to the user group limiting functionality).
-            "offer_type",
+            # "offer_type",
             "offer_group",
             "affects_cosmetic_pricing",
             "priority",
