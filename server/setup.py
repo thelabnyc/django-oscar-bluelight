@@ -52,7 +52,8 @@ setup(
     name="django-oscar-bluelight",
     description="Bluelight Specials - Enhancements to the offer and vouchers features for Django Oscar.",
     version=get_version(pypi=True),
-    long_description=open("README.rst").read(),
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
