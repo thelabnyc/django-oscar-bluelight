@@ -1,3 +1,4 @@
+from decimal import Decimal as D
 from django.conf import settings
 from django.dispatch import receiver
 from django.core import exceptions
@@ -25,9 +26,11 @@ from oscar.apps.offer.results import (
     ShippingDiscount,
 )
 from oscar.apps.offer.utils import load_proxy
+from oscar.templatetags.currency_filters import currency
 from .sql import SQL_RANGE_PRODUCTS, get_sql_range_product_triggers
 import copy
 import logging
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +160,20 @@ class ConditionalOffer(AbstractConditionalOffer):
 
 
 class Benefit(AbstractBenefit):
+    # Use this field to provide an hard-cap on the discount amount than a benefit
+    # can provide.
+    max_discount = models.DecimalField(
+        _("Max discount"),
+        decimal_places=2,
+        max_digits=12,
+        null=True,
+        blank=True,
+        help_text=_(
+            "If set, do not allow this benefit to provide a discount greater "
+            "than this amount (for a particular basket application)."
+        ),
+    )
+
     def proxy(self):
         if self.proxy_class:
             Klass = load_proxy(self.proxy_class)
@@ -211,6 +228,20 @@ class Benefit(AbstractBenefit):
                 proxy.__class__ = Klass
                 proxy.save()
         return ret
+
+    def _get_max_discount_amount(self, max_total_discount=None):
+        if max_total_discount is not None:
+            return max_total_discount
+        if self.max_discount is not None:
+            return self.max_discount
+        return D(math.inf)
+
+    def _append_max_discount_to_text(self, text):
+        if self.max_discount:
+            text += _(", maximum discount of %(max_discount)s") % {
+                "max_discount": currency(self.max_discount),
+            }
+        return text
 
 
 class Condition(AbstractCondition):

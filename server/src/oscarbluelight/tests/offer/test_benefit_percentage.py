@@ -62,6 +62,15 @@ class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
         self.assertEqual(3, self.basket.num_items_with_discount)
         self.assertEqual(0, self.basket.num_items_without_discount)
 
+    def test_obeys_max_discount_setting(self):
+        self.benefit.max_discount = D("5.00")
+        self.benefit.save()
+        add_product(self.basket, D("12.00"), 3)
+        result = self.benefit.apply(self.basket, self.condition, self.offer)
+        self.assertEqual(D("5.00"), result.discount)
+        self.assertEqual(3, self.basket.num_items_with_discount)
+        self.assertEqual(0, self.basket.num_items_without_discount)
+
     def test_records_reason_for_discount_no_voucher(self):
         self.offer.name = "My Offer Name"
         self.offer.description = "My Offer Description"

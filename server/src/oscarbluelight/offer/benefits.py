@@ -39,25 +39,35 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "value": self.value,
-            "range": self.range.name if self.range else _("product range"),
-            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
-            if self.max_affected_items
-            else _("no maximum"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "value": self.value,
+                "range": self.range.name if self.range else _("product range"),
+                "max_affected_items": (
+                    _("maximum %s item(s)") % self.max_affected_items
+                )
+                if self.max_affected_items
+                else _("no maximum"),
+            }
+        )
 
     @property
     def description(self):
-        return self._description % {
-            "value": self.value,
-            "range": utils.range_anchor(self.range)
-            if self.range
-            else _("product range"),
-            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
-            if self.max_affected_items
-            else _("no maximum"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "value": self.value,
+                "range": utils.range_anchor(self.range)
+                if self.range
+                else _("product range"),
+                "max_affected_items": (
+                    _("maximum %s item(s)") % self.max_affected_items
+                )
+                if self.max_affected_items
+                else _("no maximum"),
+            }
+        )
 
     def _clean(self):
         if not self.range:
@@ -83,7 +93,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         if discount_percent is None:
             discount_percent = self.value
 
-        discount_amount_available = max_total_discount
+        discount_amount_available = self._get_max_discount_amount(max_total_discount)
 
         line_tuples = self.get_applicable_lines(offer, basket)
         discount_percent = min(discount_percent, D("100.0"))
@@ -141,25 +151,35 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "value": currency(self.value),
-            "range": self.range.name.lower() if self.range else _("product range"),
-            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
-            if self.max_affected_items
-            else _("no maximum"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "value": currency(self.value),
+                "range": self.range.name.lower() if self.range else _("product range"),
+                "max_affected_items": (
+                    _("maximum %s item(s)") % self.max_affected_items
+                )
+                if self.max_affected_items
+                else _("no maximum"),
+            }
+        )
 
     @property
     def description(self):
-        return self._description % {
-            "value": currency(self.value),
-            "range": utils.range_anchor(self.range)
-            if self.range
-            else _("product range"),
-            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
-            if self.max_affected_items
-            else _("no maximum"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "value": currency(self.value),
+                "range": utils.range_anchor(self.range)
+                if self.range
+                else _("product range"),
+                "max_affected_items": (
+                    _("maximum %s item(s)") % self.max_affected_items
+                )
+                if self.max_affected_items
+                else _("no maximum"),
+            }
+        )
 
     def _clean(self):
         if not self.range:
@@ -207,8 +227,9 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         # Ensure we don't try to apply a discount larger than the total of the
         # matching items.
         discount = min(discount_amount, affected_items_total)
-        if max_total_discount is not None:
-            discount = min(discount, max_total_discount)
+        discount_amount_available = self._get_max_discount_amount(max_total_discount)
+        if discount_amount_available is not None:
+            discount = min(discount, discount_amount_available)
 
         if discount == 0:
             return ZERO_DISCOUNT
@@ -263,12 +284,17 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "amount": currency(self.value),
-            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
-            if self.max_affected_items
-            else _("no maximum"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "amount": currency(self.value),
+                "max_affected_items": (
+                    _("maximum %s item(s)") % self.max_affected_items
+                )
+                if self.max_affected_items
+                else _("no maximum"),
+            }
+        )
 
     def _clean(self):
         if not self.range:
@@ -276,7 +302,9 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 _("Fixed price benefits require a product range.")
             )
 
-    def apply(self, basket, condition, offer, consume_items=None):
+    def apply(
+        self, basket, condition, offer, max_total_discount=None, consume_items=None
+    ):
         self._clean()
 
         # Fetch basket lines that are in the range and available to be used in an offer.
@@ -301,7 +329,10 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
             covered_lines.append((price, line, quantity_affected))
             if num_affected >= num_permitted:
                 break
+
         discount = max(value_affected - self.value, D("0.00"))
+        discount_amount_available = self._get_max_discount_amount(max_total_discount)
+        discount = min(discount, discount_amount_available)
         if not discount:
             return ZERO_DISCOUNT
 
@@ -346,12 +377,17 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "amount": currency(self.value),
-            "max_affected_items": (_("maximum %s item(s)") % self.max_affected_items)
-            if self.max_affected_items
-            else _("no maximum"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "amount": currency(self.value),
+                "max_affected_items": (
+                    _("maximum %s item(s)") % self.max_affected_items
+                )
+                if self.max_affected_items
+                else _("no maximum"),
+            }
+        )
 
     def _clean(self):
         if not self.range:
@@ -359,7 +395,9 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
                 _("Fixed price per item benefits require a product range.")
             )
 
-    def apply(self, basket, condition, offer, consume_items=None):
+    def apply(
+        self, basket, condition, offer, max_total_discount=None, consume_items=None
+    ):
         self._clean()
 
         # Fetch basket lines that are in the range and available to be used in an offer.
@@ -390,11 +428,16 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
             return ZERO_DISCOUNT
 
         # Apply discount to the affected lines
+        discount_amount_available = self._get_max_discount_amount(max_total_discount)
         discount_applied = D("0.00")
         for price, line, quantity in covered_lines:
             line_discount = self.round(
                 ((price - self.value) * quantity),
                 currency=basket.currency,
+            )
+            line_discount = max(
+                min(line_discount, (discount_amount_available - discount_applied)),
+                D("0.00"),
             )
             line.discount(line_discount, quantity, incl_tax=False, offer=offer)
             discount_applied += line_discount
@@ -413,17 +456,23 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "range": self.range.name.lower() if self.range else _("product range"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "range": self.range.name.lower() if self.range else _("product range"),
+            }
+        )
 
     @property
     def description(self):
-        return self._description % {
-            "range": utils.range_anchor(self.range)
-            if self.range
-            else _("product range"),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "range": utils.range_anchor(self.range)
+                if self.range
+                else _("product range"),
+            }
+        )
 
     def _clean(self):
         if not self.range:
@@ -439,7 +488,9 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
                 _("Multibuy benefits don't require a 'max affected items' " "attribute")
             )
 
-    def apply(self, basket, condition, offer, consume_items=None):
+    def apply(
+        self, basket, condition, offer, max_total_discount=None, consume_items=None
+    ):
         self._clean()
 
         line_tuples = self.get_applicable_lines(offer, basket)
@@ -477,6 +528,9 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         if line.quantity_without_discount <= 0:
             return ZERO_DISCOUNT
 
+        discount_amount_available = self._get_max_discount_amount(max_total_discount)
+        discount = min(discount, discount_amount_available)
+
         line.discount(discount, 1, incl_tax=False, offer=offer)
 
         affected_lines = [(line, discount, 1)]
@@ -505,9 +559,12 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "amount": currency(self.value),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "amount": currency(self.value),
+            }
+        )
 
     def _clean(self):
         if not self.value:
@@ -539,9 +596,12 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
 
     @property
     def name(self):
-        return self._description % {
-            "amount": currency(self.value),
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "amount": currency(self.value),
+            }
+        )
 
     def _clean(self):
         if self.range:
@@ -571,9 +631,12 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
 
     @property
     def name(self):
-        return self._description % {
-            "value": self.value,
-        }
+        return self._append_max_discount_to_text(
+            self._description
+            % {
+                "value": self.value,
+            }
+        )
 
     def _clean(self):
         if self.value > 100:
@@ -628,14 +691,18 @@ class CompoundBenefit(Benefit):
     @property
     def name(self):
         names = (c.name for c in self.children)
-        return self._human_readable_conjoin(names, _("Empty Benefit"))
+        name = self._human_readable_conjoin(names, _("Empty Benefit"))
+        return self._append_max_discount_to_text(name)
 
     @property
     def description(self):
         descrs = (c.description for c in self.children)
-        return self._human_readable_conjoin(descrs, _("Empty Benefit"))
+        descr = self._human_readable_conjoin(descrs, _("Empty Benefit"))
+        return self._append_max_discount_to_text(descr)
 
-    def apply(self, basket, condition, offer, consume_items=None):
+    def apply(
+        self, basket, condition, offer, max_total_discount=None, consume_items=None
+    ):
         combined_result = None
         affected_lines = []
 
@@ -643,12 +710,22 @@ class CompoundBenefit(Benefit):
             for line in _affected_lines:
                 affected_lines.append(line)
 
+        discount_amount_available = self._get_max_discount_amount(max_total_discount)
+
         for child in self.children:
-            result = child.apply(basket, condition, offer, consume_items=_consume_items)
+            result = child.apply(
+                basket,
+                condition,
+                offer,
+                max_total_discount=max(discount_amount_available, D("0.00")),
+                consume_items=_consume_items,
+            )
             if combined_result is None:
                 combined_result = copy.deepcopy(result)
+                discount_amount_available -= result.discount
             elif combined_result.affects == result.affects:
                 combined_result.discount += result.discount
+                discount_amount_available -= result.discount
             else:
                 raise ValueError(_("Can not combine offer benefits of differing types"))
 

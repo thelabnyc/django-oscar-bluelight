@@ -63,6 +63,15 @@ class TestAFixedPriceDiscountAppliedWithCountCondition(TestCase):
         self.assertEqual(4, self.basket.num_items_with_discount)
         self.assertEqual(0, self.basket.num_items_without_discount)
 
+    def test_obeys_max_discount_setting(self):
+        self.benefit.max_discount = D("10.00")
+        self.benefit.save()
+        add_product(self.basket, D("8.00"), 4)
+        result = self.benefit.apply(self.basket, self.condition, self.offer)
+        self.assertEqual(D("10.00"), result.discount)
+        self.assertEqual(4, self.basket.num_items_with_discount)
+        self.assertEqual(0, self.basket.num_items_without_discount)
+
     def test_applies_correctly_to_basket_which_is_more_than_value_and_max_affected_items_set(
         self,
     ):
