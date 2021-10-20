@@ -51,6 +51,15 @@ class TestAMultibuyDiscountAppliedWithCountCondition(TestCase):
         self.assertEqual(3, self.basket.num_items_with_discount)
         self.assertEqual(5, self.basket.num_items_without_discount)
 
+    def test_obeys_max_discount_setting(self):
+        self.benefit.max_discount = D("3.00")
+        self.benefit.save()
+        add_products(self.basket, [(D("4.00"), 4), (D("2.00"), 4)])
+        result = self.benefit.apply(self.basket, self.condition, self.offer)
+        self.assertEqual(D("3.00"), result.discount)
+        self.assertEqual(3, self.basket.num_items_with_discount)
+        self.assertEqual(5, self.basket.num_items_without_discount)
+
     def test_records_reason_for_discount_no_voucher(self):
         self.offer.name = "My Offer Name"
         self.offer.description = "My Offer Description"

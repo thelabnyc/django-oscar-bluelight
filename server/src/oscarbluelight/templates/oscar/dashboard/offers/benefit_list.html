@@ -57,6 +57,7 @@
                     <th>{% trans 'Range' %}</th>
                     <th>{% trans 'Type' %}</th>
                     <th>{% trans 'Value' %}</th>
+                    <th>{% trans 'Max Discount' %}</th>
                     <th>{% trans 'Used by Offers' %}</th>
                     <th>{% trans 'Used by Vouchers' %}</th>
                     <th>{% trans 'Used by Benefits' %}</th>
@@ -68,6 +69,7 @@
                         <td>{{ benefit.range.name|default:"-" }}</td>
                         <td>{{ benefit.type_name|default:"-" }}</td>
                         <td>{{ benefit.value|default:"-" }}</td>
+                        <td>{{ benefit.max_discount|currency|default:"-" }}</td>
                         <td>
                             <ul>
                                 {% for offer in benefit.non_voucher_offers %}

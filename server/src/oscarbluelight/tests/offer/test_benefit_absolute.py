@@ -197,6 +197,20 @@ class TestAnAbsoluteDiscount(TestCase):
         for i, v in enumerate([D("1.33"), D("1.33"), D("1.34")]):
             self.assertEqual(line_discounts[i], v)
 
+    def test_obeys_max_discount_setting(self):
+        self.benefit.max_discount = D("3.00")
+        self.benefit.save()
+
+        add_product(self.basket, D("5.00"))
+        # Apply benefit twice to simulate how Applicator will actually do it
+        self.benefit.apply(self.basket, self.condition, self.offer)
+        self.benefit.apply(self.basket, self.condition, self.offer)
+
+        line = self.basket.all_lines()[0]
+        descrs = line.get_discount_descriptions()
+        self.assertEqual(len(descrs), 1)
+        self.assertEqual(descrs[0].amount, D("3.00"))
+
     def test_records_reason_for_discount_no_voucher(self):
         self.offer.name = "My Offer Name"
         self.offer.description = "My Offer Description"

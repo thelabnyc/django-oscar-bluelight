@@ -71,6 +71,22 @@ class TestCompoundAbsoluteBenefitDiscount(TestCase):
         self.assertEqual(line_discounts[0], D("13.00"))
         self.assertEqual(line_discounts[1], D("27.00"))
 
+    def test_obeys_max_discount_setting(self):
+        self.benefit_compound.max_discount = D("35.00")
+        self.benefit_compound.save()
+
+        self.basket.add_product(self.slipper, 1)
+        self.basket.add_product(self.pillow, 1)
+
+        result = self.benefit_compound.apply(self.basket, self.condition, self.offer)
+
+        self.assertEqual(D("35.00"), result.discount)
+
+        line_discounts = [line.discount_value for line in self.basket.all_lines()]
+        self.assertEqual(len(line_discounts), 2)
+        self.assertEqual(line_discounts[0], D("13.00"))
+        self.assertEqual(line_discounts[1], D("22.00"))
+
 
 class TestCompoundBluelightPercentageBenefitDiscount(TestCase):
     def setUp(self):
