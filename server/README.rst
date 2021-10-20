@@ -110,6 +110,10 @@ After installation, the new functionality will show up in the Oscar dashboard un
 Changelog
 =========
 
+5.1.0
+------------------
+- Add new ``max_discount`` field to Benefit models, to allow capping the total discount granted by a benefit within a single application. Primary intended use case is for capping the discount granted by a compound benefits, when its child benefits could, in some product combinations, exceed the desired discount.
+
 5.0.1
 ------------------
 - Remove duplicate ``offer_type`` field from offer form.
