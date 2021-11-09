@@ -69,12 +69,13 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.name = session_offer.name
         offer.short_name = session_offer.short_name
         offer.description = session_offer.description
-        offer.offer_type = session_offer.offer_type
         offer.desktop_image = session_offer.desktop_image
         offer.mobile_image = session_offer.mobile_image
         offer.offer_group = session_offer.offer_group
         offer.affects_cosmetic_pricing = session_offer.affects_cosmetic_pricing
         offer.priority = session_offer.priority
+
+        offer.offer_type = form.cleaned_data["offer_type"]
 
         # Save the related models and assign to the offer
         temp_offer = self._fetch_object("benefit")
