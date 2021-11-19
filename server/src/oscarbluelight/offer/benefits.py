@@ -122,11 +122,13 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 line_discount = min(line_discount, discount_amount_available)
                 discount_amount_available -= line_discount
 
-            line.discount(line_discount, quantity_affected, incl_tax=False, offer=offer)
-
-            affected_lines.append((line, line_discount, quantity_affected))
-            affected_items += quantity_affected
-            discount += line_discount
+            if line_discount > 0:
+                line.discount(
+                    line_discount, quantity_affected, incl_tax=False, offer=offer
+                )
+                affected_lines.append((line, line_discount, quantity_affected))
+                affected_items += quantity_affected
+                discount += line_discount
 
         if discount > 0:
             if consume_items:
@@ -249,9 +251,10 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                     ((price * qty) / affected_items_total) * discount,
                     currency=basket.currency,
                 )
-            line.discount(line_discount, qty, incl_tax=False, offer=offer)
-            affected_lines.append((line, line_discount, qty))
-            applied_discount += line_discount
+            if line_discount > 0:
+                line.discount(line_discount, qty, incl_tax=False, offer=offer)
+                affected_lines.append((line, line_discount, qty))
+                applied_discount += line_discount
 
         if consume_items:
             consume_items(offer, basket, affected_lines)
@@ -349,8 +352,9 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                     discount * (price * quantity) / value_affected,
                     currency=basket.currency,
                 )
-            line.discount(line_discount, quantity, incl_tax=False, offer=offer)
-            discount_applied += line_discount
+            if line_discount > 0:
+                line.discount(line_discount, quantity, incl_tax=False, offer=offer)
+                discount_applied += line_discount
         return BasketDiscount(discount)
 
 
@@ -439,8 +443,9 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
                 min(line_discount, (discount_amount_available - discount_applied)),
                 D("0.00"),
             )
-            line.discount(line_discount, quantity, incl_tax=False, offer=offer)
-            discount_applied += line_discount
+            if line_discount > 0:
+                line.discount(line_discount, quantity, incl_tax=False, offer=offer)
+                discount_applied += line_discount
 
         return BasketDiscount(discount_applied)
 
@@ -531,13 +536,14 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         discount_amount_available = self._get_max_discount_amount(max_total_discount)
         discount = min(discount, discount_amount_available)
 
-        line.discount(discount, 1, incl_tax=False, offer=offer)
+        if discount > 0:
+            line.discount(discount, 1, incl_tax=False, offer=offer)
 
-        affected_lines = [(line, discount, 1)]
-        if consume_items:
-            consume_items(offer, basket, affected_lines)
-        else:
-            condition.consume_items(offer, basket, affected_lines)
+            affected_lines = [(line, discount, 1)]
+            if consume_items:
+                consume_items(offer, basket, affected_lines)
+            else:
+                condition.consume_items(offer, basket, affected_lines)
 
         return BasketDiscount(discount)
 
