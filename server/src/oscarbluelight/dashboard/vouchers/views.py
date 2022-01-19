@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
@@ -106,9 +107,17 @@ class VoucherStatsView(DefaultVoucherStatsView):
     form_class = OrderDiscountSearchForm
 
     def get_related_order_discounts(self):
-        ids = [self.object.id] + [c.id for c in self.object.children.all()]
-        qs = OrderDiscount.objects.filter(voucher_id__in=ids).order_by(
-            "-order__date_placed"
+        qs = (
+            OrderDiscount.objects.filter(
+                Q(voucher_id=self.object.id)
+                | Q(
+                    voucher_id__in=self.object.list_children().values_list(
+                        "id", flat=True
+                    )
+                )
+            )
+            .select_related("order")
+            .order_by("-order__date_placed")
         )
         self.form = self.form_class(self.request.GET)
         qs, is_filtered = self.form.filter_queryset(qs)
@@ -118,7 +127,7 @@ class VoucherStatsView(DefaultVoucherStatsView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         # Child vouchers
-        ctx["children"] = self.object.children.order_by("code")
+        ctx["children"] = self.object.list_children().order_by("code")
         # Related orders
         discounts = self.get_related_order_discounts()
         paginator = Paginator(discounts, settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE)
@@ -198,23 +207,22 @@ class ExportChildCodesView(generic.DetailView):
 
         voucher = self.get_object()
         filename = re.sub(r"[^a-z0-9\_\-]+", "_", voucher.name.lower())
-        children = voucher.children.order_by("code")
-        return formats[format](filename, children)
+        codes = voucher.list_children().order_by("code").values_list("code", flat=True)
+        return formats[format](filename, codes)
 
-    def _render_csv(self, filename, children):
+    def _render_csv(self, filename, codes):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
         writer = csv.writer(response)
         writer.writerow([_("Codes")])
-        for child in children.all():
-            writer.writerow([child.code])
+        for code in codes:
+            writer.writerow([code])
         return response
 
-    def _render_json(self, filename, children):
+    def _render_json(self, filename, codes):
         response = HttpResponse(content_type="application/json")
         response["Content-Disposition"] = 'attachment; filename="%s.json"' % filename
-        codes = [c.code for c in children.all()]
-        data = simplejson.dumps({"codes": codes})
+        data = simplejson.dumps({"codes": list(codes)})
         response.write(data)
         return response
 

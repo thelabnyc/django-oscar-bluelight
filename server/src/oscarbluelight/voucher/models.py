@@ -1,5 +1,6 @@
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
+from django.core.cache import cache
 from oscar.models.fields import NullCharField
 from oscar.apps.voucher.abstract_models import AbstractVoucher
 from . import tasks
@@ -60,10 +61,21 @@ class Voucher(AbstractVoucher):
     @classmethod
     def from_db(cls, db, field_names, values):
         instance = super().from_db(db, field_names, values)
+
         # Child codes always get the parent's name
-        if instance.parent:
-            instance.name = instance.parent.name
+        def _get_parent_name():
+            return instance.parent.name if instance.parent else None
+
+        if instance.parent_id:
+            parent_name = cache.get_or_set(
+                instance._parent_name_cache_key, _get_parent_name, 60
+            )
+            instance.name = parent_name
         return instance
+
+    @property
+    def _parent_name_cache_key(self):
+        return f"oscarbluelight.Voucher.parent_name.{self.parent_id}"
 
     @property
     def offer_group(self):
@@ -87,7 +99,7 @@ class Voucher(AbstractVoucher):
 
     def is_available_to_user(self, user=None):
         # Parent vouchers can not be used directly
-        if self.children.exists():
+        if self.list_children().exists():
             message = _("This voucher is not available")
             return False, message
 
@@ -103,6 +115,9 @@ class Voucher(AbstractVoucher):
                 return False, message
 
         return super().is_available_to_user(user)
+
+    def list_children(self):
+        return self.children.select_related("parent").all()
 
     @transaction.atomic
     def create_children(self, auto_generate_count=0, custom_codes=[]):
@@ -143,6 +158,7 @@ class Voucher(AbstractVoucher):
         _orig_name = self.name
         if self.parent:
             self.name = None
+        cache.delete(self._parent_name_cache_key)
         # Save the object
         rc = super().save(*args, **kwargs)
         # Update children?
