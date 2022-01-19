@@ -120,6 +120,7 @@ dashboard under the Offers menu.
 
 -   Add new `max_discount` field to Benefit models, to allow capping the total discount granted by a benefit within a single application. Primary intended use case is for capping the discount granted by a compound benefits, when its child benefits could, in some product combinations, exceed the desired discount.
 -   Convert README from reStructuredText to Markdown.
+-   Fix performance issues related to vouchers with large numbers if children.
 
 ### 5.0.1
 
