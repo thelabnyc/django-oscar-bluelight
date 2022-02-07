@@ -112,9 +112,6 @@ ORDER BY range_id, product_id;
 def get_sql_range_product_triggers():
     sql_range_product_triggers = [
         """
-        DROP FUNCTION IF EXISTS refresh_offer_rangeproductset() CASCADE;
-        """,
-        """
         CREATE OR REPLACE FUNCTION refresh_offer_rangeproductset()
             RETURNS trigger AS
             $BODY$
@@ -143,14 +140,7 @@ def get_sql_range_product_triggers():
         for event in "INSERT", "UPDATE", "DELETE":
             sql_range_product_triggers.append(
                 """
-                DROP TRIGGER IF EXISTS refresh_refresh_offer_rangeproductset_{event} ON {table} CASCADE;
-            """.format(
-                    event=event, table=table_name
-                )
-            )
-            sql_range_product_triggers.append(
-                """
-                CREATE TRIGGER refresh_refresh_offer_rangeproductset_{event}
+                CREATE OR REPLACE TRIGGER refresh_refresh_offer_rangeproductset_{event}
                 AFTER {event} ON {table}
                 FOR EACH STATEMENT
                 EXECUTE PROCEDURE refresh_offer_rangeproductset();

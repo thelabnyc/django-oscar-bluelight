@@ -2,7 +2,7 @@ from decimal import Decimal as D
 from django.conf import settings
 from django.dispatch import receiver
 from django.core import exceptions
-from django.db import models, IntegrityError, connection
+from django.db import models, IntegrityError, connection, transaction
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
@@ -403,6 +403,7 @@ __all__.extend(condition_classes)
 
 
 @receiver(view_synced, sender=RangeProductSet)
+@transaction.atomic()
 def add_view_triggers(sender, **kwargs):
     with connection.cursor() as cursor:
         for sql in get_sql_range_product_triggers():
