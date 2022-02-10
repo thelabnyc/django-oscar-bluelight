@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.1.2
+
+- Revert change to `CREATE OR REPLACE TRIGGER` from `r5.1.1` since this syntax is only supported in PostgreSQL 14.
+
 ### 5.1.1
 
 - Reduce opportunities for deadlocks while updating PostgresSQL views and triggers.
