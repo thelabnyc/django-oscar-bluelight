@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.1.1
+
+- Reduce opportunities for deadlocks while updating PostgresSQL views and triggers.
+
 ### 5.1.0
 
 -   Add new `max_discount` field to Benefit models, to allow capping the total discount granted by a benefit within a single application. Primary intended use case is for capping the discount granted by a compound benefits, when its child benefits could, in some product combinations, exceed the desired discount.
