@@ -3,7 +3,6 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
-from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
@@ -33,6 +32,7 @@ Condition = get_model("offer", "Condition")
 ConditionalOffer = get_model("offer", "ConditionalOffer")
 Voucher = get_model("voucher", "Voucher")
 OrderDiscount = get_model("order", "OrderDiscount")
+Order = get_model("order", "Order")
 
 AddChildCodesForm = get_class("vouchers_dashboard.forms", "AddChildCodesForm")
 VoucherForm = get_class("vouchers_dashboard.forms", "VoucherForm")
@@ -107,14 +107,24 @@ class VoucherStatsView(DefaultVoucherStatsView):
     form_class = OrderDiscountSearchForm
 
     def get_related_order_discounts(self):
+        # Have to manually write this sub query in order to get reasonable
+        # performance with large voucher counts.
+        subquery_sql = """
+        SELECT d.id
+          FROM {order_orderdiscount} d
+          LEFT JOIN {voucher_voucher} v
+            ON v.id = d.voucher_id
+         WHERE d.voucher_id = %s
+            OR v.parent_id = %s
+            """.strip().format(
+            order_orderdiscount=OrderDiscount._meta.db_table,
+            order_order=Order._meta.db_table,
+            voucher_voucher=Voucher._meta.db_table,
+        )
         qs = (
-            OrderDiscount.objects.filter(
-                Q(voucher_id=self.object.id)
-                | Q(
-                    voucher_id__in=self.object.list_children().values_list(
-                        "id", flat=True
-                    )
-                )
+            OrderDiscount.objects.extra(
+                where=[f'"{OrderDiscount._meta.db_table}"."id" IN ({subquery_sql})'],
+                params=[self.object.id, self.object.id],
             )
             .select_related("order")
             .order_by("-order__date_placed")
