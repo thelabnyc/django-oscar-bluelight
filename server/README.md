@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.1.3
+
+- Fix performance issue in VoucherStatsView when a code had a large number of child codes.
+
 ### 5.1.2
 
 - Revert change to `CREATE OR REPLACE TRIGGER` from `r5.1.1` since this syntax is only supported in PostgreSQL 14.
