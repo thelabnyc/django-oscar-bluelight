@@ -30,6 +30,7 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
     def get_urls(self):
         from .views import (
             AddChildCodesView,
+            ExportChildCodesFormView,
             ExportChildCodesView,
             VoucherStatsView,
             ChildCodesListView,
@@ -47,9 +48,14 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
                 name="voucher-add-children",
             ),
             re_path(
-                r"^stats/(?P<pk>\d+)/export-children.(?P<format>[\w]+)$",
-                ExportChildCodesView.as_view(),
+                r"^stats/(?P<pk>\d+)/export-children/$",
+                ExportChildCodesFormView.as_view(),
                 name="voucher-export-children",
+            ),
+            re_path(
+                r"^stats/(?P<pk>\d+)/export-children.(?P<file_format>[\w]+)$",
+                ExportChildCodesView.as_view(),
+                name="voucher-export-children-file",
             ),
             re_path(
                 r"^stats/(?P<pk>\d+)/$",
