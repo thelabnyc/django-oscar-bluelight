@@ -39,7 +39,7 @@ Order = get_model("order", "Order")
 AddChildCodesForm = get_class("vouchers_dashboard.forms", "AddChildCodesForm")
 VoucherForm = get_class("vouchers_dashboard.forms", "VoucherForm")
 OrderDiscountSearchForm = get_class("offers_dashboard.forms", "OrderDiscountSearchForm")
-CodeExportForm = get_class('vouchers_dashboard.forms', 'CodeExportForm')
+CodeExportForm = get_class("vouchers_dashboard.forms", "CodeExportForm")
 
 BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER")
 CHILD_CODE_BG_TASK_THRESHOLD = 1000
@@ -220,17 +220,22 @@ class ExportChildCodesView(generic.DetailView):
         date_from = request.GET.get("date_from", "")
         date_to = request.GET.get("date_to", "")
         if date_from and date_to:
-            self._filters = {'date_created__range': [date_from, date_to]}
+            self._filters = {"date_created__range": [date_from, date_to]}
         elif date_from and not date_to:
-            self._filters = {'date_created__gte': date_from}
+            self._filters = {"date_created__gte": date_from}
         elif not date_from and date_to:
-            self._filters = {'date_created__lte': date_to}
+            self._filters = {"date_created__lte": date_to}
         else:
             self._filters = {}
 
         voucher = self.get_object()
         filename = re.sub(r"[^a-z0-9\_\-]+", "_", voucher.name.lower())
-        codes = voucher.list_children().filter(**self._filters).order_by("code").values_list("code", "date_created")
+        codes = (
+            voucher.list_children()
+            .filter(**self._filters)
+            .order_by("code")
+            .values_list("code", "date_created")
+        )
         return formats[file_format](filename, codes)
 
     def _render_csv(self, filename, codes):
@@ -266,7 +271,7 @@ class ExportChildCodesFormView(generic.FormView):
         self.file_format = self.form.cleaned_data.get("file_format") or "csv"
         query_kwargs = {
             "date_from": self.form.cleaned_data.get("date_from") or "",
-            "date_to": self.form.cleaned_data.get("date_to") or ""
+            "date_to": self.form.cleaned_data.get("date_to") or "",
         }
         return redirect(self.get_success_url(query_kwargs))
 

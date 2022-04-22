@@ -119,12 +119,25 @@ class AddChildCodesForm(forms.Form):
         codes = [code.strip() for code in code_txt.splitlines()]
         return codes
 
+
 class CodeExportForm(forms.Form):
-    date_from = forms.DateTimeField(required=False, label=_("Date from"), widget=DateTimePickerInput)
-    date_to = forms.DateTimeField(required=False, label=_("Date to"), widget=DateTimePickerInput, initial=timezone.now())
-    format_choices = (('csv', _('CSV')),
-                      ('json', _('JSON')),)
-    file_format = forms.ChoiceField(widget=forms.RadioSelect,
-                                    required=True, choices=format_choices,
-                                    initial='csv',
-                                    label=_("Get results as"))
+    date_from = forms.DateTimeField(
+        required=False, label=_("Date from"), widget=DateTimePickerInput
+    )
+    date_to = forms.DateTimeField(
+        required=False,
+        label=_("Date to"),
+        widget=DateTimePickerInput,
+        initial=timezone.now(),
+    )
+    format_choices = (
+        ("csv", _("CSV")),
+        ("json", _("JSON")),
+    )
+    file_format = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        required=True,
+        choices=format_choices,
+        initial="csv",
+        label=_("Get results as"),
+    )
