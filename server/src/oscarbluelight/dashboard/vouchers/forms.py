@@ -1,7 +1,9 @@
 from django import forms
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from oscar.core.loading import get_model
+from oscar.forms.widgets import DateTimePickerInput
 from oscar.apps.dashboard.vouchers.forms import (
     VoucherForm as BaseVoucherForm,
 )
@@ -116,3 +118,26 @@ class AddChildCodesForm(forms.Form):
         code_txt = self.cleaned_data["custom_child_codes"]
         codes = [code.strip() for code in code_txt.splitlines()]
         return codes
+
+
+class CodeExportForm(forms.Form):
+    date_from = forms.DateTimeField(
+        required=False, label=_("Date from"), widget=DateTimePickerInput
+    )
+    date_to = forms.DateTimeField(
+        required=False,
+        label=_("Date to"),
+        widget=DateTimePickerInput,
+        initial=timezone.now(),
+    )
+    format_choices = (
+        ("csv", _("CSV")),
+        ("json", _("JSON")),
+    )
+    file_format = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        required=True,
+        choices=format_choices,
+        initial="csv",
+        label=_("Get results as"),
+    )

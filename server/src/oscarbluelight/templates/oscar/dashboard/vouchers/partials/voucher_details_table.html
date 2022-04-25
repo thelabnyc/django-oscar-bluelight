@@ -71,16 +71,10 @@
                                 {% trans "View child codes" %}
                             </a>
                             <a
-                                class="dropdown-item"
-                                href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='csv' %}"
+                                 class="dropdown-item"
+                                 href="{% url 'dashboard:voucher-export-children' pk=voucher.id %}"
                             >
-                                {% trans "Export codes as CSV" %}
-                            </a>
-                            <a
-                                class="dropdown-item"
-                                href="{% url 'dashboard:voucher-export-children' pk=voucher.id format='json' %}"
-                            >
-                                {% trans "Export codes as JSON" %}
+                                {% trans "Export child codes" %}
                             </a>
                         </div>
                     </div>

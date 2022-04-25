@@ -80,8 +80,7 @@
                             </button>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item" href="{% url 'dashboard:voucher-add-children' pk=parent_voucher.id %}">{% trans "Add more child codes" %}</a>
-                                <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=parent_voucher.id format='csv' %}">{% trans "Export codes as CSV" %}</a>
-                                <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=parent_voucher.id format='json' %}">{% trans "Export codes as JSON" %}</a>
+                                <a class="dropdown-item" href="{% url 'dashboard:voucher-export-children' pk=parent_voucher.id %}">{% trans "Export child codes" %}</a>
                                 <div class="dropdown-divider"></div>
                                 <button class="dropdown-item text-danger" type="submit" name="action" value="delete_selected_codes">
                                     {% trans "Delete selected child codes" %}

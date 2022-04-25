@@ -3,9 +3,12 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
+from django.utils.http import urlencode
+from django.utils import timezone
 from django.views import generic
 from oscar.views.generic import BulkEditMixin
 from oscar.core.loading import get_class, get_model
@@ -19,6 +22,7 @@ from oscar.apps.dashboard.vouchers.views import (
 from oscar.apps.dashboard.vouchers.forms import VoucherSearchForm
 from oscar.views import sort_queryset
 from oscarbluelight.voucher import tasks
+from datetime import datetime
 import csv
 import re
 
@@ -37,6 +41,7 @@ Order = get_model("order", "Order")
 AddChildCodesForm = get_class("vouchers_dashboard.forms", "AddChildCodesForm")
 VoucherForm = get_class("vouchers_dashboard.forms", "VoucherForm")
 OrderDiscountSearchForm = get_class("offers_dashboard.forms", "OrderDiscountSearchForm")
+CodeExportForm = get_class("vouchers_dashboard.forms", "CodeExportForm")
 
 BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER")
 CHILD_CODE_BG_TASK_THRESHOLD = 1000
@@ -207,34 +212,112 @@ class AddChildCodesView(generic.FormView):
 class ExportChildCodesView(generic.DetailView):
     model = Voucher
 
-    def get(self, request, format, *args, **kwargs):
+    def get(self, request, file_format, *args, **kwargs):
         formats = {
             "csv": self._render_csv,
             "json": self._render_json,
         }
-        if format not in formats:
+        if file_format not in formats:
             raise Http404()
+        date_from = request.GET.get("date_from", "")
+        date_to = request.GET.get("date_to", "")
+        if date_from and date_to:
+            self._filters = {"date_created__range": [date_from, date_to]}
+        elif date_from and not date_to:
+            self._filters = {"date_created__gte": date_from}
+        elif not date_from and date_to:
+            self._filters = {"date_created__lte": date_to}
+        else:
+            self._filters = {}
 
         voucher = self.get_object()
         filename = re.sub(r"[^a-z0-9\_\-]+", "_", voucher.name.lower())
-        codes = voucher.list_children().order_by("code").values_list("code", flat=True)
-        return formats[format](filename, codes)
+        codes = (
+            voucher.list_children()
+            .filter(**self._filters)
+            .order_by("code")
+            .values_list("code", "date_created")
+        )
+        return formats[file_format](filename, codes)
 
     def _render_csv(self, filename, codes):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
         writer = csv.writer(response)
-        writer.writerow([_("Codes")])
-        for code in codes:
-            writer.writerow([code])
+        writer.writerow([_("Codes"), _("Date Created")])
+        for code, date_created in codes:
+            date_created = datetime.strftime(date_created, "%b %d, %Y, %H:%M %p")
+            writer.writerow([code, date_created])
         return response
 
     def _render_json(self, filename, codes):
         response = HttpResponse(content_type="application/json")
         response["Content-Disposition"] = 'attachment; filename="%s.json"' % filename
-        data = simplejson.dumps({"codes": list(codes)})
+        data = simplejson.dumps({"codes": [code[0] for code in codes]})
         response.write(data)
         return response
+
+
+class ExportChildCodesFormView(generic.FormView):
+    template_name = "oscar/dashboard/vouchers/voucher_export_children.html"
+    form_class = CodeExportForm
+
+    def dispatch(self, request, pk, *args, **kwargs):
+        self.parent = get_object_or_404(Voucher, pk=pk)
+        if not self.request.GET:
+            self.form = self.form_class(initial=self.get_initial())
+            return super().dispatch(request, pk, *args, **kwargs)
+        self.form = self.form_class(self.request.GET, initial=self.get_initial())
+        if not self.form.is_valid():
+            return super().dispatch(request, pk, *args, **kwargs)
+        self.file_format = self.form.cleaned_data.get("file_format") or "csv"
+        query_kwargs = {
+            "date_from": self.form.cleaned_data.get("date_from") or "",
+            "date_to": self.form.cleaned_data.get("date_to") or "",
+        }
+        return redirect(self.get_success_url(query_kwargs))
+
+    def get_initial(self):
+        try:
+            most_recent_creation = self.get_created_on_counts()[0]
+            date_from = most_recent_creation["date_created__date"]
+        except IndexError:
+            date_from = None
+        initial = {
+            "date_from": date_from,
+            "date_to": timezone.now(),
+            "file_format": "csv",
+        }
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["parent_voucher"] = self.parent
+        ctx["form"] = self.form
+        ctx["created_on_counts"] = self.get_created_on_counts()[:100]
+        return ctx
+
+    def get_success_url(self, query_kwargs=None):
+        url = reverse(
+            "dashboard:voucher-export-children-file",
+            kwargs={
+                "pk": self.parent.pk,
+                "file_format": self.file_format,
+            },
+        )
+        if query_kwargs:
+            return f"{url}?{urlencode(query_kwargs)}"
+        return url
+
+    def get_created_on_counts(self):
+        created_on_counts = (
+            self.parent.children.values(
+                "date_created__date",
+            )
+            .annotate(num_codes=Count("code", distinct=True))
+            .order_by("-date_created__date")
+        )
+        return created_on_counts
 
 
 class ChildCodesListView(BulkEditMixin, generic.ListView):
