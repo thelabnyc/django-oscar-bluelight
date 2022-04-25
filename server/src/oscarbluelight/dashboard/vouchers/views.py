@@ -3,10 +3,12 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlencode
+from django.utils import timezone
 from django.views import generic
 from oscar.views.generic import BulkEditMixin
 from oscar.core.loading import get_class, get_model
@@ -263,9 +265,9 @@ class ExportChildCodesFormView(generic.FormView):
     def dispatch(self, request, pk, *args, **kwargs):
         self.parent = get_object_or_404(Voucher, pk=pk)
         if not self.request.GET:
-            self.form = self.form_class()
+            self.form = self.form_class(initial=self.get_initial())
             return super().dispatch(request, pk, *args, **kwargs)
-        self.form = self.form_class(self.request.GET)
+        self.form = self.form_class(self.request.GET, initial=self.get_initial())
         if not self.form.is_valid():
             return super().dispatch(request, pk, *args, **kwargs)
         self.file_format = self.form.cleaned_data.get("file_format") or "csv"
@@ -275,10 +277,24 @@ class ExportChildCodesFormView(generic.FormView):
         }
         return redirect(self.get_success_url(query_kwargs))
 
+    def get_initial(self):
+        try:
+            most_recent_creation = self.get_created_on_counts()[0]
+            date_from = most_recent_creation["date_created__date"]
+        except IndexError:
+            date_from = None
+        initial = {
+            "date_from": date_from,
+            "date_to": timezone.now(),
+            "file_format": "csv",
+        }
+        return initial
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["parent_voucher"] = self.parent
         ctx["form"] = self.form
+        ctx["created_on_counts"] = self.get_created_on_counts()[:100]
         return ctx
 
     def get_success_url(self, query_kwargs=None):
@@ -292,6 +308,16 @@ class ExportChildCodesFormView(generic.FormView):
         if query_kwargs:
             return f"{url}?{urlencode(query_kwargs)}"
         return url
+
+    def get_created_on_counts(self):
+        created_on_counts = (
+            self.parent.children.values(
+                "date_created__date",
+            )
+            .annotate(num_codes=Count("code", distinct=True))
+            .order_by("-date_created__date")
+        )
+        return created_on_counts
 
 
 class ChildCodesListView(BulkEditMixin, generic.ListView):

@@ -1,6 +1,7 @@
 {% extends 'oscar/dashboard/layout.html' %}
 {% load currency_filters %}
 {% load i18n %}
+{% load humanize %}
 
 {% block body_class %}{{ block.super }} create-page{% endblock %}
 
@@ -30,16 +31,43 @@
 {% block headertext %}{% trans "Export children" %}{% endblock %}
 
 {% block dashboard_content %}
-    <div class="table-header">
-        <h2><i class="fas fa-file-export"></i>{% trans "Export children" %} - {{ parent_voucher.name }}</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="table-header">
+            <h2><i class="fas fa-file-export"></i>{% trans "Export children" %} - {{ parent_voucher.name }}</h2>
+        </div>
+        <form method="get" class="card card-body form-stacked">
+            {% include "oscar/dashboard/partials/form_fields.html" with form=form %}
+            {% block form_actions %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{% trans "Export" %}</button>{% trans "or" %}
+                    <a href="{% url 'dashboard:voucher-list' %}">{% trans "cancel" %}</a>
+                </div>
+            {% endblock form_actions %}
+        </form>
     </div>
-    <form method="get" class="card card-body form-stacked">
-        {% include "oscar/dashboard/partials/form_fields.html" with form=form %}
-        {% block form_actions %}
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">{% trans "Export" %}</button>{% trans "or" %}
-                <a href="{% url 'dashboard:voucher-list' %}">{% trans "cancel" %}</a>
-            </div>
-        {% endblock form_actions %}
-    </form>
+    <div class="col-md-6">
+        <table class="table table-bordered table-striped">
+            <caption>
+                {% blocktrans %}
+                To aid with selecting which dates to export, below are the most recent days in which child codes were created, and how many child codes were created on that day.
+                {% endblocktrans %}
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Number of Codes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dt in created_on_counts %}
+                    <tr>
+                        <th scope="row">{{ dt.date_created__date }}</th>
+                        <td>{{ dt.num_codes | intcomma }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock dashboard_content %}
