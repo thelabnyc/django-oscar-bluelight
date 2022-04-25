@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.2.0
+
+- Add created date filtering to Voucher child code export view.
+
 ### 5.1.3
 
 - Fix performance issue in VoucherStatsView when a code had a large number of child codes.
