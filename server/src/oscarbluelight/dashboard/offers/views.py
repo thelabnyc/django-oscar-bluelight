@@ -75,7 +75,13 @@ class OfferWizardStepView(views.OfferWizardStepView):
         offer.affects_cosmetic_pricing = session_offer.affects_cosmetic_pricing
         offer.priority = session_offer.priority
 
-        offer.offer_type = form.cleaned_data["offer_type"]
+        # Since offer_type is moved from the metadata form to restrictions from,
+        # check it is in the form or not in case of only Step 1 metadata form saving.
+        offer.offer_type = (
+            form.cleaned_data["offer_type"]
+            if "offer_type" in form.cleaned_data
+            else session_offer.offer_type
+        )
 
         # Save the related models and assign to the offer
         temp_offer = self._fetch_object("benefit")
