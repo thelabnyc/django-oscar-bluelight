@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.2.1
+
+- Fix 500 error in dashboard when saving offer directly from form step 1.
+
 ### 5.2.0
 
 - Add created date filtering to Voucher child code export view.
