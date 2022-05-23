@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.2.2
+
+- Fix performance issues with creating / updating large numbers of child voucher codes.
+
 ### 5.2.1
 
 - Fix 500 error in dashboard when saving offer directly from form step 1.
