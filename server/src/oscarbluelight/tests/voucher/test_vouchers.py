@@ -163,6 +163,9 @@ class ParentChildVoucherTest(TestCase):
         self.assertFalse(c1.limit_usage_by_group)
 
     def test_update_parent(self):
+        customer = Group.objects.create(name="Customers")
+        csrs = Group.objects.create(name="Customer Service Reps")
+
         p = Voucher.objects.create(
             name="Test Voucher",
             code="test-voucher",
@@ -171,6 +174,7 @@ class ParentChildVoucherTest(TestCase):
             end_datetime=datetime.now(),
             limit_usage_by_group=False,
         )
+        p.groups.set([customer])
         self.assertEqual(p.children.all().count(), 0)
 
         p.create_children(auto_generate_count=1)
@@ -183,8 +187,11 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(c1.start_datetime, p.start_datetime)
         self.assertEqual(c1.end_datetime, p.end_datetime)
         self.assertFalse(c1.limit_usage_by_group)
+        self.assertEqual(c1.groups.count(), 1)
+        self.assertEqual(c1.groups.get(), customer)
 
         p.name = "Some Other Name"
+        p.groups.set([csrs])
         p.save()
 
         c1 = p.children.order_by("code").first()
@@ -194,6 +201,8 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(c1.start_datetime, p.start_datetime)
         self.assertEqual(c1.end_datetime, p.end_datetime)
         self.assertFalse(c1.limit_usage_by_group)
+        self.assertEqual(c1.groups.count(), 1)
+        self.assertEqual(c1.groups.get(), csrs)
 
     def test_delete_parent(self):
         p = Voucher.objects.create(
