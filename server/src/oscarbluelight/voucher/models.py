@@ -1,9 +1,9 @@
-from django.db import models, transaction
+from django.db import models, transaction, connection
 from django.utils.translation import gettext_lazy as _
 from django.core.cache import cache
 from oscar.models.fields import NullCharField
 from oscar.apps.voucher.abstract_models import AbstractVoucher
-from . import tasks
+from . import tasks, sql
 import time
 
 
@@ -68,14 +68,15 @@ class Voucher(AbstractVoucher):
 
         if instance.parent_id:
             parent_name = cache.get_or_set(
-                instance._parent_name_cache_key, _get_parent_name, 60
+                instance._get_parent_name_cache_key(), _get_parent_name, 60
             )
             instance.name = parent_name
         return instance
 
-    @property
-    def _parent_name_cache_key(self):
-        return f"oscarbluelight.Voucher.parent_name.{self.parent_id}"
+    def _get_parent_name_cache_key(self, parent_id=None):
+        if parent_id is None:
+            parent_id = self.parent_id
+        return f"oscarbluelight.Voucher.parent_name.{parent_id}"
 
     @property
     def offer_group(self):
@@ -132,33 +133,55 @@ class Voucher(AbstractVoucher):
         errors = []
         success_count = 0
         # Generate auto codes
-        for i in range(auto_generate_count):
-            code = self._get_child_code(i, auto_generate_count)
-            self._create_child(code)
-            success_count += 1
+        auto_gen_codes = self._get_child_code_batch(auto_generate_count)
+        success_count += len(self._create_child_batch(auto_gen_codes))
         # Save manual/custom codes
-        for code in custom_codes:
-            if not Voucher.objects.filter(code__iexact=code).exists():
-                self._create_child(code)
-                success_count += 1
-            else:
-                errors.append(
-                    _("Could not create code “%s” because it already exists.") % code
-                )
+        custom_code_objs = self._create_child_batch(custom_codes)
+        success_count += len(custom_code_objs)
+        custom_code_successes = {c.code for c in custom_code_objs}
+        custom_code_failures = set(custom_codes) - custom_code_successes
+        for code in sorted(list(custom_code_failures)):
+            errors.append(
+                _("Could not create code “%s” because it already exists.") % code
+            )
         return errors, success_count
 
     @transaction.atomic
     def update_children(self):
-        for child in self.children.all():
-            self._update_child(child)
+        """
+        If logic here changes, make sure to also update the single-child update
+        version (`Voucher._update_child`)
+        """
+        # Wipe the parent name cache
+        cache.delete(self._get_parent_name_cache_key(self.pk))
+        # Batch update all the children. Uses raw SQL since this is the most
+        # efficient way to do this for vouchers with large numbers (e.g. millions)
+        # of child codes.
+        with connection.cursor() as cursor:
+            params = {
+                "parent_id": self.pk,
+            }
+            queries = [
+                # Copy parent metadata to all children
+                sql.get_update_children_meta_sql(Voucher),
+                # Copy offers m2m relationship from parent to all children
+                sql.get_insupd_children_offers_sql(Voucher),
+                sql.get_prune_children_offers_sql(Voucher),
+                # Copy groups m2m relationship from parent to all children
+                sql.get_insupd_children_groups_sql(Voucher),
+                sql.get_prune_children_groups_sql(Voucher),
+            ]
+            for query in queries:
+                cursor.execute(query, params)
 
-    @transaction.atomic
     def save(self, update_children=True, *args, **kwargs):
         # Child codes use the parent's name and always store Null for their own name
         _orig_name = self.name
         if self.parent:
             self.name = None
-        cache.delete(self._parent_name_cache_key)
+            cache.delete(self._get_parent_name_cache_key(self.parent_id))
+        else:
+            cache.delete(self._get_parent_name_cache_key(self.pk))
         # Save the object
         rc = super().save(*args, **kwargs)
         # Update children?
@@ -208,29 +231,66 @@ class Voucher(AbstractVoucher):
     record_discount.alters_data = True
 
     def _create_child(self, code):
-        child = self.__class__()
-        child.code = code
-        self._update_child(child)
-        return child
+        batch = self._create_child_batch([code])
+        return batch[0]
 
-    def _update_child(self, child):
-        child.parent = self
-        child.name = None
+    def _create_child_batch(self, codes, batch_size=10_000):
+        children = []
         copy_fields = (
             "usage",
             "start_datetime",
             "end_datetime",
             "limit_usage_by_group",
         )
-        for field in copy_fields:
-            setattr(child, field, getattr(self, field))
-        # TODO: Might be useful to use django-dirtyfields here to prevent unnecessary DB writes.
-        child.save(update_children=False)
-        child.offers.set(list(self.offers.all()))
-        child.groups.set(list(self.groups.all()))
-        child.save(update_children=False)
+        for code in codes:
+            child = self.__class__()
+            child.parent = self
+            child.code = code
+            for field in copy_fields:
+                setattr(child, field, getattr(self, field))
+            children.append(child)
+        # Bulk insert all the new codes
+        objs = self.__class__.objects.bulk_create(
+            children,
+            ignore_conflicts=True,
+            batch_size=batch_size,
+        )
+        # Bulk copy over the rest of the parent data
+        self.update_children()
+        # Return the newly created codes
+        return objs
 
-    def _get_child_code(self, code_index, max_index, max_tries=50):
+    def _get_child_code_batch(self, num_codes):
+        existing_codes = set(
+            self.__class__.objects.all().values_list("code", flat=True)
+        )
+
+        def check_code_is_unique(code):
+            return code not in existing_codes
+
+        new_codes = []
+        for i in range(num_codes):
+            new_codes.append(
+                self._get_child_code(
+                    code_index=i,
+                    max_index=num_codes,
+                    check_code_is_unique=check_code_is_unique,
+                )
+            )
+        return new_codes
+
+    def _get_child_code(
+        self, code_index, max_index, max_tries=50, check_code_is_unique=None
+    ):
+        if check_code_is_unique is None:
+
+            def check_code_is_unique(code):
+                try:
+                    self.__class__.objects.get(code=code)
+                    return False
+                except Voucher.DoesNotExist:
+                    return True
+
         try_count = 0
         while try_count < max_tries:
             try_count += 1
@@ -238,9 +298,7 @@ class Voucher(AbstractVoucher):
                 self.code,
                 self._get_code_uniquifier(code_index, max_index),
             )
-            try:
-                self.__class__.objects.get(code=code)
-            except Voucher.DoesNotExist:
+            if check_code_is_unique(code=code):
                 return code
         raise RuntimeError(
             _("Couldn't find a unique child code after %s iterations.") % try_count

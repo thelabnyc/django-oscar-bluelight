@@ -18,6 +18,7 @@ install_requires = [
     "django-redis>=4.8.0",
     "django-pgviews>=0.5.7",
     "djangorestframework>=3.10",
+    "psycopg2-binary>=2.8.4",
     "redis>=3.0.0",
 ]
 
@@ -27,7 +28,6 @@ extras_require = {
         "django-debug-toolbar>=3.2.1",
         "flake8>=3.2.1",
         "hiredis>=0.2.0",
-        "psycopg2cffi>=2.7.7",
         "sorl-thumbnail>=11.04",
         "sphinx>=1.5.2",
         "splinter>=0.7.5",
