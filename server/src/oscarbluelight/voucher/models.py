@@ -136,9 +136,8 @@ class Voucher(AbstractVoucher):
         auto_gen_codes = self._get_child_code_batch(auto_generate_count)
         success_count += len(self._create_child_batch(auto_gen_codes))
         # Save manual/custom codes
-        custom_code_objs = self._create_child_batch(custom_codes)
-        success_count += len(custom_code_objs)
-        custom_code_successes = {c.code for c in custom_code_objs}
+        custom_code_successes = self._create_child_batch(custom_codes)
+        success_count += len(custom_code_successes)
         custom_code_failures = set(custom_codes) - custom_code_successes
         for code in sorted(list(custom_code_failures)):
             errors.append(
@@ -231,8 +230,9 @@ class Voucher(AbstractVoucher):
     record_discount.alters_data = True
 
     def _create_child(self, code):
-        batch = self._create_child_batch([code])
-        return batch[0]
+        self._create_child_batch([code])
+        obj = self.children.filter(code=code).first()
+        return obj
 
     def _create_child_batch(self, codes, batch_size=10_000):
         children = []
@@ -257,8 +257,8 @@ class Voucher(AbstractVoucher):
         )
         # Bulk copy over the rest of the parent data
         self.update_children()
-        # Return the newly created codes
-        return objs
+        # Return the newly created codes as a set
+        return {obj.code for obj in objs}
 
     def _get_child_code_batch(self, num_codes):
         existing_codes = set(
