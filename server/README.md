@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.2.3
+
+- Fix bug where Voucher.\_create_child returns the unsaved voucher object instead of the saved version.
+
 ### 5.2.2
 
 - Fix performance issues with creating / updating large numbers of child voucher codes.
