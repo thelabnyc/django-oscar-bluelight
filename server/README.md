@@ -116,6 +116,9 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.2.4
+- Change `DEFAULT_AUTO_FIELD` to `BigAutoField`, migrate `Voucher_offers` through table.
+
 ### 5.2.3
 
 - Fix bug where Voucher.\_create_child returns the unsaved voucher object instead of the saved version.
