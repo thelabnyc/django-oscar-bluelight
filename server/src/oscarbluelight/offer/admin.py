@@ -7,6 +7,7 @@ Benefit = get_model("offer", "Benefit")
 Range = get_model("offer", "Range")
 CompoundCondition = get_model("offer", "CompoundCondition")
 OfferGroup = get_model("offer", "OfferGroup")
+OfferAdvertisingContent = get_model("offer", "OfferAdvertisingContent")
 
 
 @admin.register(Benefit)
@@ -72,6 +73,12 @@ class OfferGroupAdmin(admin.ModelAdmin):
     inlines = [
         ConditionalOfferAdmin,
     ]
+
+
+@admin.register(OfferAdvertisingContent)
+class OfferAdvertisingContentAdmin(admin.ModelAdmin):
+    list_filter = ("offer",)
+    list_display = ("text", "offer", "is_bogo")
 
 
 admin.site.register(Range)

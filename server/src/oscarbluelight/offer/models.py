@@ -159,6 +159,35 @@ class ConditionalOffer(AbstractConditionalOffer):
     record_usage.alters_data = True
 
 
+class OfferAdvertisingContent(models.Model):
+    """Advertising content of an offer within an in-basket line."""
+
+    text = models.CharField(_("Text"), max_length=255)
+    offer = models.OneToOneField(
+        ConditionalOffer,
+        related_name="advertising_content",
+        on_delete=models.CASCADE,
+    )
+    is_bogo = models.BooleanField(
+        _("BOGO?"),
+        default=False,
+        help_text=_(
+            "Controls whether or not the related offer should have the BOGO (Buy One, Get One) advertising content."
+        ),
+    )
+
+    class Meta:
+        verbose_name = "Offer Advertising Content"
+        verbose_name_plural = "Offer Advertising Contents"
+
+    def __str__(self):
+        return f"{self.offer} - {self.text}"
+
+    @property
+    def priority(self):
+        return self.offer.priority
+
+
 class Benefit(AbstractBenefit):
     # Use this field to provide an hard-cap on the discount amount than a benefit
     # can provide.

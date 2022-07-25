@@ -148,6 +148,7 @@ class TestCompoundBluelightPercentageBenefitDiscount(TestCase):
         )
 
         self.offer = mock.Mock()
+        self.offer.advertising_content.is_bogo = False
         self.basket = factories.create_basket(empty=True)
 
     def test_applies_correctly_one_instance(self):

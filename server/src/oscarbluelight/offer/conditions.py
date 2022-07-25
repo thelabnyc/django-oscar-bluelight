@@ -49,6 +49,25 @@ class BluelightCountCondition(CountCondition):
     def _clean(self):
         return _default_clean(self)
 
+    def _get_all_applied_lines_total_qty(self, basket):
+        num_matches = 0
+        for line in basket.all_lines():
+            if self.can_apply_condition(line):
+                num_matches += line.quantity
+        return num_matches
+
+    def is_partially_satisfied(self, offer, basket):
+        if hasattr(offer, "advertising_content") and offer.advertising_content.is_bogo:
+            num_matches = self._get_all_applied_lines_total_qty(basket)
+            return num_matches % self.value != 0
+        return super().is_partially_satisfied(offer, basket)
+
+    def is_satisfied(self, offer, basket):
+        if hasattr(offer, "advertising_content") and offer.advertising_content.is_bogo:
+            num_matches = self._get_all_applied_lines_total_qty(basket)
+            return num_matches % self.value == 0
+        return super().is_satisfied(offer, basket)
+
     def consume_items(self, offer, basket, affected_lines):
         """
         Same as CountCondition.consume_items, except that it returns a list of consumed items. This
