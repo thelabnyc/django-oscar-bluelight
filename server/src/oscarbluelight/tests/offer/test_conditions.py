@@ -5,7 +5,6 @@ from oscarbluelight.offer.models import (
     Range,
     Benefit,
     CompoundCondition,
-    OfferAdvertisingContent,
 )
 from oscarbluelight.offer.applicator import Applicator
 from oscar.test.factories import create_basket, create_product, create_stockrecord
@@ -103,118 +102,6 @@ class CountConditionTest(BaseTest):
         self.assertEqual(basket.total_excl_tax, D("5095.00"))
         self.assertEqual(basket.num_items_without_discount, 0)
         self.assertEqual(basket.num_items_with_discount, 2)
-
-    def test_is_partially_satisfied(self):
-        product_a = create_product()
-        create_stockrecord(product_a, D("100.00"), num_in_stock=10)
-        product_b = create_product()
-        create_stockrecord(product_b, D("100.00"), num_in_stock=10)
-        product_c = create_product()
-        create_stockrecord(product_c, D("100.00"), num_in_stock=10)
-
-        range = Range.objects.create(name="Bogo Pillows")
-        range.add_product(product_b)
-        range.add_product(product_a)
-
-        condition = Condition()
-        condition.proxy_class = (
-            "oscarbluelight.offer.conditions.BluelightCountCondition"
-        )
-        condition.value = 2
-        condition.range = range
-        condition.save()
-
-        benefit = Benefit()
-        benefit.proxy_class = (
-            "oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit"
-        )
-        benefit.range = range
-        benefit.save()
-
-        offer = ConditionalOffer()
-        offer.condition = condition
-        offer.benefit = benefit
-        offer.save()
-
-        advertising_content = OfferAdvertisingContent.objects.create(
-            text="Don't Forget Your FREE pillow!", offer=offer, is_bogo=True
-        )
-
-        basket = create_basket(empty=True)
-        basket.add_product(product_a, quantity=1)
-
-        self.assertTrue(offer.is_condition_partially_satisfied(basket))
-        self.assertEqual(
-            offer.advertising_content.text, "Don't Forget Your FREE pillow!"
-        )
-        basket.add_product(product_b, quantity=1)
-        self.assertFalse(offer.is_condition_partially_satisfied(basket))
-        basket.add_product(product_a, quantity=1)
-        self.assertTrue(offer.is_condition_partially_satisfied(basket))
-        basket.add_product(product_c, quantity=1)
-        self.assertTrue(offer.is_condition_partially_satisfied(basket))
-
-        advertising_content.is_bogo = False
-        basket.add_product(product_b, quantity=1)
-        self.assertFalse(offer.is_condition_partially_satisfied(basket))
-        basket.add_product(product_a, quantity=1)
-        self.assertFalse(offer.is_condition_partially_satisfied(basket))
-
-    def test_is_satisfied(self):
-        product_a = create_product()
-        create_stockrecord(product_a, D("200.00"), num_in_stock=10)
-        product_b = create_product()
-        create_stockrecord(product_b, D("200.00"), num_in_stock=10)
-        product_c = create_product()
-        create_stockrecord(product_c, D("200.00"), num_in_stock=10)
-
-        range = Range.objects.create(name="Bogo Pillows")
-        range.add_product(product_a)
-        range.add_product(product_b)
-
-        condition = Condition()
-        condition.proxy_class = (
-            "oscarbluelight.offer.conditions.BluelightCountCondition"
-        )
-        condition.value = 2
-        condition.range = range
-        condition.save()
-
-        benefit = Benefit()
-        benefit.proxy_class = (
-            "oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit"
-        )
-        benefit.range = range
-        benefit.save()
-
-        offer = ConditionalOffer()
-        offer.condition = condition
-        offer.benefit = benefit
-        offer.save()
-
-        advertising_content = OfferAdvertisingContent.objects.create(
-            text="Don't Forget Your FREE pillow!", offer=offer, is_bogo=True
-        )
-
-        basket = create_basket(empty=True)
-        basket.add_product(product_a, quantity=2)
-
-        self.assertTrue(offer.is_condition_satisfied(basket))
-        self.assertEqual(
-            offer.advertising_content.text, "Don't Forget Your FREE pillow!"
-        )
-        basket.add_product(product_b, quantity=1)
-        self.assertFalse(offer.is_condition_satisfied(basket))
-        basket.add_product(product_a, quantity=1)
-        self.assertTrue(offer.is_condition_satisfied(basket))
-        basket.add_product(product_c, quantity=1)
-        self.assertTrue(offer.is_condition_satisfied(basket))
-
-        advertising_content.is_bogo = False
-        basket.add_product(product_b, quantity=1)
-        self.assertTrue(offer.is_condition_satisfied(basket))
-        basket.add_product(product_a, quantity=1)
-        self.assertTrue(offer.is_condition_satisfied(basket))
 
 
 class ValueConditionTest(BaseTest):
