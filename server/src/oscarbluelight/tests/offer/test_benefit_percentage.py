@@ -189,7 +189,6 @@ class TestAPercentageDiscountWithMultipleApplicationsWithCountCondition(TestCase
         )
 
         self.offer = mock.Mock()
-        self.offer.advertising_content.is_bogo = False
         self.basket = factories.create_basket(empty=True)
 
     def test_applies_correctly_to_basket_which_matches_multiple_lines_multiple_times(
