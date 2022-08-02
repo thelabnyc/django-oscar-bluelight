@@ -103,6 +103,66 @@ class CountConditionTest(BaseTest):
         self.assertEqual(basket.num_items_without_discount, 0)
         self.assertEqual(basket.num_items_with_discount, 2)
 
+    def test_is_partially_satisfied(self):
+        # Create three products for two different ranges
+        product_a = create_product()
+        create_stockrecord(product_a, D("100.00"), num_in_stock=10)
+        product_b = create_product()
+        create_stockrecord(product_b, D("100.00"), num_in_stock=10)
+        product_c = create_product()
+        create_stockrecord(product_c, D("100.00"), num_in_stock=10)
+
+        range_main = Range.objects.create(name="BOGO Select Pillows")
+        range_main.add_product(product_a)
+        range_main.add_product(product_b)
+
+        range_accessories = Range.objects.create(name="Sheets")
+        range_accessories.add_product(product_c)
+
+        condition = Condition()
+        condition.proxy_class = (
+            "oscarbluelight.offer.conditions.BluelightCountCondition"
+        )
+        condition.value = 2
+        condition.range = range_main
+        condition.save()
+
+        benefit = Benefit()
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightMultibuyDiscountBenefit"
+        )
+        benefit.range = range_accessories
+        benefit.save()
+
+        offer = ConditionalOffer()
+        offer.condition = condition
+        offer.benefit = benefit
+        offer.save()
+
+        basket = create_basket(empty=True)
+        # Should not be satisfied partially because the basket is empty
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_c, quantity=1)
+        # Should not be satisfied partially because no product from the range_main is added
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_a, quantity=1)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_c, quantity=1)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_b, quantity=1)
+        # Should not be satisfied partially because the condition is satisfied
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_a, quantity=1)
+        # Should not be satisfied partially because the condition is satisfied
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
 
 class ValueConditionTest(BaseTest):
     def test_consume_items(self):
@@ -191,6 +251,62 @@ class ValueConditionTest(BaseTest):
         self.assertEqual(basket.total_excl_tax, D("5095.00"))
         self.assertEqual(basket.num_items_without_discount, 0)
         self.assertEqual(basket.num_items_with_discount, 2)
+
+    def test_is_partially_satisfied(self):
+        # Create three products for two different ranges
+        product_a = create_product()
+        create_stockrecord(product_a, D("150.00"), num_in_stock=10)
+        product_b = create_product()
+        create_stockrecord(product_b, D("100.00"), num_in_stock=10)
+        product_c = create_product()
+        create_stockrecord(product_c, D("10.00"), num_in_stock=10)
+
+        range_main = Range.objects.create(name="Expensive Stuff")
+        range_main.add_product(product_a)
+        range_main.add_product(product_b)
+
+        range_accessories = Range.objects.create(name="Less Expensive Stuff")
+        range_accessories.add_product(product_c)
+
+        condition = Condition()
+        condition.proxy_class = (
+            "oscarbluelight.offer.conditions.BluelightValueCondition"
+        )
+        condition.value = D("259.00")
+        condition.range = range_main
+        condition.save()
+
+        benefit = Benefit()
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit"
+        )
+        benefit.range = range_accessories
+        benefit.save()
+
+        offer = ConditionalOffer()
+        offer.condition = condition
+        offer.benefit = benefit
+        offer.save()
+
+        basket = create_basket(empty=True)
+        # Should not be satisfied partially because the basket is empty
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_c, quantity=1)
+        # Should not be satisfied partially because no product from the range_main is added
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_a, quantity=1)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_b, quantity=1)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_a, quantity=1)
+        # Should not be satisfied partially because the condition is satisfied
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
 
 
 class CoverageConditionTest(BaseTest):
@@ -293,6 +409,72 @@ class CoverageConditionTest(BaseTest):
         self.assertEqual(basket.total_excl_tax, D("5095.00"))
         self.assertEqual(basket.num_items_without_discount, 0)
         self.assertEqual(basket.num_items_with_discount, 2)
+
+    def test_is_partially_satisfied(self):
+        # Create five products for two different ranges
+        product_a = create_product()
+        create_stockrecord(product_a, D("150.00"), num_in_stock=10)
+        product_b = create_product()
+        create_stockrecord(product_b, D("100.00"), num_in_stock=10)
+        product_c = create_product()
+        create_stockrecord(product_c, D("125.00"), num_in_stock=10)
+        product_d = create_product()
+        create_stockrecord(product_d, D("10.00"), num_in_stock=10)
+        product_e = create_product()
+        create_stockrecord(product_e, D("20.00"), num_in_stock=10)
+
+        range_main = Range.objects.create(name="Expensive Stuff")
+        range_main.add_product(product_a)
+        range_main.add_product(product_b)
+        range_main.add_product(product_c)
+
+        range_accessories = Range.objects.create(name="Less Expensive Stuff")
+        range_accessories.add_product(product_d)
+        range_accessories.add_product(product_e)
+
+        condition = Condition()
+        condition.proxy_class = (
+            "oscarbluelight.offer.conditions.BluelightCoverageCondition"
+        )
+        condition.value = 3
+        condition.range = range_main
+        condition.save()
+
+        benefit = Benefit()
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit"
+        )
+        benefit.range = range_accessories
+        benefit.save()
+
+        offer = ConditionalOffer()
+        offer.condition = condition
+        offer.benefit = benefit
+        offer.save()
+
+        basket = create_basket(empty=True)
+        # Should not be satisfied partially because the basket is empty
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_e, quantity=1)
+        # Should not be satisfied partially because no product from the range_main is added
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_a, quantity=1)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_b, quantity=2)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_d, quantity=1)
+        # Should be satisfied partially because the count value is not reached
+        self.assertTrue(offer.is_condition_partially_satisfied(basket))
+
+        basket.add_product(product_c, quantity=1)
+        # Should not be satisfied partially because the condition is satisfied
+        self.assertFalse(offer.is_condition_partially_satisfied(basket))
 
 
 class CompoundConditionTest(BaseTest):
