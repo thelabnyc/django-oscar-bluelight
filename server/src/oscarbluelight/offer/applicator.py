@@ -118,6 +118,10 @@ class Applicator(BaseApplicator):
         pre_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
         applications = results.OfferApplications()
 
+        # Reset any upsells that might already exist (e.g. if we've already
+        # applied offers to this basket).
+        basket.clear_offer_upsells()
+
         # If this is a cosmetic application, filter out offers that shouldn't apply.
         if self._is_applying_cosmetic_prices:
             offers = [offer for offer in offers if offer.affects_cosmetic_pricing]
@@ -152,6 +156,16 @@ class Applicator(BaseApplicator):
                     applications.add(offer, result)
                     if result.is_final:
                         break
+
+                # Pre-compute upsell messages before closing out the offer
+                # group. Otherwise, the only visible upsells will be related to
+                # the last applied offer group.
+                is_fully_satisfied = offer.is_condition_satisfied(basket)
+                is_partially_satisfied = offer.is_condition_partially_satisfied(basket)
+                if not is_fully_satisfied and is_partially_satisfied:
+                    upsell = offer.get_upsell_details(basket)
+                    if upsell:
+                        basket.add_offer_upsell(upsell)
 
             # Signal the lines that we've finished applying an offer group
             for line in basket.all_lines():

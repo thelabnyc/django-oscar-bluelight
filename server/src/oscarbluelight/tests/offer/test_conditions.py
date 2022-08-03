@@ -8,6 +8,7 @@ from oscarbluelight.offer.models import (
 )
 from oscarbluelight.offer.applicator import Applicator
 from oscar.test.factories import create_basket, create_product, create_stockrecord
+from oscarbluelight.offer.constants import Conjunction
 from .base import BaseTest
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -478,7 +479,7 @@ class CoverageConditionTest(BaseTest):
 
 
 class CompoundConditionTest(BaseTest):
-    def _build_offer(self, conjunction=CompoundCondition.AND):
+    def _build_offer(self, conjunction=Conjunction.AND):
         all_products = Range()
         all_products.name = "site"
         all_products.includes_all_products = True
@@ -531,7 +532,7 @@ class CompoundConditionTest(BaseTest):
         )
 
     def test_name_and(self):
-        offer = self._build_offer(CompoundCondition.AND)
+        offer = self._build_offer(Conjunction.AND)
         c = offer.condition.proxy()
         self.assertEqual(
             c.name,
@@ -539,7 +540,7 @@ class CompoundConditionTest(BaseTest):
         )
 
     def test_name_or(self):
-        offer = self._build_offer(CompoundCondition.OR)
+        offer = self._build_offer(Conjunction.OR)
         c = offer.condition.proxy()
         self.assertEqual(
             c.name,
@@ -547,7 +548,7 @@ class CompoundConditionTest(BaseTest):
         )
 
     def test_description_and(self):
-        offer = self._build_offer(CompoundCondition.AND)
+        offer = self._build_offer(Conjunction.AND)
         c = offer.condition.proxy()
         self.assertEqual(
             c.description,
@@ -555,7 +556,7 @@ class CompoundConditionTest(BaseTest):
         )
 
     def test_description_or(self):
-        offer = self._build_offer(CompoundCondition.OR)
+        offer = self._build_offer(Conjunction.OR)
         c = offer.condition.proxy()
         self.assertEqual(
             c.description,
@@ -563,7 +564,7 @@ class CompoundConditionTest(BaseTest):
         )
 
     def test_is_satisfied_and(self):
-        offer = self._build_offer(CompoundCondition.AND)
+        offer = self._build_offer(Conjunction.AND)
 
         product = create_product()
         create_stockrecord(product, D("1.00"), num_in_stock=10)
@@ -584,7 +585,7 @@ class CompoundConditionTest(BaseTest):
         self.assertTrue(offer.condition.is_satisfied(offer, basket))
 
     def test_is_satisfied_or(self):
-        offer = self._build_offer(CompoundCondition.OR)
+        offer = self._build_offer(Conjunction.OR)
 
         product = create_product()
         create_stockrecord(product, D("1.00"), num_in_stock=10)
@@ -603,7 +604,7 @@ class CompoundConditionTest(BaseTest):
         self.assertTrue(offer.condition.is_satisfied(offer, basket))
 
     def test_is_partially_satisfied_and(self):
-        offer = self._build_offer(CompoundCondition.AND)
+        offer = self._build_offer(Conjunction.AND)
 
         product = create_product()
         create_stockrecord(product, D("1.00"), num_in_stock=10)
@@ -613,7 +614,7 @@ class CompoundConditionTest(BaseTest):
         self.assertTrue(offer.condition.is_partially_satisfied(offer, basket))
 
     def test_is_partially_satisfied_or(self):
-        offer = self._build_offer(CompoundCondition.OR)
+        offer = self._build_offer(Conjunction.OR)
 
         product = create_product()
         create_stockrecord(product, D("1.00"), num_in_stock=10)
@@ -623,7 +624,7 @@ class CompoundConditionTest(BaseTest):
         self.assertTrue(offer.condition.is_partially_satisfied(offer, basket))
 
     def test_get_upsell_message_and(self):
-        offer = self._build_offer(CompoundCondition.AND)
+        offer = self._build_offer(Conjunction.AND)
 
         product = create_product()
         create_stockrecord(product, D("1.00"), num_in_stock=10)
@@ -642,7 +643,7 @@ class CompoundConditionTest(BaseTest):
         )
 
     def test_get_upsell_message_or(self):
-        offer = self._build_offer(CompoundCondition.OR)
+        offer = self._build_offer(Conjunction.OR)
 
         product = create_product()
         create_stockrecord(product, D("1.00"), num_in_stock=10)
@@ -656,7 +657,7 @@ class CompoundConditionTest(BaseTest):
 
     def test_consume_items(self):
         basket = self._build_basket()
-        offer = self._build_offer(CompoundCondition.OR)
+        offer = self._build_offer(Conjunction.OR)
 
         line = basket.all_lines()[0]
         self.assertEqual(line.quantity_with_discount, 0)
@@ -691,14 +692,14 @@ class CompoundConditionTest(BaseTest):
     def test_create_compound_from_vanilla_condition(self):
         a = Condition()
         a.proxy_class = "oscarbluelight.offer.conditions.CompoundCondition"
-        a.conjunction = CompoundCondition.OR
+        a.conjunction = Conjunction.OR
         a.save()
 
-        self.assertEqual(a.conjunction, CompoundCondition.OR)
+        self.assertEqual(a.conjunction, Conjunction.OR)
 
         b = Condition.objects.get(pk=a.pk)
         self.assertIsNotNone(b.compoundcondition)
-        self.assertEqual(b.compoundcondition.conjunction, CompoundCondition.OR)
+        self.assertEqual(b.compoundcondition.conjunction, Conjunction.OR)
 
         # Saving the original model should work ok
         a.save()
@@ -750,7 +751,7 @@ class CompoundConditionTest(BaseTest):
         cond_has_main_and_accessory.proxy_class = (
             "oscarbluelight.offer.conditions.CompoundCondition"
         )
-        cond_has_main_and_accessory.conjunction = CompoundCondition.AND
+        cond_has_main_and_accessory.conjunction = Conjunction.AND
         cond_has_main_and_accessory.save()
         cond_has_main_and_accessory.subconditions.set(
             [cond_has_main, cond_has_accessory]
@@ -823,7 +824,7 @@ class CompoundConditionTest(BaseTest):
         cond_has_main_and_over_7000.proxy_class = (
             "oscarbluelight.offer.conditions.CompoundCondition"
         )
-        cond_has_main_and_over_7000.conjunction = CompoundCondition.AND
+        cond_has_main_and_over_7000.conjunction = Conjunction.AND
         cond_has_main_and_over_7000.save()
         cond_has_main_and_over_7000.subconditions.set([cond_has_main, cond_over_7000])
 

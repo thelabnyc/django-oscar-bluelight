@@ -10,6 +10,9 @@ from oscar.apps.offer.conditions import (
 )
 from oscar.core.loading import get_model
 from oscar.templatetags.currency_filters import currency
+from .constants import Conjunction
+from .utils import human_readable_conjoin
+from . import upsells
 
 Condition = get_model("offer", "Condition")
 
@@ -48,6 +51,28 @@ class BluelightCountCondition(CountCondition):
 
     def _clean(self):
         return _default_clean(self)
+
+    def _get_num_matches(self, basket, offer):
+        if hasattr(self, "_num_matches"):
+            return getattr(self, "_num_matches")
+        num_matches = 0
+        for line in basket.all_lines():
+            if self.can_apply_condition(line):
+                num_matches += line.quantity_without_offer_discount(offer)
+        self._num_matches = num_matches
+        return num_matches
+
+    def get_upsell_details(self, offer, basket):
+        num_matches = self._get_num_matches(basket, offer)
+        delta = self.value - num_matches
+        if delta > 0:
+            return upsells.QuantityUpsell(
+                offer=offer,
+                basket=basket,
+                product_range=self.range,
+                delta=delta,
+            )
+        return None
 
     def consume_items(self, offer, basket, affected_lines):
         """
@@ -103,6 +128,28 @@ class BluelightCoverageCondition(CoverageCondition):
             if self.range
             else _("product range"),
         }
+
+    def _get_num_covered_products(self, basket, offer):
+        covered_ids = set()
+        for line in basket.all_lines():
+            product = line.product
+            if self.can_apply_condition(line) and line.is_available_for_offer_discount(
+                offer
+            ):
+                covered_ids.add(product.id)
+        return len(covered_ids)
+
+    def get_upsell_details(self, offer, basket):
+        num_matches = self._get_num_covered_products(basket, offer)
+        delta = self.value - num_matches
+        if delta > 0:
+            return upsells.CoverageUpsell(
+                offer=offer,
+                basket=basket,
+                product_range=self.range,
+                delta=delta,
+            )
+        return None
 
     def _clean(self):
         return _default_clean(self)
@@ -182,21 +229,35 @@ class BluelightValueCondition(ValueCondition):
         """
         value_of_matches = D("0.00")
         for line in basket.all_lines():
-            if self.can_apply_condition(line) and line.quantity_without_discount > 0:
+            quantity_available = line.quantity_without_offer_discount(offer)
+            if self.can_apply_condition(line) and quantity_available > 0:
                 price = self._get_unit_price(offer, line)
-                value_of_matches += price * int(line.quantity_without_discount)
+                value_of_matches += price * int(quantity_available)
             if value_of_matches >= self.value:
                 return True
         return False
+
+    def get_upsell_details(self, offer, basket):
+        value_of_matches = self._get_value_of_matches(offer, basket)
+        delta = self.value - value_of_matches
+        if delta > 0:
+            return upsells.AmountUpsell(
+                offer=offer,
+                basket=basket,
+                product_range=self.range,
+                delta=delta,
+            )
+        return None
 
     def _get_value_of_matches(self, offer, basket):
         if hasattr(self, "_value_of_matches"):
             return getattr(self, "_value_of_matches")
         value_of_matches = D("0.00")
         for line in basket.all_lines():
-            if self.can_apply_condition(line) and line.quantity_without_discount > 0:
+            if self.can_apply_condition(line):
                 price = self._get_unit_price(offer, line)
-                value_of_matches += price * int(line.quantity_without_discount)
+                quantity_available = line.quantity_without_offer_discount(offer)
+                value_of_matches += price * int(quantity_available)
         self._value_of_matches = value_of_matches
         return value_of_matches
 
@@ -256,15 +317,10 @@ class CompoundCondition(Condition):
     allowing the creation of compound rules for offers.
     """
 
-    AND, OR = ("AND", "OR")
-    CONJUNCTION_TYPE_CHOICES = (
-        (AND, _("Logical AND")),
-        (OR, _("Logical OR")),
-    )
     conjunction = models.CharField(
         _("Sub-Condition conjunction type"),
-        choices=CONJUNCTION_TYPE_CHOICES,
-        default=AND,
+        choices=Conjunction.TYPE_CHOICES,
+        default=Conjunction.AND,
         max_length=10,
         help_text="Select the conjunction which will be used to logically join the sub-conditions together.",
     )
@@ -300,12 +356,12 @@ class CompoundCondition(Condition):
     @property
     def name(self):
         names = (c.name for c in self.children)
-        return self._human_readable_conjoin(names, _("Empty Condition"))
+        return human_readable_conjoin(self.conjunction, names, _("Empty Condition"))
 
     @property
     def description(self):
         descrs = (c.description for c in self.children)
-        return self._human_readable_conjoin(descrs, _("Empty Condition"))
+        return human_readable_conjoin(self.conjunction, descrs, _("Empty Condition"))
 
     def _clean(self):
         if self.range:
@@ -321,7 +377,25 @@ class CompoundCondition(Condition):
         return self._reduce_results(self.conjunction, "is_satisfied", *args)
 
     def is_partially_satisfied(self, *args):
-        return self._reduce_results(self.OR, "is_partially_satisfied", *args)
+        return self._reduce_results(Conjunction.OR, "is_partially_satisfied", *args)
+
+    def get_upsell_details(self, offer, basket):
+        subupsells = []
+        for c in self.children:
+            condition = c.proxy()
+            partial = condition.is_partially_satisfied(offer, basket)
+            complete = condition.is_satisfied(offer, basket)
+            if not complete and partial:
+                subupsell = condition.get_upsell_details(offer, basket)
+                subupsells.append(subupsell)
+        if len(subupsells) > 0:
+            return upsells.CompoundUpsell(
+                offer=offer,
+                basket=basket,
+                conjunction=self.conjunction,
+                subupsells=subupsells,
+            )
+        return None
 
     def get_upsell_message(self, offer, basket):
         messages = []
@@ -331,7 +405,7 @@ class CompoundCondition(Condition):
             complete = condition.is_satisfied(offer, basket)
             if not complete and partial:
                 messages.append(condition.get_upsell_message(offer, basket))
-        return self._human_readable_conjoin(messages)
+        return human_readable_conjoin(self.conjunction, messages)
 
     def consume_items(self, offer, basket, affected_lines):
         memo = affected_lines
@@ -340,16 +414,6 @@ class CompoundCondition(Condition):
             if affected_lines and affected_lines.__iter__:
                 memo = affected_lines
         return affected_lines
-
-    def _human_readable_conjoin(self, strings, empty=None):
-        labels = {
-            self.AND: _(" and "),
-            self.OR: _(" or "),
-        }
-        strings = list(strings)
-        if len(strings) <= 0 and empty is not None:
-            return empty
-        return labels[self.conjunction].join(strings)
 
     def _reduce_results(self, conjunction, method_name, *args):
         result = self._get_conjunction_root_memo(conjunction)
@@ -362,15 +426,15 @@ class CompoundCondition(Condition):
 
     def _get_conjunction_root_memo(self, conjunction):
         memos = {
-            self.AND: True,
-            self.OR: False,
+            Conjunction.AND: True,
+            Conjunction.OR: False,
         }
         return memos[conjunction]
 
     def _apply_conjunction(self, conjunction, a, b):
         fns = {
-            self.AND: lambda: a and b,
-            self.OR: lambda: a or b,
+            Conjunction.AND: lambda: a and b,
+            Conjunction.OR: lambda: a or b,
         }
         return fns[conjunction]()
 

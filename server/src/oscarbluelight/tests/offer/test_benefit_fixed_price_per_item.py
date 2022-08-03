@@ -1,10 +1,7 @@
 from decimal import Decimal as D
 from django.test import TestCase
 from oscar.test import factories
-from oscar.test.basket import (
-    add_product,
-    # add_products
-)
+from oscar.test.basket import add_product
 from django_redis import get_redis_connection
 from oscarbluelight.offer.models import (
     Condition,
@@ -15,7 +12,7 @@ from oscarbluelight.offer.models import (
     BluelightCountCondition,
     BluelightFixedPricePerItemBenefit,
 )
-
+from oscarbluelight.offer.constants import Conjunction
 from .base import BaseTest
 from unittest import mock
 
@@ -173,7 +170,7 @@ class FixedPriceBenefitCompoundConditionTest(BaseTest):
 
         condition = CompoundCondition()
         condition.proxy_class = "oscarbluelight.offer.conditions.CompoundCondition"
-        condition.conjunction = CompoundCondition.OR
+        condition.conjunction = Conjunction.OR
         condition.save()
         condition.subconditions.set([cond_a, cond_b])
         condition.save()
