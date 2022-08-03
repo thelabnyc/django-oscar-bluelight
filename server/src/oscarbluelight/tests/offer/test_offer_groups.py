@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal as D
+from unittest import mock
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test import Client
@@ -7,7 +8,7 @@ from django.urls import reverse
 from django_redis import get_redis_connection
 from oscar.core.loading import get_model, get_class
 from oscar.test.factories import create_basket, create_product, create_stockrecord
-from unittest import mock
+from oscarbluelight.offer.constants import Conjunction
 
 OfferGroup = get_model("offer", "OfferGroup")
 Benefit = get_model("offer", "Benefit")
@@ -379,7 +380,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
 
         condition = CompoundCondition()
         condition.proxy_class = "oscarbluelight.offer.conditions.CompoundCondition"
-        condition.conjunction = CompoundCondition.OR
+        condition.conjunction = Conjunction.OR
         condition.save()
         condition.subconditions.set([cond_a, cond_b])
         condition.save()

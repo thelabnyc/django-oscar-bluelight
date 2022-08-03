@@ -40,6 +40,22 @@ class BluelightBasketMixin(object):
         """
         return self.offer_applications.voucher_post_order_actions
 
+    def clear_offer_upsells(self):
+        for line in self.all_lines():
+            line.clear_offer_upsells()
+
+    def add_offer_upsell(self, offer_upsell):
+        for line in self.all_lines():
+            if line.product and offer_upsell.is_relevant_to_product(line.product):
+                line.add_offer_upsell(offer_upsell)
+
+    def get_offer_upsells(self):
+        offer_upsells = set([])
+        for line in self.all_lines():
+            for upsell in line.get_offer_upsells():
+                offer_upsells.add(upsell)
+        return list(offer_upsells)
+
 
 class BluelightBasketLineMixin(object):
     def __init__(self, *args, **kwargs):
@@ -54,6 +70,9 @@ class BluelightBasketLineMixin(object):
 
         # Used to track descriptions of why discounts where applied to the line.
         self._discount_descriptions = []
+
+        # Used to track offer upsell messages
+        self._offer_upsells = []
 
     @property
     def unit_effective_price(self):
@@ -220,6 +239,15 @@ class BluelightBasketLineMixin(object):
         """
         self.consumer.finalize_offer_group_applications()
         self._offer_group_starting_discount = self.discount_value
+
+    def clear_offer_upsells(self):
+        self._offer_upsells = []
+
+    def add_offer_upsell(self, offer_upsell):
+        self._offer_upsells.append(offer_upsell)
+
+    def get_offer_upsells(self):
+        return self._offer_upsells
 
     def get_price_breakdown(self):
         """

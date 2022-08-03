@@ -142,6 +142,9 @@ class ConditionalOffer(AbstractConditionalOffer):
             )
         return restrictions
 
+    def get_upsell_details(self, basket):
+        return self.condition.proxy().get_upsell_details(self, basket)
+
     def apply_benefit(self, basket):
         try:
             return super().apply_benefit(basket)
