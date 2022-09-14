@@ -116,6 +116,11 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.3.0
+
+- Add new system for obtaining structured data regarding offer upsell messages
+- Add `BLUELIGHT_IGNORED_ORDER_STATUSES`, ignore voucher usage on orders with those statuses
+
 ### 5.2.4
 - Change `DEFAULT_AUTO_FIELD` to `BigAutoField`, migrate `Voucher_offers` through table.
 
