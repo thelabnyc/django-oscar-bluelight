@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal as D
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import AnonymousUser, User, Group
 from oscar.test.factories import create_order
@@ -404,3 +404,40 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(p.total_discount, D("10.00"))
         self.assertEqual(c1.total_discount, D("7.00"))
         self.assertEqual(c2.total_discount, D("3.00"))
+
+
+class VoucherNotUsedForIgnoredStatus(TestCase):
+    @override_settings(BLUELIGHT_IGNORED_ORDER_STATUSES=["Pending"])
+    def test_voucher_available_if_used_on_ignored_order_status(self):
+        user = User.objects.create_user(
+            username="bob", email="bob@example.com", password="foo"
+        )
+        ignore_order = create_order()
+        ignore_order.status = "Pending"
+        ignore_order.save()
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+        )
+        c1 = Voucher.objects.create(
+            parent=p,
+            name="Test Voucher",
+            code="test-voucher-1",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+        )
+        c1.record_usage(ignore_order, user)
+        self.assertTrue(c1.is_available_to_user(user))
+        # not available after used on order with non ignored status
+        order = create_order()
+        ignore_order.status = "Authorized"
+        ignore_order.save()
+        c1.record_usage(order, user)
+        is_available, message = c1.is_available_to_user(user)
+        self.assertFalse(is_available)
