@@ -13,11 +13,11 @@ packages = find_packages("src")
 
 install_requires = [
     "celery>=4.3",
-    "django>=2.2",
+    "Django>=3.2",
     "django-oscar>=3.1b0",
     "django-redis>=4.8.0",
     "django-pgviews>=0.5.7",
-    "djangorestframework>=3.10",
+    "djangorestframework>=3.11",
     "psycopg2-binary>=2.8.4",
     "redis>=3.0.0",
 ]
