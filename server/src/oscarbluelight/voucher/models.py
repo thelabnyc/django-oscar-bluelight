@@ -104,6 +104,15 @@ class Voucher(AbstractVoucher):
         if self.list_children().exists():
             message = _("This voucher is not available")
             return False, message
+        # If a single voucher is tied to an offer, make the voucher unavailable in case that offer is suspended.
+        if any(
+            [
+                len(offer.vouchers.exclude_children().all()) == 1 and offer.is_suspended
+                for offer in self.offers.all()
+            ]
+        ):
+            message = _("This voucher is tied to a suspended offer")
+            return False, message
 
         # Enforce user group whitelisting
         if self.limit_usage_by_group:
