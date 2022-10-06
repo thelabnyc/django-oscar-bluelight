@@ -112,7 +112,7 @@ class Voucher(AbstractVoucher):
                 for offer in self.offers.all()
             ]
         ):
-            message = _("This voucher is tied to a suspended offer")
+            message = _("This promo code is currently inactive")
             return False, message
 
         # Enforce user group whitelisting
