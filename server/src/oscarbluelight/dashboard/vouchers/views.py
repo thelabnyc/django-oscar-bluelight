@@ -4,7 +4,12 @@ from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
 from django.db.models import Count
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    Http404,
+    HttpResponseBadRequest,
+)
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlencode
@@ -372,13 +377,14 @@ class ChildCodesListView(BulkEditMixin, generic.ListView):
 
 
 class VoucherSuspensionView(generic.View):
-    def dispatch(self, request, pk, action, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         self.voucher = get_object_or_404(Voucher, pk=pk)
+        action = request.POST.get("action")
         if action == "suspend":
             return self.suspend()
         elif action == "unsuspend":
             return self.unsuspend()
-        return super().dispatch(request, pk, action, *args, **kwargs)
+        return HttpResponseBadRequest()
 
     def suspend(self):
         if self.voucher.is_suspended:

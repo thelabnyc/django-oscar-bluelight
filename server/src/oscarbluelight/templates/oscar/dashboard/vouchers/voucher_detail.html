@@ -18,11 +18,16 @@
             >
                 {% trans "Delete" %}
             </a>
-            {% if voucher.is_suspended %}
-                <a class="btn btn-success" href="{% url 'dashboard:voucher-suspend' pk=object.pk action="unsuspend" %}">{% trans "Reinstate voucher" %}</a>
-            {% else %}
-                <a class="btn btn-secondary" href="{% url 'dashboard:voucher-suspend' pk=object.pk action="suspend" %}">{% trans "Suspend voucher" %}</a>
-            {% endif %}
+            <form id="status_voucher_form" class="float-right" method="post" action="{% url 'dashboard:voucher-update-suspension-status' pk=object.pk %}">
+                {% csrf_token %}
+                {% if voucher.is_suspended %}
+                    <input type="hidden" name="action" value="unsuspend" />
+                    <button type="submit" class="btn btn-success" data-loading-text="{% trans 'Reinstating...' %}">{% trans "Reinstate voucher" %}</button>
+                {% else %}
+                    <input type="hidden" name="action" value="suspend" />
+                    <button type="submit" class="btn btn-secondary" data-loading-text="{% trans 'Suspending...' %}">{% trans "Suspend voucher" %}</button>
+                {% endif %}
+            </form>
         </div>
         <h1>
             {{ voucher }}
@@ -176,6 +181,9 @@
     <style>
         .page-header h1 {
             display: inline;
+        }
+        #status_voucher_form {
+            margin-left: 0.25rem;
         }
     </style>
 {% endblock %}

@@ -62,14 +62,14 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
                 name="voucher-export-children-file",
             ),
             re_path(
+                r"^stats/(?P<pk>\d+)/update-suspension-status/$",
+                VoucherSuspensionView.as_view(),
+                name="voucher-update-suspension-status",
+            ),
+            re_path(
                 r"^stats/(?P<pk>\d+)/$",
                 VoucherStatsView.as_view(),
                 name="voucher-stats",
-            ),
-            re_path(
-                r"^stats/(?P<pk>\d+)/(?P<action>[\w]+)/$",
-                VoucherSuspensionView.as_view(),
-                name="voucher-suspend",
             ),
         ]
         return super().get_urls() + self.post_process_urls(urls)
