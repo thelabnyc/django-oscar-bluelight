@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal as D
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from oscarbluelight.voucher.models import Voucher
 from django.contrib.auth.models import AnonymousUser, User, Group
 from oscar.test.factories import create_order
@@ -453,20 +454,21 @@ class VoucherSuspensionTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now() + timezone.timedelta(days=1),
             limit_usage_by_group=False,
         )
 
         self.assertTrue(voucher.is_active())
-        is_available, _ = voucher.is_available_to_user(user)
+        is_available, message = voucher.is_available_to_user(user)
         self.assertTrue(is_available)
 
         voucher.suspend()
         self.assertTrue(voucher.is_suspended)
         self.assertFalse(voucher.is_active())
-        is_available, _ = voucher.is_available_to_user(user)
+        is_available, message = voucher.is_available_to_user(user)
         self.assertFalse(is_available)
+        self.assertEqual(message, "This voucher is currently inactive")
 
     def test_unsuspend_voucher(self):
         user = User.objects.create_user(
@@ -477,18 +479,19 @@ class VoucherSuspensionTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now() + timezone.timedelta(days=1),
             limit_usage_by_group=False,
             status=Voucher.SUSPENDED,
         )
 
         self.assertFalse(voucher.is_active())
-        is_available, _ = voucher.is_available_to_user(user)
+        is_available, message = voucher.is_available_to_user(user)
         self.assertFalse(is_available)
+        self.assertEqual(message, "This voucher is currently inactive")
 
         voucher.unsuspend()
         self.assertTrue(voucher.is_open)
         self.assertTrue(voucher.is_active())
-        is_available, _ = voucher.is_available_to_user(user)
+        is_available, message = voucher.is_available_to_user(user)
         self.assertTrue(is_available)

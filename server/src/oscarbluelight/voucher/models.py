@@ -133,6 +133,11 @@ class Voucher(AbstractVoucher):
             message = _("This voucher is not available")
             return False, message
 
+        # Check whether the voucher is suspended or not
+        if self.is_suspended:
+            message = _("This voucher is currently inactive")
+            return False, message
+
         # Enforce user group whitelisting
         if self.limit_usage_by_group:
             message = _("This voucher is only available to selected users")
