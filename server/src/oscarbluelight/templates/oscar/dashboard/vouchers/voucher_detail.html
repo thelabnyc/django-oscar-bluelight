@@ -6,6 +6,14 @@
 {% block header %}
     <div class="page-header">
         <div class="float-right">
+            <form id="status_voucher_form" class="float-right" method="post">
+            {% csrf_token %}
+            {% if voucher.is_suspended %}
+                <button type="submit" class="btn btn-success" name="unsuspend" data-loading-text="{% trans 'Reinstating...' %}">{% trans "Reinstate voucher" %}</button>
+            {% else %}
+                <button type="submit" class="btn btn-secondary" name="suspend" data-loading-text="{% trans 'Suspending...' %}">{% trans "Suspend voucher" %}</button>
+            {% endif %}
+        </form>
             <a
                 class="btn btn-primary"
                 href="{% url 'dashboard:voucher-update' pk=voucher.id %}"
@@ -22,6 +30,11 @@
         <h1>
             {{ voucher }}
         </h1>
+        {% if voucher.is_active %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% else %}
+            <span class="badge badge-danger">{% trans "Inactive" %}</span>
+        {% endif %}
     </div>
 {% endblock header %}
 
@@ -159,4 +172,16 @@
         {% endif %}
     </table>
     {% include 'oscar/dashboard/partials/pagination.html' %}
+{% endblock %}
+
+{% block extrastyles %}
+    {{ block.super }}
+    <style>
+        .page-header h1 {
+            display: inline;
+        }
+        #status_voucher_form {
+            margin-left: 0.25rem;
+        }
+    </style>
 {% endblock %}

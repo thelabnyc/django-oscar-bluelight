@@ -441,3 +441,54 @@ class VoucherNotUsedForIgnoredStatus(TestCase):
         c1.record_usage(order, user)
         is_available, message = c1.is_available_to_user(user)
         self.assertFalse(is_available)
+
+
+class VoucherSuspensionTest(TestCase):
+    def test_suspend_voucher(self):
+        user = User.objects.create_user(
+            username="bob", email="bob@example.com", password="foo"
+        )
+
+        voucher = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+        )
+
+        self.assertTrue(voucher.is_active())
+        is_available, _ = voucher.is_available_to_user(user)
+        self.assertTrue(is_available)
+
+        voucher.suspend()
+        self.assertTrue(voucher.is_suspended)
+        self.assertFalse(voucher.is_active())
+        is_available, _ = voucher.is_available_to_user(user)
+        self.assertFalse(is_available)
+
+    def test_unsuspend_voucher(self):
+        user = User.objects.create_user(
+            username="bob", email="bob@example.com", password="foo"
+        )
+
+        voucher = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.MULTI_USE,
+            start_datetime=datetime.now(),
+            end_datetime=datetime.now(),
+            limit_usage_by_group=False,
+            status=Voucher.SUSPENDED,
+        )
+
+        self.assertFalse(voucher.is_active())
+        is_available, _ = voucher.is_available_to_user(user)
+        self.assertFalse(is_available)
+
+        voucher.unsuspend()
+        self.assertTrue(voucher.is_open)
+        self.assertTrue(voucher.is_active())
+        is_available, _ = voucher.is_available_to_user(user)
+        self.assertTrue(is_available)

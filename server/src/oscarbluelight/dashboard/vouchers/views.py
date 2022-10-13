@@ -111,6 +111,10 @@ class VoucherCreateView(DefaultVoucherCreateView):
 class VoucherStatsView(DefaultVoucherStatsView):
     form_class = OrderDiscountSearchForm
 
+    def dispatch(self, request, *args, **kwargs):
+        self.voucher = get_object_or_404(Voucher, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
     def get_related_order_discounts(self):
         # Have to manually write this sub query in order to get reasonable
         # performance with large voucher counts.
@@ -163,6 +167,35 @@ class VoucherStatsView(DefaultVoucherStatsView):
             qs = self.get_related_order_discounts().order_by("order__date_placed")
             return formatter.generate_response(qs, offer=self.object.offers.first())
         return super().render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        if "suspend" in request.POST:
+            return self.suspend()
+        elif "unsuspend" in request.POST:
+            return self.unsuspend()
+
+    def suspend(self):
+        if self.voucher.is_suspended:
+            messages.error(self.request, _("Voucher is already suspended"))
+        else:
+            self.voucher.suspend()
+            messages.success(self.request, _("Voucher suspended"))
+        return HttpResponseRedirect(
+            reverse("dashboard:voucher-stats", kwargs={"pk": self.voucher.pk})
+        )
+
+    def unsuspend(self):
+        if not self.voucher.is_suspended:
+            messages.error(
+                self.request,
+                _("Voucher cannot be reinstated as it is not currently suspended"),
+            )
+        else:
+            self.voucher.unsuspend()
+            messages.success(self.request, _("Voucher reinstated"))
+        return HttpResponseRedirect(
+            reverse("dashboard:voucher-stats", kwargs={"pk": self.voucher.pk})
+        )
 
 
 class VoucherUpdateView(DefaultVoucherUpdateView):

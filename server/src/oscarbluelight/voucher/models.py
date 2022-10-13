@@ -52,6 +52,8 @@ class Voucher(AbstractVoucher):
     groups = models.ManyToManyField(
         "auth.Group", verbose_name=_("User Groups"), blank=True
     )
+    OPEN, SUSPENDED = "Open", "Suspended"
+    status = models.CharField(_("Status"), max_length=64, default=OPEN)
 
     objects = VoucherManager()
 
@@ -79,6 +81,12 @@ class Voucher(AbstractVoucher):
             parent_id = self.parent_id
         return f"oscarbluelight.Voucher.parent_name.{parent_id}"
 
+    def is_active(self, test_datetime=None):
+        ret = super().is_active(test_datetime)
+        if self.is_suspended:
+            return False
+        return ret
+
     @property
     def offer_group(self):
         offer = self.offers.first()
@@ -99,20 +107,30 @@ class Voucher(AbstractVoucher):
         offer = self.offers.first()
         return offer.benefit if offer else None
 
+    @property
+    def is_open(self):
+        return self.status == self.OPEN
+
+    @property
+    def is_suspended(self):
+        return self.status == self.SUSPENDED
+
+    def suspend(self):
+        self.status = self.SUSPENDED
+        self.save()
+
+    suspend.alters_data = True
+
+    def unsuspend(self):
+        self.status = self.OPEN
+        self.save()
+
+    unsuspend.alters_data = True
+
     def is_available_to_user(self, user=None):
         # Parent vouchers can not be used directly
         if self.list_children().exists():
             message = _("This voucher is not available")
-            return False, message
-
-        # If a single voucher is tied to an offer, make the voucher unavailable in case that offer is suspended.
-        if any(
-            [
-                len(offer.vouchers.exclude_children().all()) == 1 and offer.is_suspended
-                for offer in self.offers.all()
-            ]
-        ):
-            message = _("This promo code is currently inactive")
             return False, message
 
         # Enforce user group whitelisting
