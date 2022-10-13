@@ -9,7 +9,8 @@ def get_update_children_meta_sql(Voucher):
                usage = pv.usage,
                start_datetime = pv.start_datetime,
                end_datetime = pv.end_datetime,
-               limit_usage_by_group = pv.limit_usage_by_group
+               limit_usage_by_group = pv.limit_usage_by_group,
+               status = pv.status
           FROM {voucher_table} pv
          WHERE cv.parent_id = pv.id
            AND pv.id = {parent_id}
@@ -18,7 +19,8 @@ def get_update_children_meta_sql(Voucher):
                 cv.usage != pv.usage OR
                 cv.start_datetime != pv.start_datetime OR
                 cv.end_datetime != pv.end_datetime OR
-                cv.limit_usage_by_group != pv.limit_usage_by_group
+                cv.limit_usage_by_group != pv.limit_usage_by_group OR
+                cv.status != pv.status
            );
         """
     ).format(

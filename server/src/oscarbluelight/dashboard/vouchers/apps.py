@@ -26,6 +26,9 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
         self.set_download_view = get_class(
             "vouchers_dashboard.views", "VoucherSetDownloadView"
         )
+        self.suspension_view = get_class(
+            "vouchers_dashboard.views", "VoucherSuspensionView"
+        )
 
     def get_urls(self):
         from .views import (
@@ -34,6 +37,7 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
             ExportChildCodesView,
             VoucherStatsView,
             ChildCodesListView,
+            VoucherSuspensionView,
         )
 
         urls = [
@@ -61,6 +65,11 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
                 r"^stats/(?P<pk>\d+)/$",
                 VoucherStatsView.as_view(),
                 name="voucher-stats",
+            ),
+            re_path(
+                r"^stats/(?P<pk>\d+)/(?P<action>[\w]+)/$",
+                VoucherSuspensionView.as_view(),
+                name="voucher-suspend",
             ),
         ]
         return super().get_urls() + self.post_process_urls(urls)
