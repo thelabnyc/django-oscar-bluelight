@@ -4,7 +4,12 @@ from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
 from django.db.models import Count
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    Http404,
+    HttpResponseBadRequest,
+)
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlencode
@@ -369,3 +374,42 @@ class ChildCodesListView(BulkEditMixin, generic.ListView):
         msg = _("Deleted %s child voucher codes") % len(vouchers)
         messages.info(request, msg)
         return redirect("dashboard:voucher-list-children", parent_pk=self.parent.pk)
+
+
+class VoucherSuspensionView(generic.View):
+    def post(self, request, pk, *args, **kwargs):
+        self.voucher = get_object_or_404(Voucher, pk=pk)
+        action = request.POST.get("action")
+        if action == "suspend":
+            return self.suspend()
+        elif action == "unsuspend":
+            return self.unsuspend()
+        return HttpResponseBadRequest()
+
+    def suspend(self):
+        if self.voucher.is_suspended:
+            messages.error(self.request, _("Voucher is already suspended"))
+        else:
+            self.voucher.suspend()
+            messages.success(self.request, _("Voucher suspended"))
+        return HttpResponseRedirect(self.get_success_url())
+
+    def unsuspend(self):
+        if not self.voucher.is_suspended:
+            messages.error(
+                self.request,
+                _("Voucher cannot be reinstated as it is not currently suspended"),
+            )
+        else:
+            self.voucher.unsuspend()
+            messages.success(self.request, _("Voucher reinstated"))
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        url = reverse(
+            "dashboard:voucher-stats",
+            kwargs={
+                "pk": self.voucher.pk,
+            },
+        )
+        return url

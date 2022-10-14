@@ -18,10 +18,25 @@
             >
                 {% trans "Delete" %}
             </a>
+            <form id="status_voucher_form" class="float-right" method="post" action="{% url 'dashboard:voucher-update-suspension-status' pk=object.pk %}">
+                {% csrf_token %}
+                {% if voucher.is_suspended %}
+                    <input type="hidden" name="action" value="unsuspend" />
+                    <button type="submit" class="btn btn-success" data-loading-text="{% trans 'Reinstating...' %}">{% trans "Reinstate voucher" %}</button>
+                {% else %}
+                    <input type="hidden" name="action" value="suspend" />
+                    <button type="submit" class="btn btn-secondary" data-loading-text="{% trans 'Suspending...' %}">{% trans "Suspend voucher" %}</button>
+                {% endif %}
+            </form>
         </div>
         <h1>
             {{ voucher }}
         </h1>
+        {% if voucher.is_active %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% else %}
+            <span class="badge badge-danger">{% trans "Inactive" %}</span>
+        {% endif %}
     </div>
 {% endblock header %}
 
@@ -159,4 +174,16 @@
         {% endif %}
     </table>
     {% include 'oscar/dashboard/partials/pagination.html' %}
+{% endblock %}
+
+{% block extrastyles %}
+    {{ block.super }}
+    <style>
+        .page-header h1 {
+            display: inline;
+        }
+        #status_voucher_form {
+            margin-left: 0.25rem;
+        }
+    </style>
 {% endblock %}
