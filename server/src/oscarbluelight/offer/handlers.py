@@ -18,6 +18,8 @@ Category = get_model("catalogue", "Category")
 ProductCategory = get_model("catalogue", "ProductCategory")
 Product = get_model("catalogue", "Product")
 StockRecord = get_model("partner", "StockRecord")
+Order = get_model("order", "Order")
+OrderDiscount = get_model("order", "OrderDiscount")
 
 
 def post_migrate_ensure_all_system_groups_exist(sender, **kwargs):
@@ -65,3 +67,11 @@ def set_disable_triggers_on_connection_created(sender, **kwargs):
 def set_disable_triggers_on_settings_change(sender, setting, value, enter, **kwargs):
     if setting == "BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED":
         RangeProductSet.set_disable_triggers_for_session(value)
+
+
+# Whenever an Order or an OrderDiscount is either created or changed, recalculate
+# the Offer application totals.
+@receiver(post_save, sender=Order)
+@receiver(post_save, sender=OrderDiscount)
+def recalculate_offer_application_totals(sender, instance, **kwargs):
+    transaction.on_commit(ConditionalOffer.recalculate_offer_application_totals)

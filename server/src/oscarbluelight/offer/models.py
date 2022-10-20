@@ -9,6 +9,7 @@ from django.utils.encoding import force_str
 from django.utils.functional import cached_property
 from django_pgviews.signals import view_synced
 from django_pgviews import view as pg
+from oscar.core.loading import get_model
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -27,7 +28,11 @@ from oscar.apps.offer.results import (
 )
 from oscar.apps.offer.utils import load_proxy
 from oscar.templatetags.currency_filters import currency
-from .sql import SQL_RANGE_PRODUCTS, get_sql_range_product_triggers
+from .sql import (
+    SQL_RANGE_PRODUCTS,
+    get_sql_range_product_triggers,
+    get_recalculate_offer_application_totals_sql,
+)
 import copy
 import logging
 import math
@@ -129,6 +134,20 @@ class ConditionalOffer(AbstractConditionalOffer):
 
     class Meta:
         ordering = ("-offer_group__priority", "-priority", "pk")
+
+    @classmethod
+    def recalculate_offer_application_totals(cls):
+        Order = get_model("order", "Order")
+        OrderDiscount = get_model("order", "OrderDiscount")
+        update_sql = get_recalculate_offer_application_totals_sql(
+            Order=Order,
+            OrderDiscount=OrderDiscount,
+            ConditionalOffer=cls,
+            ignored_order_statuses=settings.BLUELIGHT_IGNORED_ORDER_STATUSES,
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(update_sql)
+        logger.info("Successfully recalculated offer application totals")
 
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()
