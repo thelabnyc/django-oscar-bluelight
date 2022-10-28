@@ -5,6 +5,7 @@ from django.core.cache import cache
 from oscar.models.fields import NullCharField
 from oscar.apps.voucher.abstract_models import AbstractVoucher
 from . import tasks, sql
+from .utils import load_cls_from_abs_path
 import time
 
 
@@ -128,51 +129,15 @@ class Voucher(AbstractVoucher):
     unsuspend.alters_data = True
 
     def is_available_to_user(self, user=None):
-        # Parent vouchers can not be used directly
-        if self.list_children().exists():
-            message = _("This voucher is not available")
-            return False, message
-
-        # Check whether the voucher is suspended or not
-        if self.is_suspended:
-            message = _("This voucher is currently inactive")
-            return False, message
-
-        # Enforce user group whitelisting
-        if self.limit_usage_by_group:
-            message = _("This voucher is only available to selected users")
-            if not user:
-                return False, message
-            group_ids = set(g.id for g in self.groups.all())
-            member_ids = set(g.id for g in user.groups.all())
-            is_member = len(group_ids & member_ids) > 0
-            if not is_member:
-                return False, message
-
-        # ignore statuses in BLUELIGHT_IGNORED_ORDER_STATUSES
-        is_available, message = False, ""
-        if self.usage == self.SINGLE_USE:
-            is_available = not self.applications.exists()
-            if not is_available:
-                message = _("This voucher has already been used")
-        elif self.usage == self.MULTI_USE:
-            is_available = True
-        elif self.usage == self.ONCE_PER_CUSTOMER:
-            if not user.is_authenticated:
+        is_available, message = True, ""
+        rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_RULE_CLASSES", [])
+        for rule_cls_path, _ in rule_classes:
+            rule_cls = load_cls_from_abs_path(rule_cls_path)
+            applied_rule = rule_cls(self, user)
+            if not applied_rule.is_obeyed_by_user():
                 is_available = False
-                message = _("This voucher is only available to signed in users")
-            else:
-                is_available = (
-                    not self.applications.exclude(
-                        order__status__in=settings.BLUELIGHT_IGNORED_ORDER_STATUSES
-                    )
-                    .filter(voucher=self, user=user)
-                    .exists()
-                )
-                if not is_available:
-                    message = _(
-                        "You have already used this voucher in " "a previous order"
-                    )
+                message = applied_rule.get_msg_text()
+                break
         return is_available, message
 
     def list_children(self):
