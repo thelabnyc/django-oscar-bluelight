@@ -26,7 +26,7 @@ class VoucherRule:
 
     def get_summary(self):
         return _("%(description)s: %(message)s") % {
-            "description": self.get_msg_text(),
+            "description": self.get_desc_text(),
             "message": self.get_msg_text(),
         }
 
