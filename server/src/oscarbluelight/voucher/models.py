@@ -131,8 +131,8 @@ class Voucher(AbstractVoucher):
     def is_available_to_user(self, user=None):
         is_available, message = True, ""
         rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_RULE_CLASSES", [])
-        for rule_cls_path, _ in rule_classes:
-            rule_cls = load_cls_from_abs_path(rule_cls_path)
+        for path, desc in rule_classes:
+            rule_cls = load_cls_from_abs_path(path)
             applied_rule = rule_cls(self, user)
             if not applied_rule.is_obeyed_by_user():
                 is_available = False
