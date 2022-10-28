@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser, User, Group
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.utils import timezone
 from oscarbluelight.voucher.models import Voucher
 from oscarbluelight.voucher.rules import (
