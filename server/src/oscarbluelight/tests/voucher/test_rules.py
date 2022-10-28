@@ -173,7 +173,7 @@ class VoucherSingleUseRuleTest(TestCase):
         applied_rule = VoucherSingleUseRule(voucher, user2)
         self.assertFalse(applied_rule.is_obeyed_by_user())
         self.assertEqual(
-            applied_rule.get_msg_text(), "This voucher has already been used"
+            applied_rule.get_msg_text(), "This coupon has already been used"
         )
 
 
@@ -212,5 +212,5 @@ class VoucherSingleUsePerCustomerRuleTest(TestCase):
         self.assertFalse(applied_rule.is_obeyed_by_user())
         self.assertEqual(
             applied_rule.get_msg_text(),
-            "You have already used this voucher in a previous order",
+            "You have already used this coupon in a previous order",
         )
