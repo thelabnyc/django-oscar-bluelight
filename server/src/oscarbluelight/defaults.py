@@ -81,6 +81,33 @@ BLUELIGHT_CONDITION_CLASSES = [
     ),
 ]
 
+BLUELIGHT_VOUCHER_RULE_CLASSES = [
+    (
+        "oscarbluelight.voucher.rules.VoucherHasChildrenRule",
+        _("Checks if the voucher has children"),
+    ),
+    (
+        "oscarbluelight.voucher.rules.VoucherSuspendedRule",
+        _("Checks if the voucher is suspended"),
+    ),
+    (
+        "oscarbluelight.voucher.rules.VoucherLimitUsageByGroupRule",
+        _(
+            "Checks if limit_usage_by_group is set for the voucher and user is not in one of the selected groups"
+        ),
+    ),
+    (
+        "oscarbluelight.voucher.rules.VoucherSingleUseRule",
+        _("Check if the voucher is single use and has already been used"),
+    ),
+    (
+        "oscarbluelight.voucher.rules.VoucherSingleUsePerCustomerRule",
+        _(
+            "Check if the voucher is single use per customer and customer has already used it"
+        ),
+    ),
+]
+
 BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED = False
 
 BLUELIGHT_IGNORED_ORDER_STATUSES = []
