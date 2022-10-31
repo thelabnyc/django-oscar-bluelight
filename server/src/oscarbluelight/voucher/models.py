@@ -1,11 +1,11 @@
 from django.db import models, transaction, connection
 from django.conf import settings
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from django.core.cache import cache
 from oscar.models.fields import NullCharField
 from oscar.apps.voucher.abstract_models import AbstractVoucher
 from . import tasks, sql
-from .utils import load_cls_from_abs_path
 import time
 
 
@@ -130,9 +130,9 @@ class Voucher(AbstractVoucher):
 
     def is_available_to_user(self, user=None):
         is_available, message = True, ""
-        rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_RULE_CLASSES", [])
+        rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_AVAILABILITY_RULES", [])
         for path, desc in rule_classes:
-            rule_cls = load_cls_from_abs_path(path)
+            rule_cls = import_string(path)
             applied_rule = rule_cls(self, user)
             if not applied_rule.is_obeyed_by_user():
                 is_available = False

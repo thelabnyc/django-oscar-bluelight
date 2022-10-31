@@ -81,7 +81,7 @@ BLUELIGHT_CONDITION_CLASSES = [
     ),
 ]
 
-BLUELIGHT_VOUCHER_RULE_CLASSES = [
+BLUELIGHT_VOUCHER_AVAILABILITY_RULES = [
     (
         "oscarbluelight.voucher.rules.VoucherHasChildrenRule",
         _("Checks if the voucher has children"),
