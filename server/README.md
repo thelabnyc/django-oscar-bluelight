@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.4.0
+
+- Add rules framework to allow library consumers to change how vouchers are determined to be available or not.
+
 ### 5.3.0
 
 - Add new system for obtaining structured data regarding offer upsell messages
