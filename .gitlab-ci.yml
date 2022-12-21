@@ -32,8 +32,6 @@ precommit:
 
 lint_typescript:
   stage: test
-  tags:
-    - django-oscar
   image: node:14
   script:
     - cd client/
@@ -43,8 +41,6 @@ lint_typescript:
 
 test:
   stage: test
-  tags:
-    - django-oscar
   image: $IMAGE
   script:
     - cd server/
