@@ -32,7 +32,7 @@ precommit:
 
 lint_typescript:
   stage: test
-  image: node:14
+  image: node:18
   script:
     - cd client/
     - NODE_ENV=dev yarn
