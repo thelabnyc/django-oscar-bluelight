@@ -32,7 +32,7 @@ precommit:
 
 lint_typescript:
   stage: test
-  image: node:14
+  image: node:18
   script:
     - cd client/
     - NODE_ENV=dev yarn
@@ -54,9 +54,9 @@ test:
         - server/junit-*/TEST-*.xml
   parallel:
     matrix:
-      - IMAGE: python:3.8
       - IMAGE: python:3.9
       - IMAGE: python:3.10
+      - IMAGE: python:3.11
 
 publish_pkg:
   image: python:3
