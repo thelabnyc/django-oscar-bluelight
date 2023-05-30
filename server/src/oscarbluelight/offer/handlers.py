@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models.signals import post_migrate, m2m_changed, post_save
 from django.db.backends.signals import connection_created
 from django.test.signals import setting_changed
-from oscar.core.loading import get_model
+from oscar.core.loading import get_model, get_class
 from .groups import ensure_all_system_groups_exist
 from .applicator import pricing_cache_ns
 
@@ -20,6 +20,8 @@ Product = get_model("catalogue", "Product")
 StockRecord = get_model("partner", "StockRecord")
 Order = get_model("order", "Order")
 OrderDiscount = get_model("order", "OrderDiscount")
+
+order_status_changed = get_class("order.signals", "order_status_changed")
 
 
 def post_migrate_ensure_all_system_groups_exist(sender, **kwargs):
@@ -69,9 +71,11 @@ def set_disable_triggers_on_settings_change(sender, setting, value, enter, **kwa
         RangeProductSet.set_disable_triggers_for_session(value)
 
 
-# Whenever an Order or an OrderDiscount is either created or changed, recalculate
-# the Offer application totals.
-@receiver(post_save, sender=Order)
-@receiver(post_save, sender=OrderDiscount)
-def recalculate_offer_application_totals(sender, instance, **kwargs):
-    transaction.on_commit(ConditionalOffer.recalculate_offer_application_totals)
+# Whenever an Order transitions to any of BLUELIGHT_IGNORED_ORDER_STATUSES, recalculate the Offer application totals.
+# This aims to prevent double/triple/N counting the order's impact on the offers.
+@receiver(order_status_changed)
+def recalculate_offer_application_totals(
+    sender, order, old_status, new_status, **kwargs
+):
+    if new_status in settings.BLUELIGHT_IGNORED_ORDER_STATUSES:
+        transaction.on_commit(ConditionalOffer.recalculate_offer_application_totals)
