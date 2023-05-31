@@ -7,6 +7,7 @@ from django.test.signals import setting_changed
 from oscar.core.loading import get_model, get_class
 from .groups import ensure_all_system_groups_exist
 from .applicator import pricing_cache_ns
+from . import tasks
 
 OfferGroup = get_model("offer", "OfferGroup")
 ConditionalOffer = get_model("offer", "ConditionalOffer")
@@ -71,11 +72,13 @@ def set_disable_triggers_on_settings_change(sender, setting, value, enter, **kwa
         RangeProductSet.set_disable_triggers_for_session(value)
 
 
-# Whenever an Order transitions to any of BLUELIGHT_IGNORED_ORDER_STATUSES, recalculate the Offer application totals.
-# This aims to prevent double/triple/N counting the order's impact on the offers.
-@receiver(order_status_changed)
-def recalculate_offer_application_totals(
-    sender, order, old_status, new_status, **kwargs
-):
-    if new_status in settings.BLUELIGHT_IGNORED_ORDER_STATUSES:
-        transaction.on_commit(ConditionalOffer.recalculate_offer_application_totals)
+# Whenever an Order or an OrderDiscount is either created or changed, queue a task
+# to recalculate the Offer application totals. Run this update task in the
+# background since it has the potential to be a little slow, and it should be
+# fine if the stats/usage data is a few seconds behind.
+@receiver(post_save, sender=Order)
+@receiver(post_save, sender=OrderDiscount)
+def queue_recalculate_offer_application_totals(sender, **kwargs):
+    transaction.on_commit(
+        lambda: tasks.recalculate_offer_application_totals.apply_async()
+    )

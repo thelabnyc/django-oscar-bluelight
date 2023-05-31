@@ -36,6 +36,7 @@ from .sql import (
 import copy
 import logging
 import math
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +140,7 @@ class ConditionalOffer(AbstractConditionalOffer):
     def recalculate_offer_application_totals(cls):
         Order = get_model("order", "Order")
         OrderDiscount = get_model("order", "OrderDiscount")
+        start_ns = time.perf_counter_ns()
         update_sql = get_recalculate_offer_application_totals_sql(
             Order=Order,
             OrderDiscount=OrderDiscount,
@@ -147,7 +149,14 @@ class ConditionalOffer(AbstractConditionalOffer):
         )
         with connection.cursor() as cursor:
             cursor.execute(update_sql)
-        logger.info("Successfully recalculated offer application totals")
+            updated_rows = cursor.rowcount
+        end_ns = time.perf_counter_ns()
+        elasped_ms = (end_ns - start_ns) / 1_000_000
+        logger.info(
+            "Successfully recalculated offer application totals in %.3fms. Updated %d offers.",
+            elasped_ms,
+            updated_rows,
+        )
 
     def availability_restrictions(self):
         restrictions = super().availability_restrictions()

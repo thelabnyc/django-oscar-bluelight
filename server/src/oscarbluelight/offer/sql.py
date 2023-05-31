@@ -161,7 +161,10 @@ def get_sql_range_product_triggers():
 
 
 def get_recalculate_offer_application_totals_sql(
-    Order, OrderDiscount, ConditionalOffer, ignored_order_statuses
+    Order,
+    OrderDiscount,
+    ConditionalOffer,
+    ignored_order_statuses,
 ):
     status_filter = sql.SQL("")
     if len(ignored_order_statuses) > 0:
@@ -173,6 +176,8 @@ def get_recalculate_offer_application_totals_sql(
     update_sql = sql.SQL(
         """
         WITH cte_discounts AS (
+            -- First query finds all of the discounts, excluding orders ignored
+            -- by the status filter
             SELECT d.offer_id as "offer_id",
                    SUM(d.amount) as "calculated_total_discount",
                    SUM(d.frequency) as "calculated_num_applications",
@@ -182,6 +187,17 @@ def get_recalculate_offer_application_totals_sql(
                 ON o.id = d.order_id
                {status_filter}
              GROUP BY d.offer_id
+            UNION
+            -- Second query finds all of the offers with no discounts at all
+            SELECT co.id as "offer_id",
+                   0 as "calculated_total_discount",
+                   0 as "calculated_num_applications",
+                   0 as "calculated_num_orders"
+              FROM {offer_conditionaloffer} co
+              LEFT JOIN {order_orderdiscount} d
+                ON d.offer_id = co.id
+             WHERE d.id IS NULL
+             GROUP BY co.id
         ),
         cte_offers_to_update AS (
             SELECT o.id,

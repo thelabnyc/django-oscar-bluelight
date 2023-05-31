@@ -281,3 +281,27 @@ class ConditionalOfferModelTest(TestCase):
         # having a relation to the discounts that apply this offer: 3 distinct orders
         # The last two discounts' orders should not be counted since their orders statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
         self.assertEqual(offer.num_orders, 3)
+
+    @override_settings(BLUELIGHT_IGNORED_ORDER_STATUSES=["Canceled", "Retired"])
+    def test_recalculate_offer_application_totals_with_no_orders(self):
+        self.offer.total_discount = D("15.00")
+        self.offer.num_applications = 8
+        self.offer.num_orders = 4
+        self.offer.save()
+
+        # Run the recalculation method
+        ConditionalOffer.recalculate_offer_application_totals()
+
+        # Get the most recent object of this offer to check the update query is executed correctly
+        offer = ConditionalOffer.objects.get(pk=self.offer.pk)
+
+        # Total discount should be updated as 1.00 + 2.00 + 3.00 = 6.00
+        # The last two discount amounts, 4.00 and 5.00, should not be counted since their orders statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.total_discount, D("0.00"))
+        # Number of applications should be updated as the sum of the order discounts' frequency values: 1 + 2 + 3 = 6
+        # The last two number of applications, 1.00 and 2.00, should not be counted since their orders statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.num_applications, 0)
+        # Number of orders should be updated as the count of the distinct orders
+        # having a relation to the discounts that apply this offer: 3 distinct orders
+        # The last two discounts' orders should not be counted since their orders statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.num_orders, 0)
