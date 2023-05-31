@@ -1,3 +1,5 @@
+from psycopg2 import sql
+
 # Basically copied from the query run by ``oscar.apps.offer.models.Range.product_queryset``
 # Just slightly altered to work as a materialized view, leading to better performance.
 # At time of writing this, calls to Range.contains_product took about 10ms. With the addition of the
@@ -156,3 +158,68 @@ def get_sql_range_product_triggers():
                 )
             )
     return sql_range_product_triggers
+
+
+def get_recalculate_offer_application_totals_sql(
+    Order,
+    OrderDiscount,
+    ConditionalOffer,
+    ignored_order_statuses,
+):
+    status_filter = sql.SQL("")
+    if len(ignored_order_statuses) > 0:
+        status_filter = sql.SQL("AND o.status NOT IN ({statuses})").format(
+            statuses=sql.SQL(", ").join(
+                [sql.Literal(status) for status in ignored_order_statuses]
+            ),
+        )
+    update_sql = sql.SQL(
+        """
+        WITH cte_discounts AS (
+            -- First query finds all of the discounts, excluding orders ignored
+            -- by the status filter
+            SELECT d.offer_id as "offer_id",
+                   SUM(d.amount) as "calculated_total_discount",
+                   SUM(d.frequency) as "calculated_num_applications",
+                   COUNT(DISTINCT d.order_id) as "calculated_num_orders"
+              FROM {order_orderdiscount} d
+              JOIN {order_order} o
+                ON o.id = d.order_id
+               {status_filter}
+             GROUP BY d.offer_id
+            UNION
+            -- Second query finds all of the offers with no discounts at all
+            SELECT co.id as "offer_id",
+                   0 as "calculated_total_discount",
+                   0 as "calculated_num_applications",
+                   0 as "calculated_num_orders"
+              FROM {offer_conditionaloffer} co
+              LEFT JOIN {order_orderdiscount} d
+                ON d.offer_id = co.id
+             WHERE d.id IS NULL
+             GROUP BY co.id
+        ),
+        cte_offers_to_update AS (
+            SELECT o.id,
+                   d.*
+              FROM {offer_conditionaloffer} o
+              JOIN cte_discounts d
+                ON d.offer_id = o.id
+             WHERE o.total_discount != d.calculated_total_discount
+                OR o.num_applications != d.calculated_num_applications
+                OR o.num_orders != d.calculated_num_orders
+        )
+        UPDATE {offer_conditionaloffer}
+           SET total_discount = d.calculated_total_discount,
+               num_applications = d.calculated_num_applications,
+               num_orders = d.calculated_num_orders
+          FROM cte_offers_to_update d
+         WHERE d.id = offer_conditionaloffer.id
+    """
+    ).format(
+        order_order=sql.Identifier(Order._meta.db_table),
+        order_orderdiscount=sql.Identifier(OrderDiscount._meta.db_table),
+        offer_conditionaloffer=sql.Identifier(ConditionalOffer._meta.db_table),
+        status_filter=status_filter,
+    )
+    return update_sql

@@ -4,9 +4,10 @@ from django.db import transaction
 from django.db.models.signals import post_migrate, m2m_changed, post_save
 from django.db.backends.signals import connection_created
 from django.test.signals import setting_changed
-from oscar.core.loading import get_model
+from oscar.core.loading import get_model, get_class
 from .groups import ensure_all_system_groups_exist
 from .applicator import pricing_cache_ns
+from . import tasks
 
 OfferGroup = get_model("offer", "OfferGroup")
 ConditionalOffer = get_model("offer", "ConditionalOffer")
@@ -18,6 +19,10 @@ Category = get_model("catalogue", "Category")
 ProductCategory = get_model("catalogue", "ProductCategory")
 Product = get_model("catalogue", "Product")
 StockRecord = get_model("partner", "StockRecord")
+Order = get_model("order", "Order")
+OrderDiscount = get_model("order", "OrderDiscount")
+
+order_status_changed = get_class("order.signals", "order_status_changed")
 
 
 def post_migrate_ensure_all_system_groups_exist(sender, **kwargs):
@@ -65,3 +70,15 @@ def set_disable_triggers_on_connection_created(sender, **kwargs):
 def set_disable_triggers_on_settings_change(sender, setting, value, enter, **kwargs):
     if setting == "BLUELIGHT_PG_VIEW_TRIGGERS_DISABLED":
         RangeProductSet.set_disable_triggers_for_session(value)
+
+
+# Whenever an Order or an OrderDiscount is either created or changed, queue a task
+# to recalculate the Offer application totals. Run this update task in the
+# background since it has the potential to be a little slow, and it should be
+# fine if the stats/usage data is a few seconds behind.
+@receiver(post_save, sender=Order)
+@receiver(post_save, sender=OrderDiscount)
+def queue_recalculate_offer_application_totals(sender, **kwargs):
+    transaction.on_commit(
+        lambda: tasks.recalculate_offer_application_totals.apply_async()
+    )
