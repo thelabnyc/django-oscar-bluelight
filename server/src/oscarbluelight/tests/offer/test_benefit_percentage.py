@@ -1,6 +1,6 @@
 from decimal import Decimal as D
 from django.core import exceptions
-from django.test import TestCase
+from django.test import TransactionTestCase
 from oscar.test import factories
 from oscar.test.basket import add_product, add_products
 from django_redis import get_redis_connection
@@ -14,7 +14,7 @@ from oscarbluelight.offer.models import (
 from unittest import mock
 
 
-class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
+class TestAPercentageDiscountAppliedWithCountCondition(TransactionTestCase):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
@@ -115,7 +115,9 @@ class TestAPercentageDiscountAppliedWithCountCondition(TestCase):
         self.assertEqual(descrs[0].voucher_code, "SWEETDEAL")
 
 
-class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
+class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(
+    TransactionTestCase
+):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
@@ -158,7 +160,9 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithCountCondition(TestCase):
         self.assertEqual(2, self.basket.num_items_without_discount)
 
 
-class TestAPercentageDiscountWithMultipleApplicationsWithCountCondition(TestCase):
+class TestAPercentageDiscountWithMultipleApplicationsWithCountCondition(
+    TransactionTestCase
+):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
@@ -216,7 +220,7 @@ class TestAPercentageDiscountWithMultipleApplicationsWithCountCondition(TestCase
         self.assertFalse(self.condition.proxy().is_satisfied(self.offer, self.basket))
 
 
-class TestAPercentageDiscountAppliedWithValueCondition(TestCase):
+class TestAPercentageDiscountAppliedWithValueCondition(TransactionTestCase):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
@@ -266,7 +270,9 @@ class TestAPercentageDiscountAppliedWithValueCondition(TestCase):
         self.assertEqual(0, self.basket.num_items_without_discount)
 
 
-class TestAPercentageDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
+class TestAPercentageDiscountWithMaxItemsSetAppliedWithValueCondition(
+    TransactionTestCase
+):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
@@ -317,7 +323,7 @@ class TestAPercentageDiscountWithMaxItemsSetAppliedWithValueCondition(TestCase):
         self.assertEqual(0, self.basket.num_items_without_discount)
 
 
-class TestAPercentageDiscountBenefit(TestCase):
+class TestAPercentageDiscountBenefit(TransactionTestCase):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")

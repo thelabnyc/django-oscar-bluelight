@@ -1,6 +1,6 @@
 from decimal import Decimal as D
 from django.core import exceptions
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from oscar.apps.offer.utils import Applicator
 from oscar.test.basket import add_product, add_products
 from oscar.test import factories
@@ -16,7 +16,9 @@ from oscarbluelight.offer.models import (
 from unittest import mock
 
 
-class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(TestCase):
+class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(
+    TransactionTestCase
+):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")

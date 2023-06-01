@@ -111,55 +111,6 @@ ORDER BY range_id, product_id;
 """
 
 
-def get_sql_range_product_triggers():
-    sql_range_product_triggers = [
-        """
-        CREATE OR REPLACE FUNCTION refresh_offer_rangeproductset()
-            RETURNS trigger AS
-            $BODY$
-            BEGIN
-                if not COALESCE(current_setting('oscarbluelight.disable_triggers', true)::boolean, false) then
-                    REFRESH MATERIALIZED VIEW CONCURRENTLY offer_rangeproductset;
-                end if;
-                RETURN NULL;
-            END;
-            $BODY$
-            LANGUAGE PLPGSQL;
-        """,
-    ]
-    range_product_trigger_tables = [
-        "catalogue_category",
-        "catalogue_product",
-        "catalogue_productcategory",
-        "catalogue_productclass",
-        "offer_range",
-        "offer_range_classes",
-        "offer_range_excluded_products",
-        "offer_range_included_categories",
-        "offer_rangeproduct",
-    ]
-    for table_name in range_product_trigger_tables:
-        for event in "INSERT", "UPDATE", "DELETE":
-            sql_range_product_triggers.append(
-                """
-                DROP TRIGGER IF EXISTS refresh_refresh_offer_rangeproductset_{event} ON {table} CASCADE;
-            """.format(
-                    event=event, table=table_name
-                )
-            )
-            sql_range_product_triggers.append(
-                """
-                CREATE TRIGGER refresh_refresh_offer_rangeproductset_{event}
-                AFTER {event} ON {table}
-                FOR EACH STATEMENT
-                EXECUTE PROCEDURE refresh_offer_rangeproductset();
-            """.format(
-                    event=event, table=table_name
-                )
-            )
-    return sql_range_product_triggers
-
-
 def get_recalculate_offer_application_totals_sql(
     Order,
     OrderDiscount,

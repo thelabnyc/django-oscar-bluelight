@@ -1,11 +1,11 @@
 from decimal import Decimal as D
-from django.test import TestCase
+from django.test import TransactionTestCase
 from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 from django_redis import get_redis_connection
 
 
-class BaseTest(TestCase):
+class BaseTest(TransactionTestCase):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
