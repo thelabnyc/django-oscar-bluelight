@@ -1,10 +1,10 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 from oscarbluelight.offer import models
 from oscar.apps.catalogue import models as catalogue_models
 from oscar.test.factories import create_product
 
 
-class TestWholeSiteRange(TestCase):
+class TestWholeSiteRange(TransactionTestCase):
     def setUp(self):
         self.range = models.Range.objects.create(
             name="All products", includes_all_products=True
@@ -23,7 +23,7 @@ class TestWholeSiteRange(TestCase):
         self.assertFalse(self.range.contains_product(self.prod))
 
 
-class TestChildRange(TestCase):
+class TestChildRange(TransactionTestCase):
     def setUp(self):
         self.range = models.Range.objects.create(
             name="Child-specific range", includes_all_products=False
@@ -43,7 +43,7 @@ class TestChildRange(TestCase):
         self.assertFalse(self.range.contains_product(self.child2))
 
 
-class TestPartialRange(TestCase):
+class TestPartialRange(TransactionTestCase):
     def setUp(self):
         self.range = models.Range.objects.create(
             name="All products", includes_all_products=False
@@ -215,7 +215,7 @@ class TestPartialRange(TestCase):
         self.assertTrue(self.range.is_reorderable)
 
 
-class TestRangeModel(TestCase):
+class TestRangeModel(TransactionTestCase):
     def test_ensures_unique_slugs_are_used(self):
         first_range = models.Range.objects.create(name="Foo")
         first_range.name = "Bar"
@@ -223,7 +223,7 @@ class TestRangeModel(TestCase):
         models.Range.objects.create(name="Foo")
 
 
-class TestRangeAddProductBatch(TestCase):
+class TestRangeAddProductBatch(TransactionTestCase):
     def test_add_product_batch(self):
         rng = models.Range.objects.create(name="Range", includes_all_products=False)
         product1 = create_product()
@@ -232,11 +232,13 @@ class TestRangeAddProductBatch(TestCase):
         product4 = create_product()
         # Add p2 to excluded products
         rng.excluded_products.add(product2)
+
         # Check starting point
         self.assertFalse(rng.contains_product(product1))
         self.assertFalse(rng.contains_product(product2))
         self.assertFalse(rng.contains_product(product3))
         self.assertFalse(rng.contains_product(product4))
+
         # Add p1, p2, and p3 to the range. Should add all 3 products and remove p2 from the exclude list.
         rng.add_product_batch(
             [
@@ -245,13 +247,16 @@ class TestRangeAddProductBatch(TestCase):
                 product3,
             ]
         )
+
         # Check results
         self.assertTrue(rng.contains_product(product1))
         self.assertTrue(rng.contains_product(product2))
         self.assertTrue(rng.contains_product(product3))
         self.assertFalse(rng.contains_product(product4))
+
         # Add p2 back to excluded products
         rng.excluded_products.add(product2)
+
         # Check results
         self.assertTrue(rng.contains_product(product1))
         self.assertFalse(rng.contains_product(product2))

@@ -1,5 +1,5 @@
 from decimal import Decimal as D
-from django.test import TestCase
+from django.test import TransactionTestCase
 from oscar.test import factories
 from oscarbluelight.offer.models import (
     Range,
@@ -12,7 +12,7 @@ from django_redis import get_redis_connection
 from unittest import mock
 
 
-class TestCompoundAbsoluteBenefitDiscount(TestCase):
+class TestCompoundAbsoluteBenefitDiscount(TransactionTestCase):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")
@@ -26,7 +26,6 @@ class TestCompoundAbsoluteBenefitDiscount(TestCase):
 
         self.slipper = factories.create_product(title="Slippers", price=D("50.00"))
         self.pillow = factories.create_product(title="Pillow", price=D("100.00"))
-
         self.range_slippers.add_product(self.slipper)
         self.range_pillows.add_product(self.pillow)
 
@@ -63,7 +62,6 @@ class TestCompoundAbsoluteBenefitDiscount(TestCase):
         self.basket.add_product(self.pillow, 1)
 
         result = self.benefit_compound.apply(self.basket, self.condition, self.offer)
-
         self.assertEqual(D("40.00"), result.discount)
 
         line_discounts = [line.discount_value for line in self.basket.all_lines()]
@@ -88,7 +86,7 @@ class TestCompoundAbsoluteBenefitDiscount(TestCase):
         self.assertEqual(line_discounts[1], D("22.00"))
 
 
-class TestCompoundBluelightPercentageBenefitDiscount(TestCase):
+class TestCompoundBluelightPercentageBenefitDiscount(TransactionTestCase):
     def setUp(self):
         # Flush the cache
         conn = get_redis_connection("redis")

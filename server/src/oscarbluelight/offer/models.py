@@ -1,13 +1,13 @@
+from datetime import timedelta
 from decimal import Decimal as D
 from django.conf import settings
-from django.dispatch import receiver
 from django.core import exceptions
-from django.db import models, IntegrityError, connection, transaction
+from django.db import models, IntegrityError, connection
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
-from django_pgviews.signals import view_synced
+from django.utils import timezone
 from django_pgviews import view as pg
 from oscar.core.loading import get_model
 from oscar.models.fields import AutoSlugField
@@ -30,7 +30,6 @@ from oscar.apps.offer.utils import load_proxy
 from oscar.templatetags.currency_filters import currency
 from .sql import (
     SQL_RANGE_PRODUCTS,
-    get_sql_range_product_triggers,
     get_recalculate_offer_application_totals_sql,
 )
 import copy
@@ -351,6 +350,8 @@ class Range(AbstractRange):
         Same as Range.add_product, but works on a batch of products (in order to optimize the number
         of queries run on the DB)
         """
+        from .handlers import queue_rps_view_refresh
+
         # Insert new rows into the included_products relationship
         RangeProduct = self.included_products.through
         rows = [RangeProduct(range=self, product=product) for product in products]
@@ -359,6 +360,8 @@ class Range(AbstractRange):
         # re-added again, thus it returns back to the range product list.
         ExcludedProduct = self.excluded_products.through
         ExcludedProduct.objects.filter(product__in=products).all().delete()
+        # Queue a view refresh
+        queue_rps_view_refresh()
         # Invalidate cache because queryset has changed
         self.invalidate_cached_queryset()
 
@@ -393,14 +396,38 @@ class RangeProductSet(pg.MaterializedView):
     class Meta:
         managed = False
 
+
+class RangeProductSetRefreshLog(models.Model):
+    refreshed_on = models.DateTimeField()
+
+    class Meta:
+        ordering = ("-refreshed_on",)
+        indexes = [
+            models.Index(fields=["refreshed_on"]),
+        ]
+
     @classmethod
-    def set_disable_triggers_for_session(cls, disable_triggers):
-        if disable_triggers:
-            stmnt = "SET oscarbluelight.disable_triggers = true"
-        else:
-            stmnt = "SET oscarbluelight.disable_triggers = false"
-        with connection.cursor() as cursor:
-            cursor.execute(stmnt)
+    def log_view_refresh(cls):
+        now = timezone.now()
+        # Truncate old log entries
+        threshold = now - timedelta(hours=1)
+        cls.objects.filter(refreshed_on__lte=threshold).all().delete()
+        # Log the refresh
+        cls.objects.create(refreshed_on=now)
+
+    @classmethod
+    def is_refresh_needed(cls, requested_on_dt):
+        last_refresh_dt = cls.get_last_refresh_dt()
+        if last_refresh_dt is None:
+            return True
+        return requested_on_dt >= last_refresh_dt
+
+    @classmethod
+    def get_last_refresh_dt(cls):
+        entry = cls.objects.first()
+        if not entry:
+            return None
+        return entry.refreshed_on
 
 
 # Make proxy_class field not unique.
@@ -431,11 +458,3 @@ from .conditions import __all__ as condition_classes  # NOQA
 
 __all__.extend(benefit_classes)
 __all__.extend(condition_classes)
-
-
-@receiver(view_synced, sender=RangeProductSet)
-@transaction.atomic()
-def add_view_triggers(sender, **kwargs):
-    with connection.cursor() as cursor:
-        for sql in get_sql_range_product_triggers():
-            cursor.execute(sql)
