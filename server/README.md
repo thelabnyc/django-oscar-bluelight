@@ -119,6 +119,8 @@ dashboard under the Offers menu.
 ### 5.4.0
 
 - Add rules framework to allow library consumers to change how vouchers are determined to be available or not.
+- Add functionality for recalculating offer application totals based on OrderDiscount models. This allows correcting voucher discount stats to account for canceled orders.
+- Redesign RangeProductSet view updating to improve web request performance (at the cost of allowing the view to be slightly out of date).
 
 ### 5.3.0
 
