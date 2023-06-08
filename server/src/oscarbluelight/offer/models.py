@@ -417,9 +417,13 @@ class RangeProductSetRefreshLog(models.Model):
 
     @classmethod
     def is_refresh_needed(cls, requested_on_dt):
+        if requested_on_dt.tzinfo is None:
+            requested_on_dt = requested_on_dt.replace(tzinfo=timezone.utc)
         last_refresh_dt = cls.get_last_refresh_dt()
         if last_refresh_dt is None:
             return True
+        if last_refresh_dt.tzinfo is None:
+            last_refresh_dt = last_refresh_dt.replace(tzinfo=timezone.utc)
         return requested_on_dt >= last_refresh_dt
 
     @classmethod
