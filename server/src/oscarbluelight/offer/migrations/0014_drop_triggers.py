@@ -13,7 +13,7 @@ range_product_trigger_tables = [
     "offer_rangeproduct",
 ]
 
-drop_triggers = ["DROP FUNCTION IF EXISTS refresh_offer_rangeproductset();"]
+drop_triggers = ["DROP FUNCTION IF EXISTS refresh_offer_rangeproductset() CASCADE;"]
 for table in range_product_trigger_tables:
     for event in "INSERT", "UPDATE", "DELETE":
         drop_triggers.append(
