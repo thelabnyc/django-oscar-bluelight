@@ -69,7 +69,11 @@ class Applicator(BaseApplicator):
         if not basket.id or not user:
             return offers
 
-        for voucher in basket.vouchers.all():
+        # Ordering by PK / Distinct is necessary here to avoid selecting
+        # duplicate rows when a voucher has more than one offer associated with
+        # it.
+        vouchers = basket.vouchers.all().order_by("pk").distinct()
+        for voucher in vouchers.all():
             available_to_user, __ = voucher.is_available_to_user(user=user)
             if voucher.is_active() and available_to_user:
                 basket_offers = voucher.offers.select_related(
