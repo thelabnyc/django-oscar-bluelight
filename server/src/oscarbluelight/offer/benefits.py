@@ -21,6 +21,7 @@ Benefit = get_model("offer", "Benefit")
 
 BasketDiscount = get_class("offer.results", "BasketDiscount")
 PostOrderAction = get_class("offer.results", "PostOrderAction")
+HiddenPostOrderAction = get_class("offer.results", "HiddenPostOrderAction")
 ZERO_DISCOUNT = get_class("offer.results", "ZERO_DISCOUNT")
 
 
@@ -276,7 +277,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
     """
 
     _description = _(
-        "The products in the range are sold for %(amount)s, %(max_affected_items)s"
+        "The products in %(range)s are sold for %(amount)s, %(max_affected_items)s"
     )
 
     class Meta:
@@ -290,6 +291,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
+                "range": self.range,
                 "amount": currency(self.value),
                 "max_affected_items": (
                     _("maximum %s item(s)") % self.max_affected_items
@@ -370,7 +372,7 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
     """
 
     _description = _(
-        "The products in the range are sold for %(amount)s each; %(max_affected_items)s"
+        "The products in %(range)s are sold for %(amount)s each; %(max_affected_items)s"
     )
 
     class Meta:
@@ -384,6 +386,7 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
+                "range": self.range,
                 "amount": currency(self.value),
                 "max_affected_items": (
                     _("maximum %s item(s)") % self.max_affected_items
@@ -726,7 +729,11 @@ class CompoundBenefit(Benefit):
                 max_total_discount=max(discount_amount_available, D("0.00")),
                 consume_items=_consume_items,
             )
-            if combined_result is None:
+            if isinstance(result, HiddenPostOrderAction):
+                # Explicitly ignore HiddenPostOrderAction so that they're the
+                # one exception to the to "can't combine differing types rule".
+                pass
+            elif combined_result is None:
                 combined_result = copy.deepcopy(result)
                 discount_amount_available -= result.discount
             elif combined_result.affects == result.affects:
