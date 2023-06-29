@@ -40,20 +40,20 @@ class TestAFixedPricePerItemDiscountAppliedWithCountCondition(TestCase):
     def test_name(self):
         self.assertEqual(
             self.benefit.name,
-            "The products in the range are sold for $20.00 each; no maximum",
+            "The products in All products are sold for $20.00 each; no maximum",
         )
 
     def test_description(self):
         self.assertEqual(
             self.benefit.description,
-            "The products in the range are sold for $20.00 each; no maximum",
+            "The products in All products are sold for $20.00 each; no maximum",
         )
 
     def test_description_with_max_items(self):
         self.benefit.max_affected_items = 1
         self.assertEqual(
             self.benefit.description,
-            "The products in the range are sold for $20.00 each; maximum 1 item(s)",
+            "The products in All products are sold for $20.00 each; maximum 1 item(s)",
         )
 
     def test_applies_correctly_to_empty_basket(self):
