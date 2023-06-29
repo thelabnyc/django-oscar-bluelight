@@ -21,6 +21,7 @@ Benefit = get_model("offer", "Benefit")
 
 BasketDiscount = get_class("offer.results", "BasketDiscount")
 PostOrderAction = get_class("offer.results", "PostOrderAction")
+HiddenPostOrderAction = get_class("offer.results", "HiddenPostOrderAction")
 ZERO_DISCOUNT = get_class("offer.results", "ZERO_DISCOUNT")
 
 
@@ -726,7 +727,11 @@ class CompoundBenefit(Benefit):
                 max_total_discount=max(discount_amount_available, D("0.00")),
                 consume_items=_consume_items,
             )
-            if combined_result is None:
+            if isinstance(result, HiddenPostOrderAction):
+                # Explicitly ignore HiddenPostOrderAction so that they're the
+                # one exception to the to "can't combine differing types rule".
+                pass
+            elif combined_result is None:
                 combined_result = copy.deepcopy(result)
                 discount_amount_available -= result.discount
             elif combined_result.affects == result.affects:
