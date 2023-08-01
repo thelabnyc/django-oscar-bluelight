@@ -755,10 +755,12 @@ class CompoundBenefit(Benefit):
         for child in self.children:
             result = child.apply_deferred(basket, order, application)
             if result is not None:
-                results.append(result)
+                # `result` should already be a string, but cast to a str() just
+                # in-case a benefit is written incorrectly.
+                results.append(str(result))
         if len(results) <= 0:
             return None
-        descr = _(" and ").join([r.description for r in results])
+        descr = _(" and ").join(results)
         return PostOrderAction(descr)
 
     def clean(self):
