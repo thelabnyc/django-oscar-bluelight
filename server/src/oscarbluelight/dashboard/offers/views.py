@@ -228,6 +228,7 @@ class BenefitListView(ListView):
     context_object_name = "benefits"
     template_name = "oscar/dashboard/offers/benefit_list.html"
     form_class = BenefitSearchForm
+    paginate_by = 25
 
     def get_queryset(self):
         qs = (
