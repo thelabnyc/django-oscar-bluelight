@@ -22,9 +22,25 @@ SourceType = get_model("payment", "SourceType")
 
 
 class BenefitSearchForm(forms.Form):
+    compound_benefit_cpath = "%s.%s" % (
+        CompoundBenefit.__module__,
+        CompoundBenefit.__name__,
+    )
+    _benefit_classes = getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])
+    _benefit_classes.append((compound_benefit_cpath, _("Compound Benefit")))
     range = forms.ModelChoiceField(
         required=False, queryset=Range.objects.order_by("name")
     )
+    benefit_type = forms.ChoiceField(
+        choices=[
+            ("", "---------"),
+        ]
+        + _benefit_classes,
+        required=False,
+        label=_("Type"),
+    )
+    min_value = forms.DecimalField(required=False, label=_("Minimum value"))
+    max_value = forms.DecimalField(required=False, label=_("Maximum value"))
 
 
 class ConditionSearchForm(forms.Form):

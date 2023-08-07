@@ -228,6 +228,7 @@ class BenefitListView(ListView):
     context_object_name = "benefits"
     template_name = "oscar/dashboard/offers/benefit_list.html"
     form_class = BenefitSearchForm
+    paginate_by = 25
 
     def get_queryset(self):
         qs = (
@@ -246,10 +247,21 @@ class BenefitListView(ListView):
             return qs
 
         data = self.form.cleaned_data
+
         if data["range"]:
             qs = qs.filter(range=data["range"])
             self.description = _("Benefits for range '%s'") % data["range"]
             self.is_filtered = True
+        if data["benefit_type"]:
+            qs = qs.filter(proxy_class=data["benefit_type"])
+            self.is_filtered = True
+        if data["min_value"] is not None:
+            qs = qs.filter(value__gte=data["min_value"])
+            self.is_filtered = True
+        if data["max_value"] is not None:
+            qs = qs.filter(value__lte=data["max_value"])
+            self.is_filtered = True
+
         return qs
 
     def get_context_data(self, **kwargs):
