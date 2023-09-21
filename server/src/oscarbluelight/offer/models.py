@@ -4,12 +4,13 @@ from django.conf import settings
 from django.core import exceptions
 from django.db import models, IntegrityError, connection
 from django.db.models import F
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
 from django.utils import timezone
 from django_pgviews import view as pg
-from oscar.core.loading import get_model
+from oscar.core.loading import get_model, get_class
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -31,6 +32,10 @@ from oscar.templatetags.currency_filters import currency
 from .sql import (
     SQL_RANGE_PRODUCTS,
     get_recalculate_offer_application_totals_sql,
+)
+
+ExpandDownwardsCategoryQueryset = get_class(
+    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
 )
 import copy
 import logging
@@ -344,6 +349,49 @@ class Range(AbstractRange):
             )
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
+
+    def all_products_without_mv(self):
+        """
+        Get the list of products without using the materialized view.
+
+        This method is similar to oscar.apps.offer.abstract_models.AbstractRange.product_queryset
+        but without utilizing @cached_property.
+        """
+        Product = self.included_products.model
+
+        # Check if all products are included and if so, return all minus the excluded ones
+        if self.includes_all_products:
+            return Product.objects.exclude(id__in=self.excluded_products.values("id"))
+
+        # Start with filter clause that always applies
+        _filter = Q(includes=self)
+
+        # Extend filter if included_products have children
+        if Product.objects.filter(parent__includes=self).exists():
+            _filter |= Q(parent__includes=self)
+
+        # Extend filter if included classes exist
+        if self.classes.exists():
+            _filter |= Q(product_class__classes=self)
+            _filter |= Q(parent__product_class__classes=self)
+
+        # Extend filter if included categories exist
+        if self.included_categories.exists():
+            expanded_range_categories = ExpandDownwardsCategoryQueryset(
+                self.included_categories.values("id")
+            )
+            _filter |= Q(categories__in=expanded_range_categories)
+            if Product.objects.filter(
+                parent__categories__in=expanded_range_categories
+            ).exists():
+                _filter |= Q(parent__categories__in=expanded_range_categories)
+
+        qs = Product.objects.filter(_filter, ~Q(excludes=self))
+
+        if Product.objects.filter(parent__excludes=self).exists():
+            qs = qs.filter(~Q(parent__excludes=self))
+
+        return qs.distinct()
 
     def add_product_batch(self, products):
         """
