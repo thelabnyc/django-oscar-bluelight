@@ -42,10 +42,6 @@ ExpandDownwardsCategoryQueryset = get_class(
     "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
 )
 
-ExpandDownwardsCategoryQueryset = get_class(
-    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
-)
-
 logger = logging.getLogger(__name__)
 
 
