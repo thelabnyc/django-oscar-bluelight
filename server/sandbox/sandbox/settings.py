@@ -155,6 +155,18 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+
+def get_redis_parser_class():
+    try:
+        from redis.connection import _HiredisParser  # noqa: F401
+
+        return "redis.connection._HiredisParser"
+    except ImportError:
+        return "redis.connection.HiredisParser"
+
+
+redis_parser_class = get_redis_parser_class()
+
 _redis_db = 0
 _redis_max_dbs = 16
 if IS_UNIT_TEST:
@@ -175,7 +187,7 @@ CACHES = {
                 "max_connections": 50,
                 "timeout": 20,
             },
-            "PARSER_CLASS": "redis.connection.HiredisParser",
+            "PARSER_CLASS": redis_parser_class,
         },
         "KEY_PREFIX": VIRTUAL_ENV,
     },
