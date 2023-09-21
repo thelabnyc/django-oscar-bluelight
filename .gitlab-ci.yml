@@ -1,7 +1,7 @@
 variables:
   POSTGRES_DB: postgres
   POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: ""
+  POSTGRES_PASSWORD: ''
   POSTGRES_HOST_AUTH_METHOD: 'trust'
 
 stages:
@@ -10,10 +10,10 @@ stages:
 
 services:
   - postgres:latest
-  - redis:latest
+  - redis:7.2-rc2
 
 cache:
-  key: "$CI_PROJECT_NAME"
+  key: '$CI_PROJECT_NAME'
   paths:
     - node_modules
     - $HOME/.cache/pip
@@ -71,14 +71,14 @@ publish_pkg:
     - export TWINE_USERNAME=__token__
     - export TWINE_PASSWORD=${PYPI_TOKEN}
     - python -m twine upload
-        --repository-url https://upload.pypi.org/legacy/
-        dist/*
+      --repository-url https://upload.pypi.org/legacy/
+      dist/*
     # Publish to Gitlab
     - export TWINE_USERNAME=gitlab-ci-token
     - export TWINE_PASSWORD=${CI_JOB_TOKEN}
     - python -m twine upload
-        --repository-url https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/pypi
-        dist/*
+      --repository-url https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/pypi
+      dist/*
 
 publish_gitlab_release:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
