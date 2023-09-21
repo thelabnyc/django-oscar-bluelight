@@ -12,7 +12,6 @@ from django.utils.functional import cached_property
 from django.utils import timezone
 from django_pgviews import view as pg
 from oscar.core.loading import get_model, get_class
-from oscar.core.loading import get_model, get_class
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
