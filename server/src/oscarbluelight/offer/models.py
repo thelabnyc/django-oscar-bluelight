@@ -37,6 +37,7 @@ import copy
 import logging
 import math
 import time
+
 ExpandDownwardsCategoryQueryset = get_class(
     "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
 )
