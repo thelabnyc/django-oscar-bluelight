@@ -10,7 +10,7 @@ stages:
 
 services:
   - postgres:latest
-  - redis:7.2-rc2
+  - redis:7.0.13
 
 cache:
   key: '$CI_PROJECT_NAME'
