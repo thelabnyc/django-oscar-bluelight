@@ -2,6 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from oscar.defaults import *  # noqa
 from oscarbluelight.defaults import *  # NOQA
 from fnmatch import fnmatch
+from django_redis import get_redis_connection
 import os
 import sys
 
@@ -155,6 +156,19 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+try:
+    conn = get_redis_connection("redis")
+    redis_version_str = conn.info().get("redis_version")
+    version = tuple(map(int, redis_version_str.split(".")))
+    redis_parser_class = (
+        "redis.connection._HiredisParser"
+        if version >= (5, 0)
+        else "redis.connection.HiredisParser"
+    )
+except (ConnectionError, KeyError, AttributeError):
+    # Default to older naming for older versions of redis
+    redis_parser_class = "redis.connection.HiredisParser"
+
 _redis_db = 0
 _redis_max_dbs = 16
 if IS_UNIT_TEST:
@@ -175,7 +189,7 @@ CACHES = {
                 "max_connections": 50,
                 "timeout": 20,
             },
-            "PARSER_CLASS": "redis.connection._HiredisParser",
+            "PARSER_CLASS": redis_parser_class,
         },
         "KEY_PREFIX": VIRTUAL_ENV,
     },
