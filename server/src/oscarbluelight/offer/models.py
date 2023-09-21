@@ -33,14 +33,13 @@ from .sql import (
     SQL_RANGE_PRODUCTS,
     get_recalculate_offer_application_totals_sql,
 )
-
-ExpandDownwardsCategoryQueryset = get_class(
-    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
-)
 import copy
 import logging
 import math
 import time
+ExpandDownwardsCategoryQueryset = get_class(
+    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
+)
 
 logger = logging.getLogger(__name__)
 
