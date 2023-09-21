@@ -175,7 +175,7 @@ CACHES = {
                 "max_connections": 50,
                 "timeout": 20,
             },
-            "PARSER_CLASS": "redis.connection.HiredisParser",
+            "PARSER_CLASS": "redis.connection._HiredisParser",
         },
         "KEY_PREFIX": VIRTUAL_ENV,
     },
