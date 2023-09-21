@@ -37,10 +37,6 @@ import logging
 import math
 import time
 
-ExpandDownwardsCategoryQueryset = get_class(
-    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
-)
-
 logger = logging.getLogger(__name__)
 
 
