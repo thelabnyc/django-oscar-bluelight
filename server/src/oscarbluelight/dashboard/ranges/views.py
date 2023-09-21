@@ -129,10 +129,15 @@ class RangeProductListView(BaseRangeProductListView):
     def get_queryset(self):
         """
         Override default query for RangeProductList
+        Retrieve the product queryset directly from the database for accuracy in the dashboard
         """
-        products = self.get_range().all_products()
-        # See: https://docs.djangoproject.com/en/3.1/ref/models/querysets/#distinct
-        products = products.order_by("rangeproduct__display_order").distinct()
+        range_instance = self.get_range()
+        products = (
+            range_instance.all_products_consistent()
+            .order_by("rangeproduct__display_order")
+            .distinct()
+        )
+
         return products
 
     def handle_query_products(self, request, range, form):

@@ -345,6 +345,14 @@ class Range(AbstractRange):
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
 
+    def all_products_consistent(self):
+        """
+        Get the list of products without using the materialized view.
+        oscar.apps.offer.abstract_models.AbstractRange.product_queryset
+        without utilizing @cached_property
+        """
+        return AbstractRange.product_queryset.real_func(self)
+
     def add_product_batch(self, products):
         """
         Same as Range.add_product, but works on a batch of products (in order to optimize the number
