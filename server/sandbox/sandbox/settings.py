@@ -155,12 +155,15 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+
 def get_redis_parser_class():
     try:
         from redis.connection import _HiredisParser
+
         return "redis.connection._HiredisParser"
     except ImportError:
         return "redis.connection.HiredisParser"
+
 
 redis_parser_class = get_redis_parser_class()
 
