@@ -15,7 +15,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 Range = get_model("offer", "Range")
-RangeProductSetRefreshLog = get_model("offer", "RangeProductSetRefreshLog")
 BatchPriceUpdateForm = get_class("ranges_dashboard.forms", "BatchPriceUpdateForm")
 RangeExcludedProductsUpdateForm = get_class(
     "ranges_dashboard.forms", "RangeExcludedProductsUpdateForm"
