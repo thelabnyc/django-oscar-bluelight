@@ -350,48 +350,13 @@ class Range(AbstractRange):
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
 
-    def all_products_without_mv(self):
+    def all_products_consistent(self):
         """
         Get the list of products without using the materialized view.
-
-        This method is similar to oscar.apps.offer.abstract_models.AbstractRange.product_queryset
-        but without utilizing @cached_property.
+        oscar.apps.offer.abstract_models.AbstractRange.product_queryset
+        without utilizing @cached_property
         """
-        Product = self.included_products.model
-
-        # Check if all products are included and if so, return all minus the excluded ones
-        if self.includes_all_products:
-            return Product.objects.exclude(id__in=self.excluded_products.values("id"))
-
-        # Start with filter clause that always applies
-        _filter = Q(includes=self)
-
-        # Extend filter if included_products have children
-        if Product.objects.filter(parent__includes=self).exists():
-            _filter |= Q(parent__includes=self)
-
-        # Extend filter if included classes exist
-        if self.classes.exists():
-            _filter |= Q(product_class__classes=self)
-            _filter |= Q(parent__product_class__classes=self)
-
-        # Extend filter if included categories exist
-        if self.included_categories.exists():
-            expanded_range_categories = ExpandDownwardsCategoryQueryset(
-                self.included_categories.values("id")
-            )
-            _filter |= Q(categories__in=expanded_range_categories)
-            if Product.objects.filter(
-                parent__categories__in=expanded_range_categories
-            ).exists():
-                _filter |= Q(parent__categories__in=expanded_range_categories)
-
-        qs = Product.objects.filter(_filter, ~Q(excludes=self))
-
-        if Product.objects.filter(parent__excludes=self).exists():
-            qs = qs.filter(~Q(parent__excludes=self))
-
-        return qs.distinct()
+        return AbstractRange.product_queryset.real_func(self)
 
     def add_product_batch(self, products):
         """

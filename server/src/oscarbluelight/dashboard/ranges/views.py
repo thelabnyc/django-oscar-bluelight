@@ -134,7 +134,7 @@ class RangeProductListView(BaseRangeProductListView):
         """
         range_instance = self.get_range()
         products = (
-            range_instance.all_products_without_mv()
+            range_instance.all_products_consistent()
             .order_by("rangeproduct__display_order")
             .distinct()
         )
