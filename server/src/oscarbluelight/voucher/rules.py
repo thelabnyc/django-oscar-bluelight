@@ -94,7 +94,10 @@ class VoucherSingleUseRule(VoucherRule):
     def is_obeyed_by_user(self):
         ret = super().is_obeyed_by_user()
         if self.voucher.usage == Voucher.SINGLE_USE:
-            is_available = not self.voucher.applications.exists()
+            # Ignore statuses in BLUELIGHT_IGNORED_ORDER_STATUSES
+            is_available = not self.voucher.applications.exclude(
+                order__status__in=settings.BLUELIGHT_IGNORED_ORDER_STATUSES
+            ).exists()
             return is_available
         return ret
 
