@@ -1,6 +1,7 @@
 from decimal import Decimal as D
 from django.test import TransactionTestCase
 from oscar.test import factories
+from oscarbluelight.offer.constants import Conjunction
 from oscarbluelight.offer.models import (
     Range,
     BluelightCountCondition,
@@ -82,8 +83,81 @@ class TestCompoundAbsoluteBenefitDiscount(TransactionTestCase):
 
         line_discounts = [line.discount_value for line in self.basket.all_lines()]
         self.assertEqual(len(line_discounts), 2)
+        self.assertEqual(line_discounts[0], D("8.00"))
+        self.assertEqual(line_discounts[1], D("27.00"))
+
+
+class TestCompoundAbsoluteBenefitDiscountWithORConjunction(TransactionTestCase):
+    def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection("redis")
+        conn.flushall()
+
+        self.range_all = Range.objects.create(
+            name="All products", includes_all_products=True
+        )
+        self.range_slippers = Range.objects.create(name="Slippers")
+        self.range_pillows = Range.objects.create(name="Pillows")
+
+        self.slipper = factories.create_product(title="Slippers", price=D("50.00"))
+        self.pillow = factories.create_product(title="Pillow", price=D("100.00"))
+        self.range_slippers.add_product(self.slipper)
+        self.range_pillows.add_product(self.pillow)
+
+        self.condition = BluelightCountCondition.objects.create(
+            range=self.range_all,
+            proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+            value=1,
+        )
+
+        self.benefit_slippers = BluelightAbsoluteDiscountBenefit.objects.create(
+            range=self.range_slippers,
+            proxy_class="oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit",
+            value=D("13.00"),
+        )
+        self.benefit_pillows = BluelightAbsoluteDiscountBenefit.objects.create(
+            range=self.range_pillows,
+            proxy_class="oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit",
+            value=D("27.00"),
+        )
+
+        self.benefit_compound = CompoundBenefit.objects.create(
+            conjunction=Conjunction.OR
+        )
+        self.benefit_compound.subbenefits.set(
+            [
+                self.benefit_slippers,
+                self.benefit_pillows,
+            ]
+        )
+
+        self.offer = mock.Mock()
+        self.basket = factories.create_basket(empty=True)
+
+    def test_applies_to_only_one_line_when_multiple_match(self):
+        self.basket.add_product(self.slipper, 1)
+        self.basket.add_product(self.pillow, 1)
+
+        result = self.benefit_compound.apply(self.basket, self.condition, self.offer)
+        self.assertEqual(D("27.00"), result.discount)
+
+        # Both lines match, so only pillow should be discounted.
+        line_discounts = [line.discount_value for line in self.basket.all_lines()]
+        self.assertEqual(len(line_discounts), 2)
+        self.assertEqual(line_discounts[0], D("0.00"))
+        self.assertEqual(line_discounts[1], D("27.00"))
+
+    def test_applies_to_one_line(self):
+        self.basket.add_product(self.slipper, 1)
+
+        result = self.benefit_compound.apply(self.basket, self.condition, self.offer)
+        self.assertEqual(D("13.00"), result.discount)
+
+        # Slipper isn't the top-priority benefit, but it is the only one that
+        # matches this basket. So that should be applied.
+        line_discounts = [line.discount_value for line in self.basket.all_lines()]
+        self.assertEqual(len(line_discounts), 1)
         self.assertEqual(line_discounts[0], D("13.00"))
-        self.assertEqual(line_discounts[1], D("22.00"))
 
 
 class TestCompoundBluelightPercentageBenefitDiscount(TransactionTestCase):
