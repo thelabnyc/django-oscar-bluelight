@@ -1,7 +1,7 @@
 from decimal import Decimal as D
 from django.core import exceptions
 from django.db import models
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext, gettext_lazy as _
 from oscar.core.loading import get_model, get_class
 from oscar.apps.offer import utils
 from oscar.apps.offer.benefits import (
@@ -15,6 +15,7 @@ from oscar.apps.offer.benefits import (
     ShippingPercentageDiscountBenefit,
 )
 from oscar.templatetags.currency_filters import currency
+from .constants import Conjunction
 import copy
 
 Benefit = get_model("offer", "Benefit")
@@ -46,7 +47,12 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 "value": self.value,
                 "range": self.range.name if self.range else _("product range"),
                 "max_affected_items": (
-                    _("maximum %s item(s)") % self.max_affected_items
+                    ngettext(
+                        "maximum %s item",
+                        "maximum %s items",
+                        self.max_affected_items,
+                    )
+                    % self.max_affected_items
                 )
                 if self.max_affected_items
                 else _("no maximum"),
@@ -63,7 +69,12 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 if self.range
                 else _("product range"),
                 "max_affected_items": (
-                    _("maximum %s item(s)") % self.max_affected_items
+                    ngettext(
+                        "maximum %s item",
+                        "maximum %s items",
+                        self.max_affected_items,
+                    )
+                    % self.max_affected_items
                 )
                 if self.max_affected_items
                 else _("no maximum"),
@@ -160,7 +171,12 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                 "value": currency(self.value),
                 "range": self.range.name.lower() if self.range else _("product range"),
                 "max_affected_items": (
-                    _("maximum %s item(s)") % self.max_affected_items
+                    ngettext(
+                        "maximum %s item",
+                        "maximum %s items",
+                        self.max_affected_items,
+                    )
+                    % self.max_affected_items
                 )
                 if self.max_affected_items
                 else _("no maximum"),
@@ -177,7 +193,12 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                 if self.range
                 else _("product range"),
                 "max_affected_items": (
-                    _("maximum %s item(s)") % self.max_affected_items
+                    ngettext(
+                        "maximum %s item",
+                        "maximum %s items",
+                        self.max_affected_items,
+                    )
+                    % self.max_affected_items
                 )
                 if self.max_affected_items
                 else _("no maximum"),
@@ -294,7 +315,12 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 "range": self.range,
                 "amount": currency(self.value),
                 "max_affected_items": (
-                    _("maximum %s item(s)") % self.max_affected_items
+                    ngettext(
+                        "maximum %s item",
+                        "maximum %s items",
+                        self.max_affected_items,
+                    )
+                    % self.max_affected_items
                 )
                 if self.max_affected_items
                 else _("no maximum"),
@@ -389,7 +415,12 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
                 "range": self.range,
                 "amount": currency(self.value),
                 "max_affected_items": (
-                    _("maximum %s item(s)") % self.max_affected_items
+                    ngettext(
+                        "maximum %s item",
+                        "maximum %s items",
+                        self.max_affected_items,
+                    )
+                    % self.max_affected_items
                 )
                 if self.max_affected_items
                 else _("no maximum"),
@@ -669,6 +700,18 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
 
 
 class CompoundBenefit(Benefit):
+    conjunction = models.CharField(
+        _("Sub-Benefit conjunction type"),
+        choices=Conjunction.TYPE_CHOICES,
+        default=Conjunction.AND,
+        max_length=10,
+        help_text=_(
+            "Select the conjunction which will be used to logically join the sub-benefits "
+            "together. An AND conjunction applies all sub-benefits. An OR conjunction "
+            "applies the first benefit which results in a non-zero discount (benefits "
+            "are applied in order of their value, descending)."
+        ),
+    )
     subbenefits = models.ManyToManyField(
         "offer.Benefit",
         related_name="parent_benefits",
@@ -693,7 +736,9 @@ class CompoundBenefit(Benefit):
         if self.pk is None:
             return []
         chil = [
-            c.proxy() for c in self.subbenefits.order_by("id").all() if c.id != self.id
+            c.proxy()
+            for c in self.subbenefits.order_by("-value", "id").all()
+            if c.id != self.id
         ]
         return chil
 
@@ -710,7 +755,12 @@ class CompoundBenefit(Benefit):
         return self._append_max_discount_to_text(descr)
 
     def apply(
-        self, basket, condition, offer, max_total_discount=None, consume_items=None
+        self,
+        basket,
+        condition,
+        offer,
+        max_total_discount=None,
+        consume_items=None,
     ):
         combined_result = None
         affected_lines = []
@@ -742,6 +792,11 @@ class CompoundBenefit(Benefit):
             else:
                 raise ValueError(_("Can not combine offer benefits of differing types"))
 
+            # If this is an OR benefit AND this child-benefit applied a non-zero
+            # discount, exit the loop.
+            if self.conjunction == Conjunction.OR and result.discount > 0:
+                break
+
         if combined_result.discount > 0:
             if consume_items:
                 consume_items(offer, basket, affected_lines)
@@ -760,7 +815,7 @@ class CompoundBenefit(Benefit):
                 results.append(str(result))
         if len(results) <= 0:
             return None
-        descr = _(" and ").join(results)
+        descr = self._get_conjoiner().join(results)
         return PostOrderAction(descr)
 
     def clean(self):
@@ -783,10 +838,15 @@ class CompoundBenefit(Benefit):
         return discount
 
     def _human_readable_conjoin(self, strings, empty=None):
-        strings = list(strings)
+        strings = [f"({s})" for s in strings]
         if len(strings) <= 0 and empty is not None:
             return empty
-        return _(" and ").join(strings)
+        return self._get_conjoiner().join(strings)
+
+    def _get_conjoiner(self):
+        if self.conjunction == Conjunction.OR:
+            return _(" OR ")
+        return _(" AND ")
 
 
 __all__ = [

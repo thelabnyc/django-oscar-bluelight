@@ -152,7 +152,7 @@ class CompoundBenefitForm(forms.ModelForm):
 
     class Meta:
         model = CompoundBenefit
-        fields = ["proxy_class", "subbenefits", "max_discount"]
+        fields = ["proxy_class", "conjunction", "subbenefits", "max_discount"]
 
 
 class CompoundConditionForm(forms.ModelForm):
