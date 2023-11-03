@@ -116,6 +116,12 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.0
+
+- Add conjunction type to CompoundBenefits
+- Add support for django-oscar 3.2.2
+- Add support for django 4.2
+
 ### 5.4.0
 
 - Add rules framework to allow library consumers to change how vouchers are determined to be available or not.
