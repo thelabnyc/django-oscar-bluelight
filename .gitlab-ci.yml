@@ -54,9 +54,9 @@ test:
         - server/junit-*/TEST-*.xml
   parallel:
     matrix:
-      - IMAGE: python:3.9
       - IMAGE: python:3.10
       - IMAGE: python:3.11
+      # - IMAGE: python:3.12
 
 publish_pkg:
   image: python:3

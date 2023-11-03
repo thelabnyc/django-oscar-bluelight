@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     ...
     # Bluelight. Must come before `django-oscar` so that template inheritance / overrides work correctly.
     'oscarbluelight',
-    'django_pgviews',
+    'thelabdb.pgviews',
 
     # django-oscar
     'oscar',

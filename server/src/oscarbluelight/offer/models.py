@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
 from django.utils import timezone
-from django_pgviews import view as pg
+from thelabdb.pgviews import view as pg
 from oscar.core.loading import get_model
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
