@@ -284,8 +284,10 @@ class Voucher(AbstractVoucher):
         return {obj.code for obj in objs}
 
     def _get_child_code_batch(self, num_codes):
+        # The empty .order_by() clause is important here to prevent introducing
+        # a bunch of JOINs for ordering by priority.
         existing_codes = set(
-            self.__class__.objects.all().values_list("code", flat=True)
+            self.__class__.objects.order_by().all().values_list("code", flat=True)
         )
 
         def check_code_is_unique(code):
