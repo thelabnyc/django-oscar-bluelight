@@ -409,10 +409,10 @@ class OfferGroupDeleteView(DeleteView):
             return HttpResponseRedirect(self.success_url)
         return super().get(request, *args, **kwargs)
 
-    def delete(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         if not self._is_validate_delete(request):
             return HttpResponseRedirect(self.success_url)
-        return super().delete(request, *args, **kwargs)
+        return super().post(request, *args, **kwargs)
 
     def _is_validate_delete(self, request):
         group = self.get_object()

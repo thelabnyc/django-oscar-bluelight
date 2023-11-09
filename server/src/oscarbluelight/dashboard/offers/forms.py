@@ -276,7 +276,7 @@ class OfferGroupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance:
+        if self.instance and self.instance.pk:
             self.initial["offers"] = self.instance.offers.all()
 
     def save(self, *args, **kwargs):
