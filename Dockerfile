@@ -34,7 +34,7 @@ CMD ["webpack", "--watch"]
 # =============================================================================
 # Python / Django Application Server
 # =============================================================================
-FROM python:3.11 as server
+FROM registry.gitlab.com/thelabnyc/python:py311 as server
 
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/server
@@ -44,7 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY server/ /oscarbluelight/server/
-RUN pip install -e .[development]
+RUN poetry install
 
 RUN mkdir /oscarbluelight/tox
 ENV TOX_WORK_DIR='/oscarbluelight/tox'
