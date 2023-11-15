@@ -9,7 +9,7 @@ from oscar.apps.dashboard.ranges.views import (
     RangeListView as BaseRangeListView,
     RangeProductListView as BaseRangeProductListView,
 )
-from .forms import RangeSearchForm
+from .forms import RangeSearchForm, RangeProductForm
 import logging
 
 logger = logging.getLogger(__name__)
@@ -126,12 +126,14 @@ class RangeExcludedProductsView(UpdateView):
 
 
 class RangeProductListView(BaseRangeProductListView):
+    form_class = RangeProductForm
+
     def get_queryset(self):
         """
         Override default query for RangeProductList
         Retrieve the product queryset directly from the database for accuracy in the dashboard
         """
-        range_instance = self.get_range()
+        range_instance = self.get_product_range()
         products = (
             range_instance.all_products_consistent()
             .order_by("rangeproduct__display_order")
