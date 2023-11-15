@@ -116,6 +116,14 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.2
+
+- Fix bug where dashboard range form error messages were not consistent with the actual DB state.
+
+### 5.5.1
+
+- Fix performance regression in Voucher.\_get_child_code_batch
+
 ### 5.5.0
 
 - Add conjunction type to CompoundBenefits

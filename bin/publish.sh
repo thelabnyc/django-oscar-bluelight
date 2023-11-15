@@ -30,7 +30,7 @@ else
 fi
 
 # Set version in pyproject.toml
-PYPROJ_FILE="pyproject.toml"
+PYPROJ_FILE="server/pyproject.toml"
 PYPROJ_BK_FILE="${PYPROJ_FILE}.bk"
 awk "{gsub(/^version = (.+)$/,\"version = \\\"$VERSION\\\"\")}1" "$PYPROJ_FILE" > "$PYPROJ_BK_FILE"
 mv "$PYPROJ_BK_FILE" "$PYPROJ_FILE"
