@@ -132,13 +132,10 @@ class BluelightBasketLineMixin(object):
                 _("Bluelight does not support tax-inclusive discounting.")
             )
 
-        # Protect against divide by 0 errors
-        if self.quantity == 0:
+        # Protect against divide by 0 errors and comparing None with Decimal errors (price field in
+        # StockRecord is allowed to be null, which means effective_price may occasionally be None).
+        if self.quantity == 0 or self.purchase_info.price.effective_price is None:
             return Decimal("0.00")
-
-        # Cannot compare None with Decimal below, so return None
-        if self.purchase_info.price.effective_price is None:
-            return None
 
         # Figure out the per-unit discount by taking the discount at the start of offer group application and
         # dividing it by the line quantity.
