@@ -75,7 +75,8 @@ publish_pkg:
     - export TWINE_USERNAME=gitlab-ci-token
     - export TWINE_PASSWORD=${CI_JOB_TOKEN}
     - python -m twine upload
-      --repository-url https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/pypi
+      --verbose
+      --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
       dist/*
 
 publish_gitlab_release:
