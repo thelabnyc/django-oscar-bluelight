@@ -1,4 +1,12 @@
-from psycopg2 import sql
+from django.core.exceptions import ImproperlyConfigured
+
+try:
+    try:
+        from psycopg import sql
+    except ImportError:
+        from psycopg2 import sql
+except ImportError:
+    raise ImproperlyConfigured("Error loading psycopg2 or psycopg module")
 
 
 def get_update_children_meta_sql(Voucher):

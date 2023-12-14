@@ -1,4 +1,13 @@
-from psycopg2 import sql
+from django.core.exceptions import ImproperlyConfigured
+
+try:
+    try:
+        from psycopg import sql
+    except ImportError:
+        from psycopg2 import sql
+except ImportError:
+    raise ImproperlyConfigured("Error loading psycopg2 or psycopg module")
+
 
 # Basically copied from the query run by ``oscar.apps.offer.models.Range.product_queryset``
 # Just slightly altered to work as a materialized view, leading to better performance.
