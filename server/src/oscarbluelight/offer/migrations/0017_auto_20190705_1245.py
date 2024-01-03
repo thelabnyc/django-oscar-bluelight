@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offer", "0016_remove_conditionaloffer_apply_to_displayed_prices"),
     ]

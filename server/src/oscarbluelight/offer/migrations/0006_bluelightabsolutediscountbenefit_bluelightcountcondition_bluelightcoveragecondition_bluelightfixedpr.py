@@ -94,7 +94,6 @@ def use_bluelight_reverse(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offer", "0005_auto_20160719_1238"),
     ]

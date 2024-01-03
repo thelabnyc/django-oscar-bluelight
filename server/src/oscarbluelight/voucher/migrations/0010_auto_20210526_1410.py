@@ -32,7 +32,6 @@ def make_voucher_names_unique(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("voucher", "0009_auto_20210216_1327"),
     ]

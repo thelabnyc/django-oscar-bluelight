@@ -7,7 +7,6 @@ from decimal import Decimal
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("order", "0001_initial"),
         ("offer", "0001_initial"),

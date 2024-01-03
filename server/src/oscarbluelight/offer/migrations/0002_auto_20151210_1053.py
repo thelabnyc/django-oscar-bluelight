@@ -6,7 +6,6 @@ import oscar.models.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offer", "0001_initial"),
     ]

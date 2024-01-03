@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offer", "0013_conditionaloffer_exclusive"),
     ]

@@ -43,7 +43,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
             deleteTitle = gettext("System groups can not be deleted.");
         } else if (hasOffers) {
             deleteTitle = gettext(
-                "Remove all offers from this group to delete it."
+                "Remove all offers from this group to delete it.",
             );
         } else {
             deleteTitle = interpolate(gettext("Delete the %s offer group"), [
@@ -70,9 +70,9 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                             href={group.update_link}
                             title={interpolate(
                                 gettext(
-                                    "Edit the details of the %s offer group"
+                                    "Edit the details of the %s offer group",
                                 ),
-                                [group.name]
+                                [group.name],
                             )}
                         >
                             {gettext("Edit")}

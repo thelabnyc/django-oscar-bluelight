@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offer", "0013_conditionaloffer_exclusive"),
         ("voucher", "0006_auto_20170710_1442"),

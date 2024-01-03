@@ -6,7 +6,6 @@ import oscar.core.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("basket", "0003_basket_vouchers"),
     ]

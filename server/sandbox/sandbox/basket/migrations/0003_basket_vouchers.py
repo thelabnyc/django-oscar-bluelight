@@ -5,7 +5,6 @@ from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("voucher", "0001_initial"),
         ("basket", "0002_auto_20140827_1705"),
