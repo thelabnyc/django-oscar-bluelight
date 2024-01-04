@@ -14,7 +14,7 @@ interface IDjango {
     readonly ngettext: (
         singular: string,
         plural: string,
-        count: number
+        count: number,
     ) => string;
     readonly gettext_noop: (msgid: string) => string;
     readonly pgettext: (context: string, msgid: string) => string;
@@ -22,12 +22,12 @@ interface IDjango {
         context: string,
         singular: string,
         plural: string,
-        count: number
+        count: number,
     ) => string;
     readonly interpolate: (
         fmt: string,
         obj: IInterpolationData,
-        named?: boolean
+        named?: boolean,
     ) => string;
 
     readonly pluralidx: (count: number) => number;

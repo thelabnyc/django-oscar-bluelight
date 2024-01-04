@@ -5,7 +5,6 @@ import oscar.models.fields.autoslugfield
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offer", "0012_auto_20211020_1037"),
     ]

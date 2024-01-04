@@ -8,7 +8,6 @@ from django.conf import settings
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("catalogue", "0001_initial"),
         ("address", "0001_initial"),

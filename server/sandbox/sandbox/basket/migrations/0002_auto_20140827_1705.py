@@ -6,7 +6,6 @@ from django.conf import settings
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("partner", "0001_initial"),
         ("catalogue", "0001_initial"),
