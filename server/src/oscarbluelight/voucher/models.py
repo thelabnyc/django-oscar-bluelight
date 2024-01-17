@@ -287,7 +287,10 @@ class Voucher(AbstractVoucher):
         # The empty .order_by() clause is important here to prevent introducing
         # a bunch of JOINs for ordering by priority.
         existing_codes = set(
-            self.__class__.objects.order_by().all().values_list("code", flat=True)
+            self.__class__.objects.filter(code__startswith=self.code)
+            .order_by()
+            .values_list("code", flat=True)
+            .iterator()
         )
 
         def check_code_is_unique(code):
