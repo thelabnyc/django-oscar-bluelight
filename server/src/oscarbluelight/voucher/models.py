@@ -257,7 +257,7 @@ class Voucher(AbstractVoucher):
         obj = self.children.filter(code=code).first()
         return obj
 
-    def _create_child_batch(self, codes, batch_size=10_000):
+    def _create_child_batch(self, codes, batch_size=1_000):
         children = []
         copy_fields = (
             "usage",
