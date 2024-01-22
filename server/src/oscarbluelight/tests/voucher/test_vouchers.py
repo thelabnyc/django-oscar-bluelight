@@ -174,10 +174,10 @@ class ParentChildVoucherTest(TestCase):
         )
         self.assertEqual(p.children.all().count(), 0)
 
-        # First batch. Query count should be (17 + (auto_generate_count / 10_000)), since
-        # the `bulk_create` batch size is 10_000
+        # First batch. Query count should be (17 + (auto_generate_count / 1_000)), since
+        # the `bulk_create` batch size is 1_000
         baseline_num_queries = 17
-        insert_batch_size = 10_000
+        insert_batch_size = 1_000
         auto_generate_count = 100_000
         with self.assertNumQueries(
             baseline_num_queries + (auto_generate_count / insert_batch_size)
