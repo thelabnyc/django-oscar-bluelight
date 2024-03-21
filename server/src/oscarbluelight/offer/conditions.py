@@ -96,7 +96,7 @@ class BluelightCountCondition(CountCondition):
 
         for __, line in applicable_lines:
             quantity_to_consume = min(line.quantity_without_discount, to_consume)
-            line.consume(quantity_to_consume)
+            line.consume(quantity_to_consume, offer=offer)
             affected_lines.append((line, 0, quantity_to_consume))
             to_consume -= quantity_to_consume
             if to_consume == 0:
@@ -183,7 +183,7 @@ class BluelightCoverageCondition(CoverageCondition):
             if not line.is_available_for_offer_discount(offer):
                 continue
             # Only consume a quantity of 1 from each line
-            line.consume(1)
+            line.consume(1, offer=offer)
             affected_lines.append((line, 0, 1))
             consumed_products.append(product)
             to_consume -= 1
@@ -293,7 +293,7 @@ class BluelightValueCondition(ValueCondition):
             quantity_to_consume = min(
                 line.quantity_without_discount, quantity_to_consume
             )
-            line.consume(quantity_to_consume)
+            line.consume(quantity_to_consume, offer=offer)
             affected_lines.append((line, 0, quantity_to_consume))
             to_consume -= price * quantity_to_consume
             if to_consume <= 0:
