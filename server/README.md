@@ -116,6 +116,26 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.7
+
+- Fix compatibility with Oscar 3.2.3.
+
+### 5.5.6
+
+- Tweak `Voucher._create_child_batch` so that batch size does not exceed Postgres limit of 65535 query params
+
+### 5.5.5
+
+- Improve performance of child code additions
+
+### 5.5.4
+
+- Add support for psycopg
+
+### 5.5.3
+
+- Fix bug when basket line unit_effective_price is None.
+
 ### 5.5.2
 
 - Fix bug where dashboard range form error messages were not consistent with the actual DB state.
