@@ -44,9 +44,9 @@ class BluelightCountCondition(CountCondition):
     def description(self):
         return self._description % {
             "count": self.value,
-            "range": utils.range_anchor(self.range)
-            if self.range
-            else _("product range"),
+            "range": (
+                utils.range_anchor(self.range) if self.range else _("product range")
+            ),
         }
 
     def _clean(self):
@@ -124,9 +124,9 @@ class BluelightCoverageCondition(CoverageCondition):
     def description(self):
         return self._description % {
             "count": self.value,
-            "range": utils.range_anchor(self.range)
-            if self.range
-            else _("product range"),
+            "range": (
+                utils.range_anchor(self.range) if self.range else _("product range")
+            ),
         }
 
     def _get_num_covered_products(self, basket, offer):
@@ -215,9 +215,9 @@ class BluelightValueCondition(ValueCondition):
         return self._description % {
             "amount": currency(self.value),
             "tax": _("tax-inclusive") if self._tax_inclusive else _("tax-exclusive"),
-            "range": utils.range_anchor(self.range)
-            if self.range
-            else _("product range"),
+            "range": (
+                utils.range_anchor(self.range) if self.range else _("product range")
+            ),
         }
 
     def _clean(self):
