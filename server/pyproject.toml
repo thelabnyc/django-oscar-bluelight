@@ -35,3 +35,6 @@ redis = ">=3.0.0"
 sorl-thumbnail = ">=11.04"
 tox = ">=4.14.1"
 unittest-xml-reporting = ">=3.0.4"
+
+# Fix currently unpublished Python 3.12 compat
+django-haystack = { git = "https://github.com/django-haystack/django-haystack.git", branch = "master" }
