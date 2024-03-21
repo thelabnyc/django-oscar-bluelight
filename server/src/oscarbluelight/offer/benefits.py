@@ -47,15 +47,17 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 "value": self.value,
                 "range": self.range.name if self.range else _("product range"),
                 "max_affected_items": (
-                    ngettext(
-                        "maximum %s item",
-                        "maximum %s items",
-                        self.max_affected_items,
+                    (
+                        ngettext(
+                            "maximum %s item",
+                            "maximum %s items",
+                            self.max_affected_items,
+                        )
+                        % self.max_affected_items
                     )
-                    % self.max_affected_items
-                )
-                if self.max_affected_items
-                else _("no maximum"),
+                    if self.max_affected_items
+                    else _("no maximum")
+                ),
             }
         )
 
@@ -65,19 +67,21 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
             self._description
             % {
                 "value": self.value,
-                "range": utils.range_anchor(self.range)
-                if self.range
-                else _("product range"),
+                "range": (
+                    utils.range_anchor(self.range) if self.range else _("product range")
+                ),
                 "max_affected_items": (
-                    ngettext(
-                        "maximum %s item",
-                        "maximum %s items",
-                        self.max_affected_items,
+                    (
+                        ngettext(
+                            "maximum %s item",
+                            "maximum %s items",
+                            self.max_affected_items,
+                        )
+                        % self.max_affected_items
                     )
-                    % self.max_affected_items
-                )
-                if self.max_affected_items
-                else _("no maximum"),
+                    if self.max_affected_items
+                    else _("no maximum")
+                ),
             }
         )
 
@@ -171,15 +175,17 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                 "value": currency(self.value),
                 "range": self.range.name.lower() if self.range else _("product range"),
                 "max_affected_items": (
-                    ngettext(
-                        "maximum %s item",
-                        "maximum %s items",
-                        self.max_affected_items,
+                    (
+                        ngettext(
+                            "maximum %s item",
+                            "maximum %s items",
+                            self.max_affected_items,
+                        )
+                        % self.max_affected_items
                     )
-                    % self.max_affected_items
-                )
-                if self.max_affected_items
-                else _("no maximum"),
+                    if self.max_affected_items
+                    else _("no maximum")
+                ),
             }
         )
 
@@ -189,19 +195,21 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
             self._description
             % {
                 "value": currency(self.value),
-                "range": utils.range_anchor(self.range)
-                if self.range
-                else _("product range"),
+                "range": (
+                    utils.range_anchor(self.range) if self.range else _("product range")
+                ),
                 "max_affected_items": (
-                    ngettext(
-                        "maximum %s item",
-                        "maximum %s items",
-                        self.max_affected_items,
+                    (
+                        ngettext(
+                            "maximum %s item",
+                            "maximum %s items",
+                            self.max_affected_items,
+                        )
+                        % self.max_affected_items
                     )
-                    % self.max_affected_items
-                )
-                if self.max_affected_items
-                else _("no maximum"),
+                    if self.max_affected_items
+                    else _("no maximum")
+                ),
             }
         )
 
@@ -315,15 +323,17 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 "range": self.range,
                 "amount": currency(self.value),
                 "max_affected_items": (
-                    ngettext(
-                        "maximum %s item",
-                        "maximum %s items",
-                        self.max_affected_items,
+                    (
+                        ngettext(
+                            "maximum %s item",
+                            "maximum %s items",
+                            self.max_affected_items,
+                        )
+                        % self.max_affected_items
                     )
-                    % self.max_affected_items
-                )
-                if self.max_affected_items
-                else _("no maximum"),
+                    if self.max_affected_items
+                    else _("no maximum")
+                ),
             }
         )
 
@@ -415,15 +425,17 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
                 "range": self.range,
                 "amount": currency(self.value),
                 "max_affected_items": (
-                    ngettext(
-                        "maximum %s item",
-                        "maximum %s items",
-                        self.max_affected_items,
+                    (
+                        ngettext(
+                            "maximum %s item",
+                            "maximum %s items",
+                            self.max_affected_items,
+                        )
+                        % self.max_affected_items
                     )
-                    % self.max_affected_items
-                )
-                if self.max_affected_items
-                else _("no maximum"),
+                    if self.max_affected_items
+                    else _("no maximum")
+                ),
             }
         )
 
@@ -507,9 +519,9 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
-                "range": utils.range_anchor(self.range)
-                if self.range
-                else _("product range"),
+                "range": (
+                    utils.range_anchor(self.range) if self.range else _("product range")
+                ),
             }
         )
 

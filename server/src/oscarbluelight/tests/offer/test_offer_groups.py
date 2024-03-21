@@ -525,7 +525,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0].consumer.consumed(), 0)
+        self.assertEqual(lines[0].discounts.num_consumed(), 0)
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
         self.assertEqual(lines[0].has_discount, False)
@@ -586,7 +586,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0].consumer.consumed(), 2)
+        self.assertEqual(lines[0].discounts.num_consumed(), 2)
         self.assertEqual(lines[0].quantity_with_discount, 2)
         self.assertEqual(lines[0].quantity_without_discount, 0)
 
@@ -684,7 +684,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0].consumer.consumed(), 0)
+        self.assertEqual(lines[0].discounts.num_consumed(), 0)
         self.assertEqual(lines[0].quantity_with_discount, 0)
         self.assertEqual(lines[0].quantity_without_discount, 2)
 
@@ -701,7 +701,7 @@ class OfferGroupApplicatorTest(TestCase):
         lines = basket.all_lines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0].quantity, 2)
-        self.assertEqual(lines[0].consumer.consumed(), 2)
+        self.assertEqual(lines[0].discounts.num_consumed(), 2)
         self.assertEqual(lines[0].quantity_with_discount, 2)
         self.assertEqual(lines[0].quantity_without_discount, 0)
 

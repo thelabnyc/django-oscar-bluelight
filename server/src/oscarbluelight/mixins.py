@@ -85,7 +85,7 @@ class BluelightBasketLineMixin(object):
         Description of logic:
 
         During offer application, because of the existence of OfferGroup, discount may be > 0 even
-        when ``self.consumer.consumed`` is 0. This is because Applicator resets the affected quantity
+        when ``self.discounts.num_consumed`` is 0. This is because Applicator resets the affected quantity
         to 0 when progressing onto the next OfferGroup, so that the it may affect the same lines that
         the previous OfferGroup just did, e.g. compounding offers. However, since by default Offers
         all calculate their discounts using the full unit price excluding discounts, this has the
@@ -181,12 +181,8 @@ class BluelightBasketLineMixin(object):
                 )
             )
 
-        # Increase the total line discount amount
-        self._discount_excl_tax += discount_value
-
         # Increment tracking counters
-        self.consume(affected_quantity, offer=offer)
-        self.consumer.discount(affected_quantity)
+        self.discounts.discount(discount_value, affected_quantity, incl_tax, offer)
 
         # Push description of discount onto the stack
         if offer:
@@ -212,14 +208,14 @@ class BluelightBasketLineMixin(object):
         This allows offers to re-consume lines already consumed by previous offer groups while
         still calculating their discount amounts correctly.
         """
-        self.consumer.begin_offer_group_application()
+        self.discounts.begin_offer_group_application()
         self._offer_group_starting_discount = self.discount_value
 
     def end_offer_group_application(self):
         """
         Signal that the Applicator has finished applying a group of offers.
         """
-        discounted_quantity = self.consumer.discounted()
+        discounted_quantity = self.discounts.discounted()
         if discounted_quantity > 0:
             delta_line = self.discount_value - self._offer_group_starting_discount
             delta_unit = delta_line / discounted_quantity
@@ -228,13 +224,13 @@ class BluelightBasketLineMixin(object):
                 discount_delta_unit=delta_unit,
             )
             self._price_breakdown_stack.append(item)
-            self.consumer.end_offer_group_application()
+            self.discounts.end_offer_group_application()
 
     def finalize_offer_group_applications(self):
         """
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
-        self.consumer.finalize_offer_group_applications()
+        self.discounts.finalize_offer_group_applications()
         self._offer_group_starting_discount = self.discount_value
 
     def clear_offer_upsells(self):
