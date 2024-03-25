@@ -126,12 +126,28 @@ def get_recalculate_offer_application_totals_sql(
     ConditionalOffer,
     ignored_order_statuses,
 ):
-    status_filter = sql.SQL("")
+    status_in_filter = status_not_in_filter = sql.SQL("")
     if len(ignored_order_statuses) > 0:
-        status_filter = sql.SQL("AND o.status NOT IN ({statuses})").format(
-            statuses=sql.SQL(", ").join(
-                [sql.Literal(status) for status in ignored_order_statuses]
-            ),
+        status_sql_literals = sql.SQL(", ").join(
+            [sql.Literal(status) for status in ignored_order_statuses]
+        )
+        status_in_filter = sql.SQL(
+            """
+            OR (co.id IN (
+                     SELECT offer_id
+                       FROM {order_orderdiscount}
+                      GROUP BY offer_id
+                     HAVING COUNT(order_id) = 1
+                     )
+                     AND o.status IN ({statuses})
+            )
+            """
+        ).format(
+            order_orderdiscount=sql.Identifier(OrderDiscount._meta.db_table),
+            statuses=status_sql_literals,
+        )
+        status_not_in_filter = sql.SQL("AND o.status NOT IN ({statuses})").format(
+            statuses=status_sql_literals
         )
     update_sql = sql.SQL(
         """
@@ -145,10 +161,12 @@ def get_recalculate_offer_application_totals_sql(
               FROM {order_orderdiscount} d
               JOIN {order_order} o
                 ON o.id = d.order_id
-               {status_filter}
+               {status_not_in_filter}
              GROUP BY d.offer_id
             UNION
-            -- Second query finds all of the offers with no discounts at all
+            -- Second query finds all of the offers
+            --     - with no discounts at all
+            --     - with exactly one associated order that has an ignored order status
             SELECT co.id as "offer_id",
                    0 as "calculated_total_discount",
                    0 as "calculated_num_applications",
@@ -156,7 +174,10 @@ def get_recalculate_offer_application_totals_sql(
               FROM {offer_conditionaloffer} co
               LEFT JOIN {order_orderdiscount} d
                 ON d.offer_id = co.id
+              LEFT JOIN {order_order} o
+                ON o.id = d.order_id
              WHERE d.id IS NULL
+                {status_in_filter}
              GROUP BY co.id
         ),
         cte_offers_to_update AS (
@@ -180,6 +201,7 @@ def get_recalculate_offer_application_totals_sql(
         order_order=sql.Identifier(Order._meta.db_table),
         order_orderdiscount=sql.Identifier(OrderDiscount._meta.db_table),
         offer_conditionaloffer=sql.Identifier(ConditionalOffer._meta.db_table),
-        status_filter=status_filter,
+        status_not_in_filter=status_not_in_filter,
+        status_in_filter=status_in_filter,
     )
     return update_sql
