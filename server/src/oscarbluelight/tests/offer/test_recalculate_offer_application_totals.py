@@ -283,6 +283,92 @@ class ConditionalOfferModelTest(TestCase):
         self.assertEqual(offer.num_orders, 3)
 
     @override_settings(BLUELIGHT_IGNORED_ORDER_STATUSES=["Canceled", "Retired"])
+    def test_recalculate_offer_application_totals_with_status_filter_and_exactly_one_order(
+        self,
+    ):
+        self.offer.total_discount = D("15.00")
+        self.offer.num_applications = 1
+        self.offer.num_orders = 1
+        self.offer.save()
+
+        OrderDiscount.objects.create(
+            order=self.order_retired,
+            category=OrderDiscount.BASKET,
+            offer_id=self.offer.id,
+            amount=D("15.00"),
+            message="$5 off some things",
+            frequency=1,
+        )
+
+        # Run the recalculation method
+        ConditionalOffer.recalculate_offer_application_totals()
+        # Get the most recent object of this offer to check the update query is executed correctly
+        offer = ConditionalOffer.objects.get(pk=self.offer.pk)
+
+        # Total discount should be updated as 0.00
+        # The discount amount, 15.00 should not be counted since its associated order's status exists in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.total_discount, D("0.00"))
+        # Number of applications should be updated as 0
+        # The application should not be counted since its associated order's status exists in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.num_applications, 0)
+        # Number of orders should be updated as the count of the distinct orders
+        # having a relation to the discounts that apply this offer: 0 distinct orders
+        # The discount's associated order should not be counted since its status exists in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.num_orders, 0)
+
+    @override_settings(BLUELIGHT_IGNORED_ORDER_STATUSES=["Canceled", "Retired"])
+    def test_recalculate_offer_application_totals_with_all_orders_with_ignored_statuses(
+        self,
+    ):
+        self.offer.total_discount = D("29.00")
+        self.offer.num_applications = 3
+        self.offer.num_orders = 2
+        self.offer.save()
+
+        OrderDiscount.objects.create(
+            order=self.order_retired,
+            category=OrderDiscount.BASKET,
+            offer_id=self.offer.id,
+            amount=D("15.00"),
+            message="$5 off some things",
+            frequency=1,
+        )
+
+        OrderDiscount.objects.create(
+            order=self.order_retired,
+            category=OrderDiscount.BASKET,
+            offer_id=self.offer.id,
+            amount=D("4.00"),
+            message="$4 off some things",
+            frequency=1,
+        )
+
+        OrderDiscount.objects.create(
+            order=self.order_canceled,
+            category=OrderDiscount.BASKET,
+            offer_id=self.offer.id,
+            amount=D("10.00"),
+            message="$10 off some things",
+            frequency=1,
+        )
+
+        # Run the recalculation method
+        ConditionalOffer.recalculate_offer_application_totals()
+        # Get the most recent object of this offer to check the update query is executed correctly
+        offer = ConditionalOffer.objects.get(pk=self.offer.pk)
+
+        # Total discount should be updated as 0.00
+        # The discount amount, 29.00 shouldn't be counted since all the associated orders' statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.total_discount, D("0.00"))
+        # Number of applications should be updated as 0
+        # The application shouldn be counted since all the associated orders' statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.num_applications, 0)
+        # Number of orders should be updated as the count of the distinct orders
+        # having a relation to the discounts that apply this offer: 0 distinct orders
+        # The discounts' associated orders shouldn be counted since their statuses exist in BLUELIGHT_IGNORED_ORDER_STATUSES
+        self.assertEqual(offer.num_orders, 0)
+
+    @override_settings(BLUELIGHT_IGNORED_ORDER_STATUSES=["Canceled", "Retired"])
     def test_recalculate_offer_application_totals_with_no_orders(self):
         self.offer.total_discount = D("15.00")
         self.offer.num_applications = 8

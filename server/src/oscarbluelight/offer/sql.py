@@ -135,31 +135,30 @@ def get_recalculate_offer_application_totals_sql(
         )
     update_sql = sql.SQL(
         """
-        WITH cte_discounts AS (
-            -- First query finds all of the discounts, excluding orders ignored
-            -- by the status filter
-            SELECT d.offer_id as "offer_id",
-                   SUM(d.amount) as "calculated_total_discount",
-                   SUM(d.frequency) as "calculated_num_applications",
-                   COUNT(DISTINCT d.order_id) as "calculated_num_orders"
+        WITH cte_nonignored_order_discounts AS (
+            -- Project OrderDiscount, filtered down to just discounts for orders
+            -- that aren't in the list of ignored statuses.
+            SELECT d.*
               FROM {order_orderdiscount} d
               JOIN {order_order} o
                 ON o.id = d.order_id
                {status_filter}
-             GROUP BY d.offer_id
-            UNION
-            -- Second query finds all of the offers with no discounts at all
-            SELECT co.id as "offer_id",
-                   0 as "calculated_total_discount",
-                   0 as "calculated_num_applications",
-                   0 as "calculated_num_orders"
-              FROM {offer_conditionaloffer} co
-              LEFT JOIN {order_orderdiscount} d
-                ON d.offer_id = co.id
-             WHERE d.id IS NULL
-             GROUP BY co.id
+        ),
+        cte_discounts AS (
+            -- Find all of the offers and recalculate the totals for each offer
+            -- based on the OrderDiscount rows from cte_nonignored_order_discounts
+            SELECT o.id as "offer_id",
+                   COALESCE(SUM(d.amount), 0) as "calculated_total_discount",
+                   COALESCE(SUM(d.frequency), 0) as "calculated_num_applications",
+                   COUNT(DISTINCT d.order_id) as "calculated_num_orders"
+              FROM {offer_conditionaloffer} o
+              LEFT JOIN cte_nonignored_order_discounts d
+                ON o.id = d.offer_id
+             GROUP BY o.id
         ),
         cte_offers_to_update AS (
+            -- Find all the offers who's recorded totals don't match the totals
+            -- calculated by cte_discounts.
             SELECT o.id,
                    d.*
               FROM {offer_conditionaloffer} o
