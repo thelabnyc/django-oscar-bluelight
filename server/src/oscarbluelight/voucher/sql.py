@@ -50,7 +50,12 @@ def _get_insupd_m2m_sql(Voucher, m2m_table_name, rel_column_name):
            AND pv.id = {parent_id}
           JOIN {m2m_table_name} pvmm
             ON pvmm.voucher_id = pv.id
-            ON CONFLICT DO NOTHING;
+         WHERE NOT EXISTS (
+                SELECT 1
+                  FROM {m2m_table_name} cvmm
+                 WHERE cvmm.voucher_id = cv.id
+                   AND cvmm.{rel_column_name} = pvmm.{rel_column_name}
+               );
         """
     ).format(
         voucher_table=sql.Identifier(Voucher._meta.db_table),
