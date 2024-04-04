@@ -157,7 +157,10 @@ class Voucher(AbstractVoucher):
         success_count = 0
         # Generate auto codes
         auto_gen_codes = self._get_child_code_batch(auto_generate_count)
-        success_count += len(self._create_child_batch(auto_gen_codes))
+        # Update newly created child vouchers only when calling `_create_child_batch` for the last time.
+        success_count += len(
+            self._create_child_batch(auto_gen_codes, update_children=False)
+        )
         # Save manual/custom codes
         custom_code_successes = self._create_child_batch(custom_codes)
         success_count += len(custom_code_successes)
@@ -257,7 +260,7 @@ class Voucher(AbstractVoucher):
         obj = self.children.filter(code=code).first()
         return obj
 
-    def _create_child_batch(self, codes, batch_size=1_000):
+    def _create_child_batch(self, codes, batch_size=1_000, update_children=True):
         children = []
         copy_fields = (
             "usage",
@@ -279,7 +282,8 @@ class Voucher(AbstractVoucher):
             batch_size=batch_size,
         )
         # Bulk copy over the rest of the parent data
-        self.update_children()
+        if update_children:
+            self.update_children()
         # Return the newly created codes as a set
         return {obj.code for obj in objs}
 
