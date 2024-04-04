@@ -116,6 +116,11 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.8
+
+- Improve query performance for copying parent-to-child offers relationship
+- Fix order status bug in get_recalculate_offer_application_totals_sql
+
 ### 5.5.7
 
 - Fix compatibility with Oscar 3.2.3.
