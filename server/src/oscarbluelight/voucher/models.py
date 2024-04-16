@@ -162,7 +162,9 @@ class Voucher(AbstractVoucher):
             self._create_child_batch(auto_gen_codes, update_children=False)
         )
         # Save manual/custom codes
-        custom_code_successes = self._create_child_batch(custom_codes)
+        custom_code_successes = self._create_child_batch(
+            custom_codes, update_children=False
+        )
         success_count += len(custom_code_successes)
         custom_code_failures = set(custom_codes) - custom_code_successes
         for code in sorted(list(custom_code_failures)):

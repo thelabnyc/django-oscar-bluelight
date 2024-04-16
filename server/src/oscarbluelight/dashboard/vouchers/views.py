@@ -316,10 +316,10 @@ class ExportChildCodesFormView(generic.FormView):
 
     def get_created_on_counts(self):
         created_on_counts = (
-            self.parent.children.values(
-                "date_created__date",
-            )
-            .annotate(num_codes=Count("code", distinct=True))
+            self.parent.children.values("date_created__date", "code")
+            .distinct()
+            .values("date_created__date")
+            .annotate(num_codes=Count("code"))
             .order_by("-date_created__date")
         )
         return created_on_counts
