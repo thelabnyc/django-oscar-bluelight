@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.9
+
+- Improve query performance of child-voucher creation-date table.
+
 ### 5.5.8
 
 - Improve query performance for copying parent-to-child offers relationship
