@@ -8,6 +8,7 @@ from oscar.apps.dashboard.vouchers.forms import (
     VoucherForm as BaseVoucherForm,
 )
 
+ConditionalOffer = get_model("offer", "ConditionalOffer")
 Voucher = get_model("voucher", "Voucher")
 
 MAX_CHILDREN_CREATE = 100_000
@@ -64,6 +65,12 @@ class VoucherForm(BaseVoucherForm):
         queryset=Group.objects.order_by("name"),
         required=False,
     )
+    # Because we're using pagination and leveraging select2's remote data sets capability to populate the offers field,
+    # there's no need to send a potentially large queryset to the client side.
+    offers = forms.ModelMultipleChoiceField(
+        label=_("Which offers apply for this voucher?"),
+        queryset=ConditionalOffer.objects.none(),
+    )
 
     class Meta(BaseVoucherForm.Meta):
         fields = BaseVoucherForm.Meta.fields + [
@@ -75,10 +82,24 @@ class VoucherForm(BaseVoucherForm):
             "groups",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["offers"].queryset = self.instance.offers.all()
+
     def clean_custom_child_codes(self):
         code_txt = self.cleaned_data["custom_child_codes"]
         codes = [code.strip() for code in code_txt.splitlines()]
         return codes
+
+    def is_valid(self):
+        # To ensure the selected value is considered valid/invalid correctly during the form's validation process,
+        # update the `offers` field queryset to include all possible voucher-type offer choices.
+        self.fields["offers"].queryset = ConditionalOffer.objects.filter(
+            offer_type=ConditionalOffer.VOUCHER
+        )
+        res = super().is_valid()
+        return res
 
 
 class AddChildCodesForm(forms.Form):

@@ -24,7 +24,7 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
         self.detail_view = get_class("offers_dashboard.views", "OfferDetailView")
 
     def get_urls(self):
-        from .api_views import OfferGroupViewSet
+        from .api_views import OfferGroupViewSet, OfferAPIView
         from .views import (
             BenefitListView,
             BenefitDeleteView,
@@ -61,6 +61,11 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
                 "<int:pk>/images/",
                 self.image_update_view.as_view(),
                 name="offer-images",
+            ),
+            path(
+                "offers/",
+                OfferAPIView.as_view(),
+                name="offer-api-list",
             ),
             # Benefits
             path("benefits/", BenefitListView.as_view(), name="benefit-list"),
