@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.10
+
+- Improve offer select performance on voucher creation screen.
+
 ### 5.5.9
 
 - Improve query performance of child-voucher creation-date table.
