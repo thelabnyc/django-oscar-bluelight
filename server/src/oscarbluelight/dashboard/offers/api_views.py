@@ -28,7 +28,7 @@ class OfferAPIView(View):
         offer_type = request.GET.get("offer_type")
         if offer_type:
             query_filter["offer_type"] = offer_type
-        offers = ConditionalOffer.objects.filter(**query_filter)
+        offers = ConditionalOffer.objects.filter(**query_filter).order_by("id")
         # Paginate the results
         items_per_page = request.GET.get("items_per_page", 10)
         paginator = Paginator(offers, items_per_page)

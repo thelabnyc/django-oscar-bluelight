@@ -1,54 +1,28 @@
 {% extends 'oscar/dashboard/vouchers/voucher_form.html' %}
 {% load currency_filters %}
-{% load static %}
 {% load i18n %}
 
-{% block dashboard_content %}
-    <div class="table-header">
-        <h2><i class="fas fa-money-bill"></i>
-            {% if voucher %}
-                {% trans "Edit voucher" %}
-            {% else %}
-                {% trans "Create voucher" %}
-            {% endif %}
-        </h2>
-    </div>
-    <form method="post" class="card card-body form-stacked">
-        {% csrf_token %}
-        {% include "oscar/dashboard/partials/form_fields.html" with form=form %}
-        {% block form_actions %}
-            <div class="form-actions">
-                <button class="btn btn-primary" type="submit" data-loading-text="{% trans 'Saving...' %}">{% trans "Save" %}</button> {% trans "or" %}
-                <a href="{% url 'dashboard:voucher-list' %}">{% trans "cancel" %}</a>
-            </div>
-        {% endblock form_actions %}
-    </form>
-    <script src="{% static "admin/js/vendor/jquery/jquery.min.js" %}"></script>
-    <script src="{% static "admin/js/vendor/select2/select2.full.js" %}"></script>
-    <script>
-        /**
-         * Retrieve and populate the offers field using pagination along with select2's remote data sets feature.
-         */
-        $(window).on("load", () => {
-            $("#id_offers").select2({
-                ajax: {
-                    url: '/store/dashboard/offers/offers/',
-                    data: (params) => {
-                        return {
-                            q: params.term,
-                            page: params.page || 1,
-                            offer_type: "Voucher",
-                            items_per_page: 10,
-                        };
-                    },
-                    dataType: "json",
-                    cache: true,
-                },
-                minimumInputLength: 0,
-            });
-        });
-    </script>
-{% endblock dashboard_content %}
+{% block onbodyload %}
+    {{ block.super }}
+
+    // Retrieve and populate the offers field using pagination along with select2's remote data sets feature.
+    $("#id_offers").select2({
+        ajax: {
+            url: '/store/dashboard/offers/offers/',
+            data: (params) => {
+                return {
+                    q: params.term,
+                    page: params.page || 1,
+                    offer_type: "Voucher",
+                    items_per_page: 10,
+                };
+            },
+            dataType: "json",
+            cache: true,
+        },
+        minimumInputLength: 0,
+    });
+{% endblock %}
 
 {% block extrascripts %}
     {{ block.super }}
