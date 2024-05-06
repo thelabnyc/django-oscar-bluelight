@@ -116,6 +116,10 @@ dashboard under the Offers menu.
 
 ## Changelog
 
+### 5.5.11
+
+- Fix offer pagination bugs introduced by 5.5.10 (see !87).
+
 ### 5.5.10
 
 - Improve offer select performance on voucher creation screen.
