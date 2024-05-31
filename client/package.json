@@ -15,7 +15,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "redux": "^4.0.0",
-        "regenerator-runtime": "^0.13.3",
+        "regenerator-runtime": "^0.14.0",
         "superagent": "^8.0.9"
     },
     "devDependencies": {
