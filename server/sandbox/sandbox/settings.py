@@ -94,12 +94,9 @@ INSTALLED_APPS = [
     # 3rd-party apps we depend on
     "rest_framework",
     "thelabdb.pgviews",
-    # Dev/Debug stuff
-    "debug_toolbar",
 ]
 
 MIDDLEWARE = (
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -110,6 +107,13 @@ MIDDLEWARE = (
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "oscar.apps.basket.middleware.BasketMiddleware",
 )
+
+if not IS_UNIT_TEST:
+    INSTALLED_APPS += [
+        "debug_toolbar",
+    ]
+    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
+
 
 AUTHENTICATION_BACKENDS = (
     "oscar.apps.customer.auth_backends.EmailBackend",
