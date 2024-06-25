@@ -1143,7 +1143,7 @@
     "@types/prop-types" "*"
     csstype "^3.0.2"
 
-"@types/superagent@^4.1.1":
+"@types/superagent@^4.1.24":
   version "4.1.24"
   resolved "https://registry.yarnpkg.com/@types/superagent/-/superagent-4.1.24.tgz#e1f9ad3b66a21ed13c047e8529009735732dde0a"
   integrity sha512-mEafCgyKiMFin24SDzWN7yAADt4gt6YawFiNMp0QS5ZPboORfyxFt0s3VzJKhTaKg9py/4FUmrHLTNfJKt9Rbw==
