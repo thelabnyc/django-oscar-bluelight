@@ -19,9 +19,9 @@
         "superagent": "^8.0.9"
     },
     "devDependencies": {
-        "@babel/core": "^7.3.3",
-        "@babel/preset-env": "^7.3.1",
-        "@babel/preset-react": "^7.0.0",
+        "@babel/core": "^7.24.7",
+        "@babel/preset-env": "^7.24.7",
+        "@babel/preset-react": "^7.24.7",
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
         "@types/superagent": "^4.1.1",
