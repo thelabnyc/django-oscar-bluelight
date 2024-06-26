@@ -26,7 +26,7 @@ djangorestframework = ">=3.14"
 
 [tool.poetry.group.dev.dependencies]
 coverage = ">=7.5.4"
-django-debug-toolbar = ">=3.2.1"
+django-debug-toolbar = ">=4.4.2"
 django-redis = ">=4.8.0"
 flake8 = ">=3.2.1"
 hiredis = ">=0.2.0"
