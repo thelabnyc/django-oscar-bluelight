@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import path
 from oscar.apps.dashboard.ranges import apps
 from oscar.core.loading import get_class
 
@@ -17,11 +17,13 @@ class RangesDashboardConfig(apps.RangesDashboardConfig):
             "ranges_dashboard.views", "RangeExcludedProductsView"
         )
         urlpatterns = [
-            re_path(
-                r"^(?P<pk>\d+)/prices/$", price_list_view.as_view(), name="range-prices"
+            path(
+                "<int:pk>/prices/",
+                price_list_view.as_view(),
+                name="range-prices",
             ),
-            re_path(
-                r"^(?P<pk>\d+)/excluded-products/$",
+            path(
+                "<int:pk>/excluded-products/",
                 excluded_products_view.as_view(),
                 name="range-excluded-products",
             ),
