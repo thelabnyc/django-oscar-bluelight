@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import path
 from oscar.apps.dashboard.vouchers import apps
 from oscar.core.loading import get_class
 
@@ -41,33 +41,33 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
         )
 
         urls = [
-            re_path(
-                r"^stats/(?P<parent_pk>\d+)/children/$",
+            path(
+                "stats/<int:pk>/children/",
                 ChildCodesListView.as_view(),
                 name="voucher-list-children",
             ),
-            re_path(
-                r"^stats/(?P<pk>\d+)/add-children/$",
+            path(
+                "stats/<int:pk>/add-children/",
                 AddChildCodesView.as_view(),
                 name="voucher-add-children",
             ),
-            re_path(
-                r"^stats/(?P<pk>\d+)/export-children/$",
+            path(
+                "stats/<int:pk>/export-children/",
                 ExportChildCodesFormView.as_view(),
                 name="voucher-export-children",
             ),
-            re_path(
-                r"^stats/(?P<pk>\d+)/export-children.(?P<file_format>[\w]+)$",
+            path(
+                "stats/<int:pk>/export-children.<slug:file_format>",
                 ExportChildCodesView.as_view(),
                 name="voucher-export-children-file",
             ),
-            re_path(
-                r"^stats/(?P<pk>\d+)/update-suspension-status/$",
+            path(
+                "stats/<int:pk>/update-suspension-status/",
                 VoucherSuspensionView.as_view(),
                 name="voucher-update-suspension-status",
             ),
-            re_path(
-                r"^stats/(?P<pk>\d+)/$",
+            path(
+                "stats/<int:pk>/",
                 VoucherStatsView.as_view(),
                 name="voucher-stats",
             ),
