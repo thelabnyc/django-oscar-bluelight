@@ -152,7 +152,6 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     }
 
     private buildOfferList(group: IOfferGroup) {
-        const self = this;
         const rows = group.offers
             .filter((offer) => {
                 // Don't display voucher offers who's voucher has been deleted
@@ -167,8 +166,8 @@ class OfferGroupTable extends React.Component<IProps, IState> {
             .map((offer, i) => {
                 const index = i + 1;
                 return offer.vouchers.length > 0
-                    ? self.buildVoucherRow(index, offer)
-                    : self.buildOfferRow(index, offer);
+                    ? this.buildVoucherRow(index, offer)
+                    : this.buildOfferRow(index, offer);
             });
         return (
             <table className="table table-bordered table-striped offergroup-subtable">
@@ -195,7 +194,6 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     }
 
     private buildGroupRows() {
-        const self = this;
         const numCols = 5;
         if (this.state.isLoading) {
             return (
@@ -222,9 +220,9 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                     <td>{this.buildBooleanLabel(group.is_system_group)}</td>
                     <td>{group.priority}</td>
                     <td className="subtable-container">
-                        {self.buildOfferList(group)}
+                        {this.buildOfferList(group)}
                     </td>
-                    <td>{self.buildGroupActions(group)}</td>
+                    <td>{this.buildGroupActions(group)}</td>
                 </tr>
             );
         });

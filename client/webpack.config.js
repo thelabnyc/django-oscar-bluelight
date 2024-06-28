@@ -76,7 +76,7 @@ const rules = [
 let plugins = [
     new BundleTracker({
         path: BUILD_DIR,
-        filename: path.resolve(BUILD_DIR, "webpack-stats.json"),
+        filename: "webpack-stats.json",
     }),
     new webpack.DefinePlugin({
         "process.env": {

@@ -1,7 +1,7 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 import React from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import OfferGroupTable from "./offergroups/OfferGroupTable";
 
 type INamedInterpolationData = { [key: string]: string };
@@ -56,11 +56,11 @@ declare global {
 }
 
 const main = function () {
-    const elem = document.querySelector("#offergroup-table") as HTMLDivElement;
-    const component = (
-        <OfferGroupTable endpoint={elem.dataset.offergroupApi || ""} />
+    const elem = document.querySelector<HTMLDivElement>("#offergroup-table")!;
+    const root = createRoot(elem);
+    root.render(
+        <OfferGroupTable endpoint={elem.dataset.offergroupApi || ""} />,
     );
-    render(component, elem);
 };
 
 main();
