@@ -1,6 +1,6 @@
-.PHONY: statics screenshots translations install_precommit test_precommit fmt fmt_client fmt_server
+.PHONY: statics screenshots translations
 
-DOCKERCOMPOSE = docker-compose
+DOCKERCOMPOSE = docker compose
 
 statics:
 	@$(DOCKERCOMPOSE) run --rm -e NODE_ENV=production node webpack
@@ -18,18 +18,3 @@ translations:
 	cd ../../server/src/oscarbluelight && \
 	django-admin makemessages --locale=es && \
 	django-admin compilemessages
-
-install_precommit:
-	pre-commit install
-
-test_precommit: install_precommit
-	pre-commit run --all-files
-
-fmt_client:
-	cd client && \
-	yarn prettier --no-color --write .
-
-fmt_server:
-	black .
-
-fmt: fmt_client fmt_server

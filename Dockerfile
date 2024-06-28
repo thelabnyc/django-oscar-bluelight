@@ -12,8 +12,8 @@ RUN apt-get update && \
 
 # Install node_modules
 COPY client/package.json /oscarbluelight/client/package.json
-COPY client/yarn.lock /oscarbluelight/client/yarn.lock
-RUN yarn --force-lockfile
+COPY client/package-lock.json /oscarbluelight/client/package-lock.json
+RUN npm ci
 VOLUME /oscarbluelight/client/node_modules
 
 # Include NPM's .bin directory in the sys path
