@@ -28,7 +28,7 @@ include:
 
 lint_typescript:
   stage: test
-  image: node:20
+  image: node:20.15.1
   script:
     - cd client/
     - NODE_ENV=dev npm i
