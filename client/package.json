@@ -34,7 +34,7 @@
         "postcss": "^8.4.39",
         "postcss-loader": "^8.1.1",
         "prettier": "~3.1.0",
-        "sass": "^1.77.6",
+        "sass": "^1.77.8",
         "sass-loader": "^14.2.1",
         "source-map-loader": "^5.0.0",
         "ts-loader": "^9.5.1",
