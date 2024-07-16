@@ -25,7 +25,7 @@ thelabdb = "^0.1.1"
 djangorestframework = "^3.15.2"
 
 [tool.poetry.group.dev.dependencies]
-coverage = "^7.5.4"
+coverage = "^7.6.0"
 django-debug-toolbar = "^4.4.6"
 django-redis = "^5.4.0"
 flake8 = "^7.1.0"
