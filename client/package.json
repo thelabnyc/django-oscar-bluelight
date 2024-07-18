@@ -19,7 +19,7 @@
         "tslib": "^2.6.3"
     },
     "devDependencies": {
-        "@babel/core": "^7.24.8",
+        "@babel/core": "^7.24.9",
         "@babel/preset-env": "^7.24.8",
         "@babel/preset-react": "^7.24.7",
         "@thelabnyc/standards": "^0.2.1",
