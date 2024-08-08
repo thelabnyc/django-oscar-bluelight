@@ -1,5 +1,24 @@
 # Changes
 
+## v5.5.12b0 (2024-08-08)
+
+### Fix
+
+- **deps**: update dependency core-js to ^3.38.0
+- **deps**: update dependency django to ^4.2.14
+- **deps**: update dependency regenerator-runtime to ^0.14.1
+- **deps**: update dependency django to ^4.2.13
+- **deps**: update dependency core-js to ^3.37.1
+- **deps**: update dependency classnames to ^2.5.1
+- **deps**: update dependency djangorestframework to v3.15.2
+- **deps**: update dependency superagent to v8.1.2
+- **deps**: update dependency regenerator-runtime to ^0.14.0
+- **deps**: update dependency celery to v5.4.0
+- **deps**: update dependency core-js to v3.37.1
+- **deps**: update dependency classnames to v2.5.1
+- **deps**: update dependency django to v4.2.13
+- **deps**: update dependency djangorestframework to v3.15.1
+
 ## v5.5.11
 
 - Fix offer pagination bugs introduced by 5.5.10 (see !87).
