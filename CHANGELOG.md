@@ -1,0 +1,362 @@
+# Changes
+
+## v5.5.11
+
+- Fix offer pagination bugs introduced by 5.5.10 (see !87).
+
+## v5.5.10
+
+- Improve offer select performance on voucher creation screen.
+
+## v5.5.9
+
+- Improve query performance of child-voucher creation-date table.
+
+## v5.5.8
+
+- Improve query performance for copying parent-to-child offers relationship
+- Fix order status bug in get_recalculate_offer_application_totals_sql
+
+## v5.5.7
+
+- Fix compatibility with Oscar 3.2.3.
+
+## v5.5.6
+
+- Tweak `Voucher._create_child_batch` so that batch size does not exceed Postgres limit of 65535 query params
+
+## v5.5.5
+
+- Improve performance of child code additions
+
+## v5.5.4
+
+- Add support for psycopg
+
+## v5.5.3
+
+- Fix bug when basket line unit_effective_price is None.
+
+## v5.5.2
+
+- Fix bug where dashboard range form error messages were not consistent with the actual DB state.
+
+## v5.5.1
+
+- Fix performance regression in Voucher.\_get_child_code_batch
+
+## v5.5.0
+
+- Add conjunction type to CompoundBenefits
+- Add support for django-oscar 3.2.2
+- Add support for django 4.2
+
+## v5.4.0
+
+- Add rules framework to allow library consumers to change how vouchers are determined to be available or not.
+- Add functionality for recalculating offer application totals based on OrderDiscount models. This allows correcting voucher discount stats to account for canceled orders.
+- Redesign RangeProductSet view updating to improve web request performance (at the cost of allowing the view to be slightly out of date).
+- Fix issue where a voucher is applied multiple times when it contains multiple offers.
+- Allow HiddenPostOrderAction benefits to be combined with other benefit types.
+- Improve descriptions of fixed price benefits.
+
+## v5.3.0
+
+- Add new system for obtaining structured data regarding offer upsell messages
+- Add `BLUELIGHT_IGNORED_ORDER_STATUSES`, ignore voucher usage on orders with those statuses
+
+## v5.2.4
+- Change `DEFAULT_AUTO_FIELD` to `BigAutoField`, migrate `Voucher_offers` through table.
+
+## v5.2.3
+
+- Fix bug where Voucher.\_create_child returns the unsaved voucher object instead of the saved version.
+
+## v5.2.2
+
+- Fix performance issues with creating / updating large numbers of child voucher codes.
+
+## v5.2.1
+
+- Fix 500 error in dashboard when saving offer directly from form step 1.
+
+## v5.2.0
+
+- Add created date filtering to Voucher child code export view.
+
+## v5.1.3
+
+- Fix performance issue in VoucherStatsView when a code had a large number of child codes.
+
+## v5.1.2
+
+- Revert change to `CREATE OR REPLACE TRIGGER` from `r5.1.1` since this syntax is only supported in PostgreSQL 14.
+
+## v5.1.1
+
+- Reduce opportunities for deadlocks while updating PostgresSQL views and triggers.
+
+## v5.1.0
+
+-   Add new `max_discount` field to Benefit models, to allow capping the total discount granted by a benefit within a single application. Primary intended use case is for capping the discount granted by a compound benefits, when its child benefits could, in some product combinations, exceed the desired discount.
+-   Convert README from reStructuredText to Markdown.
+-   Fix performance issues related to vouchers with large numbers if children.
+
+## v5.0.1
+
+-   Remove duplicate `offer_type` field from offer form.
+
+## v5.0.0
+
+-   Oscar 3.1 compatibility
+-   Drops Oscar 3.0 compatibility (due to 3.1's significant changes to offers / vouchers).
+-   Fix bug in Offer Restrictions form which always reset voucher-type
+    offers to site-type offers.
+-   Add new "Fixed Price Per Item" benefit type
+
+## v4.1.0
+
+-   Add new dashboard view to view and delete voucher child codes.
+-   Tweak voucher form to allow creating custom child codes on initial
+    voucher creation.
+
+## v4.0.0
+
+-   Oscar 3.0 Compatibility
+-   Add checkbox for excluding offer from cosmetic pricing
+
+## v3.0.1
+
+-   Improve performance of the \"Add Products to Range\" functionality
+    in the dashboard by utilizing batch inserts.
+
+## v3.0.0
+
+-   Use Postgres materialized views to improve performance of querying
+    for products in a range.
+
+## v2.0.0
+
+-   Support django-oscar 2.1
+
+## v1.0.0
+
+-   Add improved reporting formats for offers and vouchers.
+
+## v0.14.1
+
+-   Fix bug in CompoundBenefit which caused lines to not be properly
+    consumed by a condition if the last-to-be-applied child benefit
+    didn't trigger a discount.
+
+## v0.14.0
+
+-   Add support for django-oscar 2.x.
+-   Drop support for django-oscar 1.x.
+
+## v0.13.0
+
+-   Internationalization
+-   Feature: Compound Benefits. Allows applying more than one benefit
+    with a single offer.
+-   Improve performance of Range.contains_product by utilizing Redis
+    SETs. Requires Redis caching on the Django site
+
+## v0.12.0
+
+-   Improve UI of the offer group dashboard view.
+-   Improve checkout performance by tuning the update query in
+    Offer.record_usage.
+-   Alter behavior of MultibuyDiscountBenefit. Not discounts the
+    second-most expensive product, rather than the cheapest product.
+-   Remove now-unused cosmetic-pricing settings.
+
+## v0.11.1
+
+-   Fix bug with effective price.
+
+## v0.11.0
+
+-   Add support for adding images to Offers and Vouchers.
+-   Add support for Python 3.7.
+-   Add support for Django 2.1.
+
+## v0.10.0
+
+-   Add flag to offer result objects to allow flagging a result as
+    hidden in the UI. Doesn't functionally affect anything other than
+    adding the boolean flag property.
+-   Bugfix for clearing products from range cache
+
+## v0.9.0
+
+-   Add support for Oscar 1.6 and Django 2.0.
+    -   Due to the write of the offer's system in Oscar 1.6, this
+        release drops support for Oscar 1.5.
+
+## v0.8.7
+
+-   Fix exception thrown when editing a voucher
+-   Fix broken Webpack build
+
+## v0.8.6
+
+-   Improve performance of offer application by caching the results of
+    `Range.contains_product` and `Range.contains`.
+
+## v0.8.5
+
+-   Improve performance of cosmetic price application by using
+    `select_related`.
+
+## v0.8.4
+
+-   Fix Django 2.0 Deprecation warnings.
+
+## v0.8.3
+
+-   Fix bug preventing saving an Offer's short name in the dashboard.
+
+## v0.8.2
+
+-   Fix method signature bug in several shipping benefits.
+
+## v0.8.1
+
+-   Adds support for Django 1.11 and Oscar 1.5
+
+## v0.8.0
+
+-   Add Concept of System Offer Groups.
+    -   System Offer Groups are standard offer groups, but are
+        automatically created and are ensured to always exist. They
+        can not, therefore, be created or deleted via the dashboard
+        UI. They are lazy-created by referencing them in code using
+        the
+        `oscarbluelight.offer.groups.register_system_offer_group(slug='foo')`
+        function. - Along with this functionality comes the addition of offer
+        and group related signals which can be used to perform
+        actions at specific points in time during offer group
+        application. For example you could create a system offer
+        group for offers which should be applied only after taxes
+        have been calculated. Then you could use the
+        `pre_offer_group_apply` signal to perform tax calculation on
+        a basket directly before the offer group is applied.
+
+## v0.7.1
+
+-   Fix exception in dashboard when adding compound conditions
+
+## v0.7.0
+
+-   Fix bug related to conditions consuming basket lines when the
+    condition range differed from the benefit range.
+-   Run model validation before applying benefits to a basket. Results
+    in better error reporting of invalid but difficult to enforce data.
+-   Start to rebuild OfferGroup dashboard view as a React application.
+    -   Currently just recreates existing functionality using React
+        and an API endpoint. - Next release will include drag-and-drop priority sorting of
+        offers, vouchers, and offer groups.
+
+## v0.6.1
+
+-   Drop Django 1.9 support.
+-   In offer group list, dim inactive offers and vouchers.
+-   List related vouchers on benefit and condition edit pages.
+-   Limit orders displayed on voucher stats.
+-   Start testing against Django 1.11 and Oscar 1.5rc1:
+    -   Fix issue with Voucher ordering when doing a
+        select_for_update. - Fix Oscar 1.5 issue with conditionaloffer_set vs offers
+        related name. - Fix Oscar 1.5 issue with basket.Line.line_tax. - Upgrade sandbox to Oscar 1.5.
+-   Add new field to ConditionalOffer: short_name
+-   Make OfferApplications ordered
+
+## v0.6.0
+
+-   Add concept of Offer groups.
+    -   This makes it possible to create promotions which overlap on
+        line items.
+-   Add API for determining why a line was discounted.
+
+## v0.5.4
+
+-   Improve unit testing with tox.
+
+## v0.5.3
+
+-   Upgrade test dependencies.
+
+## v0.5.2
+
+-   Upgraded to `versiontag` 1.2.0.
+
+## v0.5.1
+
+-   Fixed bug where voucher condition range was always set to be equal
+    to the benefit range.
+
+## v0.5.0
+
+-   Create custom subclasses of all built-in Oscar conditions and Benefits
+    -   Eliminates need for monkey-patching the
+        `Condition.consume_items` method. - Adds migration to change all row's proxy_class from
+        `oscar.apps.offer.FOOBAR` to `oscarbluelight.offer.FOOBAR`.
+-   Change behavior of `FixedPriceBenefit` to be more logical.
+    -   Uses the benefit's assigned range instead of the
+        condition's range. - Respects the `max_affected_items` setting.
+-   Improved dashboard form validation using polymorphic `_clean`
+    methods on benefits and conditions.
+-   Disallow deleting a range when a benefit or a condition depends on
+    it.
+-   If a benefit or condition's proxy_class isn't a proxy_model,
+    automatically create the row in the subclass's table.
+
+## v0.4.1
+
+-   Fixed several exceptions throw in dashboard views when a voucher had
+    no offers linked to it.
+
+## v0.4.0
+
+-   Dashboard:
+    -   Separate vouchers form offers in benefits and conditions
+        lists - Add condition field to voucher form. Allows creating more
+        complex vouchers, such as those that require specific items
+        in the basket. - Add priority field to vouchers and offers forms. Display
+        priority field in detail and list fields. - Add offer restrictions fields to voucher form.
+-   Performance:
+    -   Move child code creation and updating background task with
+        Celery.
+
+## v0.3.1
+
+-   Use correct transaction.atomic syntax in voucher creation.
+-   Fix validation of voucher name and code when child codes exist.
+-   Set max_length to 128 on name field of voucher form, to match model.
+
+## v0.3.0
+
+-   Makes it possible to selectively apply offers to specific groups of
+    users (using django.auth.contrib.models.Group).
+-   Adds custom dashboard screens for managing offer / voucher benefits.
+
+## v0.2.2
+
+-   Fix bug preventing Voucher.groups form field from being blank
+
+## v0.2.1
+
+-   Fix bug the excluded templates from package.
+
+## v0.2.0
+
+-   Renamed package to [oscarbluelight]{.title-ref} to have consistent
+    naming with other Oscar projects.
+
+## v0.1.1
+
+-   Fix bug the excluded templates from package.
+
+## v0.1.0
+
+-   Initial release.
