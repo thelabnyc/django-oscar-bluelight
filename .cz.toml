@@ -6,7 +6,8 @@ major_version_zero = true
 tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_merge_prerelease = true
-version_provider = "poetry"
+version = "5.5.11"
+version_provider = "commitizen"
 version_scheme = "pep440"
 version_files = [
     "server/pyproject.toml:version",
