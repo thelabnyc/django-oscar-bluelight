@@ -257,8 +257,8 @@ class Voucher(AbstractVoucher):
 
     record_discount.alters_data = True
 
-    def _create_child(self, code):
-        self._create_child_batch([code])
+    def _create_child(self, code, update_children=True):
+        self._create_child_batch([code], update_children=update_children)
         obj = self.children.filter(code=code).first()
         return obj
 
