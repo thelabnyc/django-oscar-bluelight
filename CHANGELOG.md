@@ -1,5 +1,15 @@
 # Changes
 
+## v5.5.12 (2024-08-12)
+
+### Fix
+
+- **deps**: update dependency django to ^4.2.15
+
+### Perf
+
+- introduce update_children arg in the child creation method
+
 ## v5.5.12b0 (2024-08-08)
 
 ### Fix
