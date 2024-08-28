@@ -1,5 +1,13 @@
 # Changes
 
+## v5.5.13 (2024-08-28)
+
+### Fix
+
+- resolve NoReverseMatch error for `voucher-list-children`
+- **deps**: update dependency tslib to ^2.7.0
+- **deps**: update dependency core-js to ^3.38.1
+
 ## v5.5.12 (2024-08-12)
 
 ### Fix
