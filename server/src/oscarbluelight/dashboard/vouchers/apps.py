@@ -42,7 +42,7 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
 
         urls = [
             path(
-                "stats/<int:pk>/children/",
+                "stats/<int:parent_pk>/children/",
                 ChildCodesListView.as_view(),
                 name="voucher-list-children",
             ),
