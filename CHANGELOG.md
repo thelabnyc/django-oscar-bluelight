@@ -1,5 +1,12 @@
 # Changes
 
+## v5.5.14 (2024-08-31)
+
+### Fix
+
+- add missing migration
+- fix behavior of bulk add/exclude forms in RangeProductListView
+
 ## v5.5.13 (2024-08-28)
 
 ### Fix
