@@ -96,7 +96,7 @@ INSTALLED_APPS = [
     "thelabdb.pgviews",
 ]
 
-MIDDLEWARE = (
+MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -106,7 +106,7 @@ MIDDLEWARE = (
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "oscar.apps.basket.middleware.BasketMiddleware",
-)
+]
 
 if not IS_UNIT_TEST:
     INSTALLED_APPS += [
