@@ -3,6 +3,7 @@ from oscar.apps.offer import apps
 
 class OfferConfig(apps.OfferConfig):
     name = "oscarbluelight.offer"
+    default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
         super().ready()
