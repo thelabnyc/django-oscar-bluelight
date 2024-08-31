@@ -225,40 +225,105 @@ class TestRangeModel(TransactionTestCase):
 
 class TestRangeAddProductBatch(TransactionTestCase):
     def test_add_product_batch(self):
-        rng = models.Range.objects.create(name="Range", includes_all_products=False)
+        # Create some products
         product1 = create_product()
         product2 = create_product()
         product3 = create_product()
         product4 = create_product()
-        # Add p2 to excluded products
-        rng.excluded_products.add(product2)
 
-        # Check starting point
-        self.assertFalse(rng.contains_product(product1))
-        self.assertFalse(rng.contains_product(product2))
-        self.assertFalse(rng.contains_product(product3))
-        self.assertFalse(rng.contains_product(product4))
+        # Crwate two ranges. Range 2 includes all products by default.
+        rng1 = models.Range.objects.create(name="Range 1", includes_all_products=False)
+        rng2 = models.Range.objects.create(name="Range 2", includes_all_products=True)
 
-        # Add p1, p2, and p3 to the range. Should add all 3 products and remove p2 from the exclude list.
-        rng.add_product_batch(
-            [
-                product1,
-                product2,
-                product3,
-            ]
-        )
+        # Exclude p2 from both ranges
+        rng1.excluded_products.add(product2)
+        rng2.excluded_products.add(product2)
 
-        # Check results
-        self.assertTrue(rng.contains_product(product1))
-        self.assertTrue(rng.contains_product(product2))
-        self.assertTrue(rng.contains_product(product3))
-        self.assertFalse(rng.contains_product(product4))
+        # Check starting point. Range 1 contains nothing. Range 2 contains
+        # everything except p2.
+        self.assertFalse(rng1.contains_product(product1))
+        self.assertFalse(rng1.contains_product(product2))
+        self.assertFalse(rng1.contains_product(product3))
+        self.assertFalse(rng1.contains_product(product4))
+
+        self.assertTrue(rng2.contains_product(product1))
+        self.assertFalse(rng2.contains_product(product2))
+        self.assertTrue(rng2.contains_product(product3))
+        self.assertTrue(rng2.contains_product(product4))
+
+        # Add p1, p2, and p3 to range 1. Should add all 3 products and remove
+        # p2 from the exclude list. Should _not_ affect range 2.
+        rng1.add_product_batch([product1, product2, product3])
+
+        # Check results. Range 1 should now include p{1,2,3}. Range 2 should
+        # include everything except for p2.
+        self.assertTrue(rng1.contains_product(product1))
+        self.assertTrue(rng1.contains_product(product2))
+        self.assertTrue(rng1.contains_product(product3))
+        self.assertFalse(rng1.contains_product(product4))
+
+        self.assertTrue(rng2.contains_product(product1))
+        self.assertFalse(rng2.contains_product(product2))
+        self.assertTrue(rng2.contains_product(product3))
+        self.assertTrue(rng2.contains_product(product4))
 
         # Add p2 back to excluded products
-        rng.excluded_products.add(product2)
+        rng1.excluded_products.add(product2)
 
         # Check results
-        self.assertTrue(rng.contains_product(product1))
-        self.assertFalse(rng.contains_product(product2))
-        self.assertTrue(rng.contains_product(product3))
-        self.assertFalse(rng.contains_product(product4))
+        self.assertTrue(rng1.contains_product(product1))
+        self.assertFalse(rng1.contains_product(product2))
+        self.assertTrue(rng1.contains_product(product3))
+        self.assertFalse(rng1.contains_product(product4))
+
+        self.assertTrue(rng2.contains_product(product1))
+        self.assertFalse(rng2.contains_product(product2))
+        self.assertTrue(rng2.contains_product(product3))
+        self.assertTrue(rng2.contains_product(product4))
+
+
+class TestRangeExcludeProductBatch(TransactionTestCase):
+    def test_exclude_product_batch(self):
+        # Create some products
+        product1 = create_product()
+        product2 = create_product()
+        product3 = create_product()
+        product4 = create_product()
+
+        # Create two ranges.
+        rng1 = models.Range.objects.create(name="Range 1", includes_all_products=False)
+        rng2 = models.Range.objects.create(name="Range 2", includes_all_products=False)
+
+        # Add p{1,2,3} to both ranges
+        rng1.included_products.add(product1)
+        rng1.included_products.add(product2)
+        rng1.included_products.add(product3)
+        rng2.included_products.add(product1)
+        rng2.included_products.add(product2)
+        rng2.included_products.add(product3)
+
+        # Check starting point. Both ranges contain p{1,2,3}
+        self.assertTrue(rng1.contains_product(product1))
+        self.assertTrue(rng1.contains_product(product2))
+        self.assertTrue(rng1.contains_product(product3))
+        self.assertFalse(rng1.contains_product(product4))
+
+        self.assertTrue(rng2.contains_product(product1))
+        self.assertTrue(rng2.contains_product(product2))
+        self.assertTrue(rng2.contains_product(product3))
+        self.assertFalse(rng2.contains_product(product4))
+
+        # Exclude p{1,2,4} from range 1. Should _not_ affect range 2.
+        rng1.exclude_product_batch([product1, product2, product4])
+
+        # Check results. Range 1 should now include p{1,2,3}. Range 2 should
+        # include everything except for p2.
+        self.assertFalse(rng1.contains_product(product1))
+        self.assertFalse(rng1.contains_product(product2))
+        self.assertTrue(rng1.contains_product(product3))
+        self.assertFalse(rng1.contains_product(product4))
+
+        self.assertTrue(rng2.contains_product(product1))
+        self.assertTrue(rng2.contains_product(product2))
+        self.assertTrue(rng2.contains_product(product3))
+        self.assertFalse(rng2.contains_product(product4))

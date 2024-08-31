@@ -367,7 +367,26 @@ class Range(AbstractRange):
         # Remove product from excluded products if it was removed earlier and
         # re-added again, thus it returns back to the range product list.
         ExcludedProduct = self.excluded_products.through
-        ExcludedProduct.objects.filter(product__in=products).all().delete()
+        ExcludedProduct.objects.filter(range=self, product__in=products).all().delete()
+        # Queue a view refresh
+        queue_rps_view_refresh()
+        # Invalidate cache because queryset has changed
+        self.invalidate_cached_queryset()
+
+    def exclude_product_batch(self, products):
+        """
+        Inverse of add_product_batch
+        """
+        from .handlers import queue_rps_view_refresh
+
+        # Insert new rows into the excluded_products relationship
+        ExcludedProduct = self.excluded_products.through
+        rows = [ExcludedProduct(range=self, product=product) for product in products]
+        ExcludedProduct.objects.bulk_create(rows, ignore_conflicts=True)
+        # Remove product from excluded products if it was removed earlier and
+        # re-added again, thus it returns back to the range product list.
+        RangeProduct = self.included_products.through
+        RangeProduct.objects.filter(range=self, product__in=products).all().delete()
         # Queue a view refresh
         queue_rps_view_refresh()
         # Invalidate cache because queryset has changed

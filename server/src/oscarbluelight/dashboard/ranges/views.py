@@ -15,6 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 Range = get_model("offer", "Range")
+RangeProductFileUpload = get_model("offer", "RangeProductFileUpload")
 BatchPriceUpdateForm = get_class("ranges_dashboard.forms", "BatchPriceUpdateForm")
 RangeExcludedProductsUpdateForm = get_class(
     "ranges_dashboard.forms", "RangeExcludedProductsUpdateForm"
@@ -142,30 +143,43 @@ class RangeProductListView(BaseRangeProductListView):
 
         return products
 
-    def handle_query_products(self, request, range, form):
+    def handle_query_products(self, request, product_range, form):
         products = form.get_products()
         if not products:
             return
-        # Add the products to the range in a batch
-        range.add_product_batch(products)
+        # Check what kind of operaiton this is, add or exclude
+        if (
+            form.cleaned_data["upload_type"]
+            == RangeProductFileUpload.EXCLUDED_PRODUCTS_TYPE
+        ):
+            product_range.exclude_product_batch(products)
+            action = _("excluded from this range")
+        else:
+            # Add the products to the range in a batch
+            product_range.add_product_batch(products)
+            action = _("added to this range")
         # Message the user
         num_products = len(products)
         messages.success(
             request,
             ngettext(
-                "%d product added to range", "%d products added to range", num_products
+                "%(num_products)d product has been %(action)s",
+                "%(num_products)d products have been %(action)s",
+                num_products,
             )
-            % num_products,
+            % {"num_products": num_products, "action": action},
         )
         dupe_skus = form.get_duplicate_skus()
         if dupe_skus:
             messages.warning(
                 request,
                 _(
-                    "The products with SKUs or UPCs matching %s are already in this range"
+                    "The products with SKUs or UPCs matching %(skus)s have "
+                    "already been %(action)s"
                 )
-                % ", ".join(dupe_skus),
+                % {"skus": ", ".join(dupe_skus), "action": action},
             )
+
         missing_skus = form.get_missing_skus()
         if missing_skus:
             messages.warning(
