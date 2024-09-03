@@ -492,7 +492,7 @@ Django = ">=2.1"
 
 [[package]]
 name = "django-haystack"
-version = "3.3.1.dev13+g7f492268"
+version = "3.3.1.dev14+g068507e6"
 description = "Pluggable search for Django."
 optional = false
 python-versions = "*"
@@ -511,7 +511,7 @@ testing = ["coverage", "geopy (==2)", "pysolr (>=3.7)", "python-dateutil", "requ
 type = "git"
 url = "https://github.com/django-haystack/django-haystack.git"
 reference = "master"
-resolved_reference = "7f492268d906de488cc1a72fb8ea89de4decd5c3"
+resolved_reference = "068507e6627f96ebd4f3cbe1b789e7b35e590c77"
 
 [[package]]
 name = "django-oscar"
@@ -656,13 +656,13 @@ doc = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-spelling"]
 
 [[package]]
 name = "faker"
-version = "28.0.0"
+version = "28.1.0"
 description = "Faker is a Python package that generates fake data for you."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Faker-28.0.0-py3-none-any.whl", hash = "sha256:6a3a08be54c37e05f7943d7ba5211d252c1de737687a46ad6f29209d8d5db11f"},
-    {file = "faker-28.0.0.tar.gz", hash = "sha256:0d3c0399204aaf8205cc1750db443474ca0436f177126b2c27b798e8336cc74f"},
+    {file = "Faker-28.1.0-py3-none-any.whl", hash = "sha256:b17d69312ef6485a720e21bffa997668c88876a5298b278e903ba706243c9c6b"},
+    {file = "faker-28.1.0.tar.gz", hash = "sha256:bc460a0e6020966410d0b276043879abca0fac51890f3324bc254bb0a383ee3a"},
 ]
 
 [package.dependencies]
@@ -1382,18 +1382,18 @@ doc = ["sphinx"]
 
 [[package]]
 name = "thelabdb"
-version = "0.1.1"
+version = "0.1.2"
 description = "Django DB Utilities"
 optional = false
-python-versions = ">=3.10,<4.0"
+python-versions = "<4.0,>=3.10"
 files = [
-    {file = "thelabdb-0.1.1-py3-none-any.whl", hash = "sha256:750dd95302bc8f7c80f54c72f89224ef3a6bd9d0fed2778ce4ee4c8228938309"},
-    {file = "thelabdb-0.1.1.tar.gz", hash = "sha256:4ba8857af79c1079b4863d3fce109d32e436962a5857057619510de14e0eff1e"},
+    {file = "thelabdb-0.1.2-py3-none-any.whl", hash = "sha256:024f76345e98050a3387aff007d756ba2e49d0ad1b55f0b8c499e446991d0649"},
+    {file = "thelabdb-0.1.2.tar.gz", hash = "sha256:7f68bc6efce4d89063df26ed0c29e1a0ea1aaa5d3ddd1b865d93ba84b93bd1a8"},
 ]
 
 [package.dependencies]
-cryptography = ">=41.0.5"
-Django = ">=3.2.0,<5.0"
+cryptography = ">=43.0.0"
+Django = ">=4.2.0"
 
 [[package]]
 name = "tomli"
