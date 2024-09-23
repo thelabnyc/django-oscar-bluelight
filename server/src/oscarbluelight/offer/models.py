@@ -4,12 +4,13 @@ from django.conf import settings
 from django.core import exceptions
 from django.db import models, IntegrityError, connection
 from django.db.models import F
+from django.db.models.query import Q
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
 from django.utils import timezone
 from thelabdb.pgviews import view as pg
-from oscar.core.loading import get_model
+from oscar.core.loading import get_model, get_class
 from oscar.models.fields import AutoSlugField
 from oscar.apps.offer.abstract_models import (
     AbstractBenefit,
@@ -38,6 +39,10 @@ import math
 import time
 
 logger = logging.getLogger(__name__)
+
+ExpandDownwardsCategoryQueryset = get_class(
+    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
+)
 
 
 def _init_proxy_class(obj, Klass):
@@ -338,10 +343,23 @@ class Range(AbstractRange):
         Product = self.included_products.model
         # Use the "Include All" escape hatch?
         if self.includes_all_products:
-            # Filter out blacklisted products
-            return Product.objects.all().exclude(
-                id__in=self.excluded_products.values("id")
-            )
+            _filter = Q(id__in=self.excluded_products.values("id"))
+            # extend filter if excluded_categories exist
+            if self.excluded_categories.exists():
+                expanded_range_categories = ExpandDownwardsCategoryQueryset(
+                    self.excluded_categories.values("id")
+                )
+                _filter |= Q(categories__in=expanded_range_categories)
+                # extend filter for parent categories, exclude parent = None
+                if (
+                    Product.objects.exclude(parent=None)
+                    .filter(parent__categories__in=expanded_range_categories)
+                    .exists()
+                ):
+                    _filter |= Q(parent__categories__in=expanded_range_categories)
+
+            # Filter out blacklisted
+            return Product.objects.exclude(_filter)
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
 

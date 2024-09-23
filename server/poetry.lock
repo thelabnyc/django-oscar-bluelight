@@ -515,13 +515,13 @@ resolved_reference = "068507e6627f96ebd4f3cbe1b789e7b35e590c77"
 
 [[package]]
 name = "django-oscar"
-version = "3.2.4"
+version = "3.2.5"
 description = "A domain-driven e-commerce framework for Django"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django-oscar-3.2.4.tar.gz", hash = "sha256:79a48dfd3cd9a6d93636e55bc7cba25abb56c05c200fcd0c0f30face9566a998"},
-    {file = "django_oscar-3.2.4-py3-none-any.whl", hash = "sha256:22d2f2725ba273335f12f28bf7ed79f49a63ee2d16bd842e103c90b2a65bb504"},
+    {file = "django_oscar-3.2.5-py3-none-any.whl", hash = "sha256:61b7d69ccd07a84012dea1154bf82977b39b6434241512d8345a3cabfb919c1a"},
+    {file = "django_oscar-3.2.5.tar.gz", hash = "sha256:c9d679461d79c21889152641d7d1cdf7a7342a21ca7edc747c55f08afddade06"},
 ]
 
 [package.dependencies]
@@ -537,12 +537,13 @@ factory-boy = ">=3.0,<3.3"
 phonenumbers = "*"
 pillow = ">=6.0"
 purl = ">=0.7"
+setuptools = ">=51.3.3"
 
 [package.extras]
 docs = ["Sphinx (>=5.0)", "easy-thumbnails (>=2.7,<2.8.6)", "sorl-thumbnail (>=12.9,<12.10)", "sphinx-issues (==3.0.1)", "sphinx-rtd-theme (==1.0.0)", "sphinxcontrib-spelling (==7.5.1)"]
 easy-thumbnails = ["easy-thumbnails (>=2.7,<2.8.6)"]
 sorl-thumbnail = ["sorl-thumbnail (>=12.9,<12.10)"]
-test = ["WebTest (>=2.0,<2.1)", "coverage (>=5.4,<5.5)", "django-webtest (>=1.9,<1.10)", "easy-thumbnails (>=2.7,<2.8.6)", "freezegun (>=1.1,<2)", "psycopg2-binary (>=2.8,<2.10)", "pytest-django (>=3.7,<3.9)", "pytest-xdist (>=2.2,<3)", "pytz", "sorl-thumbnail (>=12.9,<12.10)", "tox (>=3.21,<4)"]
+test = ["WebTest (>=2.0,<2.1)", "coverage (>=5.4,<5.5)", "django-webtest (>=1.9,<1.10)", "easy-thumbnails (>=2.7,<2.8.6)", "freezegun (>=1.1,<2)", "psycopg2-binary (>=2.8,<2.10)", "pytest-django (>=3.7,<3.9)", "pytest-xdist (>=2.2,<3)", "pytz", "sorl-thumbnail (>=12.9,<12.10)", "tox (>=3.21,<4)", "vdt.versionplugin.wheel"]
 
 [[package]]
 name = "django-phonenumber-field"
@@ -1198,7 +1199,6 @@ files = [
     {file = "psycopg2_binary-2.9.9-cp311-cp311-win32.whl", hash = "sha256:dc4926288b2a3e9fd7b50dc6a1909a13bbdadfc67d93f3374d984e56f885579d"},
     {file = "psycopg2_binary-2.9.9-cp311-cp311-win_amd64.whl", hash = "sha256:b76bedd166805480ab069612119ea636f5ab8f8771e640ae103e05a4aae3e417"},
     {file = "psycopg2_binary-2.9.9-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:8532fd6e6e2dc57bcb3bc90b079c60de896d2128c5d9d6f24a63875a95a088cf"},
-    {file = "psycopg2_binary-2.9.9-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b0605eaed3eb239e87df0d5e3c6489daae3f7388d455d0c0b4df899519c6a38d"},
     {file = "psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8f8544b092a29a6ddd72f3556a9fcf249ec412e10ad28be6a0c0d948924f2212"},
     {file = "psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2d423c8d8a3c82d08fe8af900ad5b613ce3632a1249fd6a223941d0735fce493"},
     {file = "psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:2e5afae772c00980525f6d6ecf7cbca55676296b580c0e6abb407f15f3706996"},
@@ -1207,8 +1207,6 @@ files = [
     {file = "psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:cb16c65dcb648d0a43a2521f2f0a2300f40639f6f8c1ecbc662141e4e3e1ee07"},
     {file = "psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_ppc64le.whl", hash = "sha256:911dda9c487075abd54e644ccdf5e5c16773470a6a5d3826fda76699410066fb"},
     {file = "psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:57fede879f08d23c85140a360c6a77709113efd1c993923c59fde17aa27599fe"},
-    {file = "psycopg2_binary-2.9.9-cp312-cp312-win32.whl", hash = "sha256:64cf30263844fa208851ebb13b0732ce674d8ec6a0c86a4e160495d299ba3c93"},
-    {file = "psycopg2_binary-2.9.9-cp312-cp312-win_amd64.whl", hash = "sha256:81ff62668af011f9a48787564ab7eded4e9fb17a4a6a74af5ffa6a457400d2ab"},
     {file = "psycopg2_binary-2.9.9-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:2293b001e319ab0d869d660a704942c9e2cce19745262a8aba2115ef41a0a42a"},
     {file = "psycopg2_binary-2.9.9-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:03ef7df18daf2c4c07e2695e8cfd5ee7f748a1d54d802330985a78d2a5a6dca9"},
     {file = "psycopg2_binary-2.9.9-cp37-cp37m-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0a602ea5aff39bb9fac6308e9c9d82b9a35c2bf288e184a816002c9fae930b77"},
@@ -1343,6 +1341,26 @@ async-timeout = {version = ">=4.0.3", markers = "python_full_version < \"3.11.3\
 [package.extras]
 hiredis = ["hiredis (>1.0.0)"]
 ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
+
+[[package]]
+name = "setuptools"
+version = "75.1.0"
+description = "Easily download, build, install, upgrade, and uninstall Python packages"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "setuptools-75.1.0-py3-none-any.whl", hash = "sha256:35ab7fd3bcd95e6b7fd704e4a1539513edad446c097797f2985e0e4b960772f2"},
+    {file = "setuptools-75.1.0.tar.gz", hash = "sha256:d59a21b17a275fb872a9c3dae73963160ae079f1049ed956880cd7c09b120538"},
+]
+
+[package.extras]
+check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1)", "ruff (>=0.5.2)"]
+core = ["importlib-metadata (>=6)", "importlib-resources (>=5.10.2)", "jaraco.collections", "jaraco.functools", "jaraco.text (>=3.7)", "more-itertools", "more-itertools (>=8.8)", "packaging", "packaging (>=24)", "platformdirs (>=2.6.2)", "tomli (>=2.0.1)", "wheel (>=0.43.0)"]
+cover = ["pytest-cov"]
+doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
+enabler = ["pytest-enabler (>=2.2)"]
+test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "jaraco.test", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-home (>=0.5)", "pytest-perf", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel (>=0.44.0)"]
+type = ["importlib-metadata (>=7.0.2)", "jaraco.develop (>=7.21)", "mypy (==1.11.*)", "pytest-mypy"]
 
 [[package]]
 name = "six"
@@ -1520,4 +1538,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d35ade3a947c678aae829fab66d39c15703f9a52424da420042986a17c3a8216"
+content-hash = "29efdc0f9d45e9c3fce8691086579a0815e9635d830b797855d4fb5f382f07dc"
