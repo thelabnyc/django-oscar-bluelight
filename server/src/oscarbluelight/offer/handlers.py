@@ -47,6 +47,7 @@ def invalidate_pricing_cache_ns(sender, instance, **kwargs):
 @receiver(m2m_changed, sender=Range.excluded_products.through)
 @receiver(m2m_changed, sender=Range.classes.through)
 @receiver(m2m_changed, sender=Range.included_categories.through)
+@receiver(m2m_changed, sender=Range.excluded_categories.through)
 def queue_rps_view_refresh(*args, **kwargs):
     def _queue():
         now = datetime.timestamp(timezone.now())

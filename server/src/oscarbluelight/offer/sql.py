@@ -37,21 +37,17 @@ LEFT JOIN LATERAL (
                 )
                 OR
                 catalogue_productcategory.category_id IN (
-                    SELECT V0.id
-                    FROM catalogue_category V0
-                    WHERE EXISTS (
-                        SELECT U0.id
-                        FROM catalogue_category U0
-                        INNER JOIN offer_range_included_categories U1 ON (U0.id = U1.category_id)
-                        WHERE (
-                            U1.range_id = rng1.id
+                    SELECT cAll.id
+                      FROM catalogue_category AS cBase
+                     INNER JOIN offer_range_included_categories rc
+                        ON rc.range_id = rng1.id
+                       AND rc.category_id = cBase.id
+                      LEFT JOIN catalogue_category AS cAll
+                        ON (
+                            cAll.path LIKE cBase.path || '%%%%'
                             AND
-                            U0.depth <= (V0.depth)
-                            AND
-                            (V0.path) LIKE
-                                REPLACE(REPLACE(REPLACE(U0.path::text, E'\\\\', E'\\\\\\\\'), E'%', E'\\\\%'), E'_', E'\\\\_') || '%'
-                        )
-                    ) = TRUE
+                            cBase.depth <= cAll.depth
+                           )
                 )
             )
             OR offer_rangeproduct.range_id = rng1.id
@@ -70,21 +66,17 @@ LEFT JOIN LATERAL (
                         )
                         OR
                         W2.category_id IN (
-                            SELECT V0.id
-                            FROM catalogue_category V0
-                            WHERE EXISTS (
-                                SELECT U0.id
-                                FROM catalogue_category U0
-                                INNER JOIN offer_range_included_categories U1 ON (U0.id = U1.category_id)
-                                WHERE (
-                                    U1.range_id = rng1.id
+                            SELECT cAll.id
+                              FROM catalogue_category AS cBase
+                             INNER JOIN offer_range_included_categories rc
+                                ON rc.range_id = rng1.id
+                               AND rc.category_id = cBase.id
+                              LEFT JOIN catalogue_category AS cAll
+                                ON (
+                                    cAll.path LIKE cBase.path || '%%%%'
                                     AND
-                                    U0.depth <= (V0.depth)
-                                    AND
-                                    (V0.path) LIKE
-                                        REPLACE(REPLACE(REPLACE(U0.path::text, E'\\\\', E'\\\\\\\\'), E'%', E'\\\\%'), E'_', E'\\\\_') || '%'
-                                )
-                            ) = TRUE
+                                    cBase.depth <= cAll.depth
+                                   )
                         )
                     )
                     OR
