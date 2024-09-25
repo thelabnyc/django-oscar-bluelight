@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "django-oscar-bluelight"
-version = "5.5.14"
+version = "5.5.15"
 description = "Bluelight Specials - Enhancements to the offer and vouchers features for Django Oscar."
 authors = ["thelab <thelabdev@thelab.co>"]
 readme = "README.md"
