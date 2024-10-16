@@ -423,13 +423,13 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "distlib"
-version = "0.3.8"
+version = "0.3.9"
 description = "Distribution utilities"
 optional = false
 python-versions = "*"
 files = [
-    {file = "distlib-0.3.8-py2.py3-none-any.whl", hash = "sha256:034db59a0b96f8ca18035f36290806a9a6e6bd9d1ff91e45a7f172eb17e51784"},
-    {file = "distlib-0.3.8.tar.gz", hash = "sha256:1530ea13e350031b6312d8580ddb6b27a104275a31106523b8f123787f494f64"},
+    {file = "distlib-0.3.9-py2.py3-none-any.whl", hash = "sha256:47f8c22fd27c27e25a65601af709b38e4f0a45ea4fc2e710f65755fa8caaaf87"},
+    {file = "distlib-0.3.9.tar.gz", hash = "sha256:a60f20dea646b8a33f3e7772f74dc0b2d0772d2837ee1342a00645c81edf9403"},
 ]
 
 [[package]]
@@ -482,7 +482,7 @@ Django = ">=2.1"
 
 [[package]]
 name = "django-haystack"
-version = "3.3.1.dev14+g068507e6"
+version = "3.3.1.dev15+g10c15ec1"
 description = "Pluggable search for Django."
 optional = false
 python-versions = "*"
@@ -501,7 +501,7 @@ testing = ["coverage", "geopy (==2)", "pysolr (>=3.7)", "python-dateutil", "requ
 type = "git"
 url = "https://github.com/django-haystack/django-haystack.git"
 reference = "master"
-resolved_reference = "068507e6627f96ebd4f3cbe1b789e7b35e590c77"
+resolved_reference = "10c15ec12c6d71a815b8843c34ab9dd4d01fddb3"
 
 [[package]]
 name = "django-oscar"
