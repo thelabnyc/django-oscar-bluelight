@@ -33,7 +33,7 @@ hiredis = "^3.0.0"
 psycopg2-binary = "^2.9.10"
 redis = "^5.1.1"
 sorl-thumbnail = "^12.11.0"
-tox = "^4.23.1"
+tox = "^4.23.2"
 unittest-xml-reporting = "^3.2.0"
 
 # Fix currently unpublished Python 3.12 compat
