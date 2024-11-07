@@ -23,12 +23,15 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         };
     }
 
-    async componentDidMount() {
-        const groups = await listOfferGroups(this.props.endpoint);
-        this.setState({
-            isLoading: false,
-            groups: groups,
-        });
+    componentDidMount() {
+        const load = async () => {
+            const groups = await listOfferGroups(this.props.endpoint);
+            this.setState({
+                isLoading: false,
+                groups: groups,
+            });
+        };
+        load().catch(console.log);
     }
 
     private buildGroupActions(group: IOfferGroup) {
