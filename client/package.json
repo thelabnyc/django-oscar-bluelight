@@ -7,7 +7,7 @@
     "license": "ISC",
     "private": true,
     "scripts": {
-        "lint": "eslint -c .eslintrc.json --ext .ts --ext .tsx ."
+        "lint": "eslint ."
     },
     "dependencies": {
         "classnames": "^2.5.1",
@@ -22,7 +22,8 @@
         "@babel/core": "^7.26.0",
         "@babel/preset-env": "^7.26.0",
         "@babel/preset-react": "^7.25.9",
-        "@thelabnyc/standards": "^0.3.4",
+        "@thelabnyc/standards": "^0.4.0",
+        "@types/eslint-config-prettier": "^6.11.3",
         "@types/react": "^18.3.12",
         "@types/react-dom": "^18.3.1",
         "@types/superagent": "^8.1.9",

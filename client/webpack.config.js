@@ -32,6 +32,9 @@ const rules = [
             },
             {
                 loader: "ts-loader",
+                options: {
+                    onlyCompileBundledFiles: true,
+                },
             },
         ],
     },
@@ -77,11 +80,6 @@ let plugins = [
     new BundleTracker({
         path: BUILD_DIR,
         filename: "webpack-stats.json",
-    }),
-    new webpack.DefinePlugin({
-        "process.env": {
-            NODE_ENV: JSON.stringify(process.env.NODE_ENV),
-        },
     }),
     new MiniCssExtractPlugin({
         filename: "[name].css",
