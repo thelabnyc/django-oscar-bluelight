@@ -2,6 +2,8 @@ from rest_framework import serializers
 from oscarbluelight.offer.models import OfferGroup, ConditionalOffer
 from oscarbluelight.voucher.models import Voucher
 
+DEFAULT_OFFER_LIMIT_TO_DISPLAY = 1000
+
 
 class VoucherSerializer(serializers.ModelSerializer):
     details_link = serializers.HyperlinkedIdentityField(
@@ -70,7 +72,7 @@ class OfferSerializer(serializers.ModelSerializer):
 
 
 class OfferGroupSerializer(serializers.ModelSerializer):
-    offers = OfferSerializer(many=True)
+    offers = serializers.SerializerMethodField()
     update_link = serializers.HyperlinkedIdentityField(
         view_name="dashboard:offergroup-update"
     )
@@ -90,3 +92,26 @@ class OfferGroupSerializer(serializers.ModelSerializer):
             "update_link",
             "delete_link",
         )
+
+    @staticmethod
+    def _limit_displayed_offers(offer_group):
+        """
+        Sometimes, an offer group might have an excessive number of offers attached to it, and each offer might
+        include a large number of vouchers.
+
+        For example:
+
+        One offer group contains 500 offers.
+        Each offer has 10,000 vouchers.
+
+        This can significantly increase the render time on the Oscar offer dashboard page.
+        To mitigate this, the number of offers displayed is limited to a certain threshold.
+        """
+        if offer_group.offers.count() > DEFAULT_OFFER_LIMIT_TO_DISPLAY:
+            return offer_group.offers.all()[:DEFAULT_OFFER_LIMIT_TO_DISPLAY]
+        else:
+            return offer_group.offers.all()
+
+    def get_offers(self, obj):
+        offers = self._limit_displayed_offers(obj)
+        return OfferSerializer(offers, many=True, context=self.context).data

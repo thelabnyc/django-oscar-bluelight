@@ -8,7 +8,7 @@ from oscar.apps.dashboard.offers.forms import (
     RestrictionsForm as BaseRestrictionsForm,
 )
 from django.forms import ModelMultipleChoiceField
-from oscar.core.loading import get_model
+from oscar.core.loading import get_class, get_model
 
 ConditionalOffer = get_model("offer", "ConditionalOffer")
 CompoundBenefit = get_model("offer", "CompoundBenefit")
@@ -19,6 +19,16 @@ Range = get_model("offer", "Range")
 OfferGroup = get_model("offer", "OfferGroup")
 Order = get_model("order", "Order")
 SourceType = get_model("payment", "SourceType")
+
+OscarOfferSearchForm = get_class("dashboard.offers.forms", "OfferSearchForm")
+
+
+def get_offer_group_choices():
+    OfferGroup = get_model("offer", "OfferGroup")
+
+    return (("", "---------"),) + tuple(
+        (og.slug, og.name) for og in OfferGroup.objects.all()
+    )
 
 
 class BenefitSearchForm(forms.Form):
@@ -46,6 +56,12 @@ class BenefitSearchForm(forms.Form):
 class ConditionSearchForm(forms.Form):
     range = forms.ModelChoiceField(
         required=False, queryset=Range.objects.order_by("name")
+    )
+
+
+class OfferSearForm(OscarOfferSearchForm):
+    offer_group = forms.ChoiceField(
+        required=False, label=_("Offer group"), choices=get_offer_group_choices
     )
 
 
