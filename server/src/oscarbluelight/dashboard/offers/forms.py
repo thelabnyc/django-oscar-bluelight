@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from oscar.forms.widgets import DatePickerInput
 from oscar.apps.dashboard.offers.forms import (
+    OfferSearchForm as BaseOfferSearchForm,
     RestrictionsForm as BaseRestrictionsForm,
 )
 from django.forms import ModelMultipleChoiceField
@@ -19,6 +20,12 @@ Range = get_model("offer", "Range")
 OfferGroup = get_model("offer", "OfferGroup")
 Order = get_model("order", "Order")
 SourceType = get_model("payment", "SourceType")
+
+
+def get_offer_group_choices():
+    return (("", "---------"),) + tuple(
+        (og.slug, og.name) for og in OfferGroup.objects.all()
+    )
 
 
 class BenefitSearchForm(forms.Form):
@@ -46,6 +53,12 @@ class BenefitSearchForm(forms.Form):
 class ConditionSearchForm(forms.Form):
     range = forms.ModelChoiceField(
         required=False, queryset=Range.objects.order_by("name")
+    )
+
+
+class OfferSearchForm(BaseOfferSearchForm):
+    offer_group = forms.ChoiceField(
+        required=False, label=_("Offer group"), choices=get_offer_group_choices
     )
 
 

@@ -10,7 +10,9 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
     name = "oscarbluelight.dashboard.offers"
 
     def ready(self):
-        self.list_view = get_class("offers_dashboard.views", "OfferListView")
+        from .views import OfferListView
+
+        self.list_view = OfferListView
         self.metadata_view = get_class("offers_dashboard.views", "OfferMetaDataView")
         self.condition_view = get_class("offers_dashboard.views", "OfferConditionView")
         self.benefit_view = get_class("offers_dashboard.views", "OfferBenefitView")

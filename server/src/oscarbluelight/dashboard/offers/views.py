@@ -8,6 +8,7 @@ from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers.views import *  # noqa
 from oscar.apps.dashboard.offers import views
+from .forms import OfferSearchForm
 import json
 
 ConditionalOffer = get_model("offer", "ConditionalOffer")
@@ -152,6 +153,21 @@ class OfferConditionView(OfferWizardStepView):
     url_name = "dashboard:offer-condition"
     success_url_name = "dashboard:offer-restrictions"
     previous_view = OfferBenefitView
+
+
+class OfferListView(views.OfferListView):
+    form_class = OfferSearchForm
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.form.is_valid():
+            offer_group_slug = self.form.cleaned_data["offer_group"]
+            if offer_group_slug:
+                qs = qs.filter(offer_group__slug=offer_group_slug).distinct()
+                self.search_filters.append(
+                    _('Offer Group matches "%s"') % offer_group_slug
+                )
+        return qs
 
 
 class OfferRestrictionsView(OfferWizardStepView):

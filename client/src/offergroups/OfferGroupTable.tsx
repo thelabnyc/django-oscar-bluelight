@@ -1,7 +1,11 @@
 import React from "react";
 import classNames from "classnames";
 import { listOfferGroups } from "../utils/api";
-import { IOfferGroup, IOffer } from "../utils/api.interfaces";
+import {
+    IOffer,
+    IOfferGroup,
+    IOfferGroupWithPagination,
+} from "../utils/api.interfaces";
 
 import "./OfferGroupTable.scss";
 
@@ -11,7 +15,8 @@ export interface IProps {
 
 export interface IState {
     isLoading: boolean;
-    groups: IOfferGroup[];
+    isLoadingMoreForGroup: number[];
+    groups: IOfferGroupWithPagination[];
 }
 
 class OfferGroupTable extends React.Component<IProps, IState> {
@@ -19,6 +24,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             isLoading: true,
+            isLoadingMoreForGroup: [],
             groups: [],
         };
     }
@@ -28,11 +34,64 @@ class OfferGroupTable extends React.Component<IProps, IState> {
             const groups = await listOfferGroups(this.props.endpoint);
             this.setState({
                 isLoading: false,
+                isLoadingMoreForGroup: [],
                 groups: groups,
             });
         };
         load().catch(console.log);
     }
+
+    private onLoadMoreOffers = async (groupID: number) => {
+        if (this.state.isLoadingMoreForGroup.includes(groupID)) {
+            return;
+        }
+        this.setState((s) => ({
+            isLoadingMoreForGroup: [...s.isLoadingMoreForGroup, groupID],
+        }));
+
+        try {
+            const currPage = this.state.groups.find(
+                (g) => g.id === groupID,
+            )?.current_offers_page;
+            const nextPage = (currPage || 1) + 1;
+
+            // Fetch next page of offers for this group
+            const updatedGroups = await listOfferGroups(
+                this.props.endpoint,
+                nextPage,
+            );
+
+            // Merge offers from previous and new pages and update state
+            this.setState((s) => {
+                const groups = [...s.groups];
+                const groupIdx = groups.findIndex((g) => g.id === groupID);
+                const group = groups[groupIdx];
+                groups[groupIdx] = {
+                    ...group,
+                    offers: [
+                        ...group.offers,
+                        ...updatedGroups[groupIdx].offers,
+                    ],
+                    current_offers_page: nextPage,
+                    has_more_offers: updatedGroups[groupIdx].has_more_offers,
+                };
+                return {
+                    isLoadingMoreForGroup: s.isLoadingMoreForGroup.filter(
+                        (gid) => gid !== groupID,
+                    ),
+                    groups: groups,
+                };
+            });
+        } catch (error) {
+            console.error("Failed to load more offers:", error);
+        }
+
+        this.setState((s) => ({
+            isLoadingMoreForGroup: s.isLoadingMoreForGroup.filter(
+                (gid) => gid !== groupID,
+            ),
+        }));
+    };
 
     private buildGroupActions(group: IOfferGroup) {
         const hasOffers = group.offers.length > 0;
@@ -154,7 +213,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         return elems;
     }
 
-    private buildOfferList(group: IOfferGroup) {
+    private buildOfferList(group: IOfferGroupWithPagination) {
         const rows = group.offers
             .filter((offer) => {
                 // Don't display voucher offers who's voucher has been deleted
@@ -173,26 +232,39 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                     : this.buildOfferRow(index, offer);
             });
         return (
-            <table className="table table-bordered table-striped offergroup-subtable">
-                <caption>{group.name}</caption>
-                <thead>
-                    <tr>
-                        <th className="offergroup__offer__index">
-                            {gettext("#")}
-                        </th>
-                        <th className="offergroup__offer__name">
-                            {gettext("Name")}
-                        </th>
-                        <th className="offergroup__offer__priority">
-                            {gettext("Priority")}
-                        </th>
-                        <th className="offergroup__offer__type">
-                            {gettext("Type")}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>{rows}</tbody>
-            </table>
+            <>
+                <table className="table table-bordered table-striped offergroup-subtable">
+                    <caption>{group.name}</caption>
+                    <thead>
+                        <tr>
+                            <th className="offergroup__offer__index">
+                                {gettext("#")}
+                            </th>
+                            <th className="offergroup__offer__name">
+                                {gettext("Name")}
+                            </th>
+                            <th className="offergroup__offer__priority">
+                                {gettext("Priority")}
+                            </th>
+                            <th className="offergroup__offer__type">
+                                {gettext("Type")}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>{rows}</tbody>
+                </table>
+                {group.has_more_offers && (
+                    <button
+                        onClick={() => this.onLoadMoreOffers(group.id)}
+                        disabled={this.state.isLoadingMoreForGroup.includes(
+                            group.id,
+                        )}
+                        className="btn btn-block btn-primary"
+                    >
+                        {gettext("Load More Offers")}
+                    </button>
+                )}
+            </>
         );
     }
 

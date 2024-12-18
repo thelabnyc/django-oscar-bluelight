@@ -8,6 +8,8 @@ from django.urls import reverse
 from django_redis import get_redis_connection
 from oscar.core.loading import get_model, get_class
 from oscar.test.factories import create_basket, create_product, create_stockrecord
+from urllib.parse import urlencode, urljoin
+
 from oscarbluelight.offer.constants import Conjunction
 
 OfferGroup = get_model("offer", "OfferGroup")
@@ -1349,3 +1351,126 @@ class OfferGroupViewTest(TestCase):
             reverse("dashboard:voucher-update", args=[voucher.pk]), data=data
         )
         self.assertEqual(response.status_code, 200)
+
+
+class OfferGroupViewSetTest(TestCase):
+    def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection("redis")
+        conn.flushall()
+
+        self.client = Client()
+
+        all_products = Range()
+        all_products.includes_all_products = True
+        all_products.save()
+
+        condition = Condition()
+        condition.proxy_class = (
+            "oscarbluelight.offer.conditions.BluelightCountCondition"
+        )
+        condition.value = 5
+        condition.range = all_products
+        condition.save()
+
+        benefit = Benefit()
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit"
+        )
+        benefit.value = 1
+        benefit.save()
+
+        self.offer_group = OfferGroup.objects.create(name="someName", priority=10)
+        for i in range(5):
+            offer = ConditionalOffer.objects.create(
+                name=f"Offer {i + 1}", condition=condition, benefit=benefit
+            )
+            self.offer_group.offers.add(offer)
+
+        User.objects.create_user(
+            "john", "lennon@thebeatles.com", "johnpassword", is_staff=True
+        )
+
+    def test_get_list(self):
+        self.client.login(username="john", password="johnpassword")
+
+        response = self.client.get(reverse("dashboard:api-offergroup-list"))
+        self.assertEqual(response.status_code, 200)
+
+        offer_groups = response.json()
+        self.assertEqual(len(offer_groups), 2)
+
+        offer_group = offer_groups[1]
+        self.assertEqual(offer_group["name"], "someName")
+        self.assertEqual(offer_group["slug"], "somename")
+        self.assertEqual(offer_group["priority"], 10)
+        self.assertEqual(len(offer_group["offers"]), 5)
+        self.assertEqual(offer_group["total_offers_count"], 5)
+
+    def test_get_list_with_pagination_params(self):
+        self.client.login(username="john", password="johnpassword")
+
+        # Get offer groups with their first "offers page": Offer 1 and Offer 2
+        query_str = urlencode({"offers_page": 1, "offers_page_size": 2})
+        response = self.client.get(
+            urljoin(reverse("dashboard:api-offergroup-list"), f"?{query_str}")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        offer_groups = response.json()
+        self.assertEqual(len(offer_groups), 2)
+
+        offer_group = offer_groups[1]
+        self.assertEqual(offer_group["name"], "someName")
+        self.assertEqual(len(offer_group["offers"]), 2)
+        self.assertEqual(offer_group["offers"][0]["name"], "Offer 1")
+        self.assertEqual(offer_group["offers"][1]["name"], "Offer 2")
+        self.assertEqual(offer_group["total_offers_count"], 5)
+
+        # Get offer groups with their second "offers page": Offer 3 and Offer 4
+        query_str = urlencode({"offers_page": 2, "offers_page_size": 2})
+        response = self.client.get(
+            urljoin(reverse("dashboard:api-offergroup-list"), f"?{query_str}")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        offer_groups = response.json()
+        self.assertEqual(len(offer_groups), 2)
+
+        offer_group = offer_groups[1]
+        self.assertEqual(offer_group["name"], "someName")
+        self.assertEqual(len(offer_group["offers"]), 2)
+        self.assertEqual(offer_group["offers"][0]["name"], "Offer 3")
+        self.assertEqual(offer_group["offers"][1]["name"], "Offer 4")
+        self.assertEqual(offer_group["total_offers_count"], 5)
+
+        # Get offer groups with their third "offers page": Offer 5
+        query_str = urlencode({"offers_page": 3, "offers_page_size": 2})
+        response = self.client.get(
+            urljoin(reverse("dashboard:api-offergroup-list"), f"?{query_str}")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        offer_groups = response.json()
+        self.assertEqual(len(offer_groups), 2)
+
+        offer_group = offer_groups[1]
+        self.assertEqual(offer_group["name"], "someName")
+        self.assertEqual(len(offer_group["offers"]), 1)
+        self.assertEqual(offer_group["offers"][0]["name"], "Offer 5")
+        self.assertEqual(offer_group["total_offers_count"], 5)
+
+        # Get offer groups with their fourth "offers page": No offers within this page
+        query_str = urlencode({"offers_page": 4, "offers_page_size": 2})
+        response = self.client.get(
+            urljoin(reverse("dashboard:api-offergroup-list"), f"?{query_str}")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        offer_groups = response.json()
+        self.assertEqual(len(offer_groups), 2)
+
+        offer_group = offer_groups[1]
+        self.assertEqual(offer_group["name"], "someName")
+        self.assertEqual(len(offer_group["offers"]), 0)
+        self.assertEqual(offer_group["total_offers_count"], 5)
