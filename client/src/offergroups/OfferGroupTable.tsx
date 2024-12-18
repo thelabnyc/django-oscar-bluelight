@@ -15,6 +15,7 @@ export interface IProps {
 
 export interface IState {
     isLoading: boolean;
+    isLoadingMoreForGroup: number[];
     groups: IOfferGroupWithPagination[];
 }
 
@@ -23,6 +24,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             isLoading: true,
+            isLoadingMoreForGroup: [],
             groups: [],
         };
     }
@@ -32,6 +34,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
             const groups = await listOfferGroups(this.props.endpoint);
             this.setState({
                 isLoading: false,
+                isLoadingMoreForGroup: [],
                 groups: groups,
             });
         };
@@ -39,14 +42,18 @@ class OfferGroupTable extends React.Component<IProps, IState> {
     }
 
     private onLoadMoreOffers = async (groupID: number) => {
+        if (this.state.isLoadingMoreForGroup.includes(groupID)) {
+            return;
+        }
+        this.setState((s) => ({
+            isLoadingMoreForGroup: [...s.isLoadingMoreForGroup, groupID],
+        }));
+
         try {
-            const currentGroups = [...this.state.groups];
-            const groupIdx = currentGroups.findIndex((g) => g.id === groupID);
-
-            if (groupIdx === -1) return;
-
-            const currentGroup = currentGroups[groupIdx];
-            const nextPage = (currentGroup.current_offers_page || 1) + 1;
+            const currPage = this.state.groups.find(
+                (g) => g.id === groupID,
+            )?.current_offers_page;
+            const nextPage = (currPage || 1) + 1;
 
             // Fetch next page of offers for this group
             const updatedGroups = await listOfferGroups(
@@ -54,21 +61,36 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                 nextPage,
             );
 
-            // Merge offers from previous and new pages
-            const mergedGroup = {
-                ...currentGroup,
-                offers: [
-                    ...currentGroup.offers,
-                    ...updatedGroups[groupIdx].offers,
-                ],
-                current_offers_page: nextPage,
-                has_more_offers: updatedGroups[groupIdx].has_more_offers,
-            };
-            currentGroups[groupIdx] = mergedGroup;
-            this.setState({ groups: currentGroups });
+            // Merge offers from previous and new pages and update state
+            this.setState((s) => {
+                const groups = [...s.groups];
+                const groupIdx = groups.findIndex((g) => g.id === groupID);
+                const group = groups[groupIdx];
+                groups[groupIdx] = {
+                    ...group,
+                    offers: [
+                        ...group.offers,
+                        ...updatedGroups[groupIdx].offers,
+                    ],
+                    current_offers_page: nextPage,
+                    has_more_offers: updatedGroups[groupIdx].has_more_offers,
+                };
+                return {
+                    isLoadingMoreForGroup: s.isLoadingMoreForGroup.filter(
+                        (gid) => gid !== groupID,
+                    ),
+                    groups: groups,
+                };
+            });
         } catch (error) {
             console.error("Failed to load more offers:", error);
         }
+
+        this.setState((s) => ({
+            isLoadingMoreForGroup: s.isLoadingMoreForGroup.filter(
+                (gid) => gid !== groupID,
+            ),
+        }));
     };
 
     private buildGroupActions(group: IOfferGroup) {
@@ -234,6 +256,9 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                 {group.has_more_offers && (
                     <button
                         onClick={() => this.onLoadMoreOffers(group.id)}
+                        disabled={this.state.isLoadingMoreForGroup.includes(
+                            group.id,
+                        )}
                         className="btn btn-block btn-primary"
                     >
                         {gettext("Load More Offers")}
