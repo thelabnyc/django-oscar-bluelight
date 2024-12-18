@@ -8,9 +8,8 @@ from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from oscar.core.loading import get_class, get_model
 from oscar.apps.dashboard.offers.views import *  # noqa
 from oscar.apps.dashboard.offers import views
+from .forms import OfferSearchForm
 import json
-
-from .forms import OfferSearForm
 
 ConditionalOffer = get_model("offer", "ConditionalOffer")
 CompoundBenefit = get_model("offer", "CompoundBenefit")
@@ -34,8 +33,6 @@ MetaDataForm = get_class("offers_dashboard.forms", "MetaDataForm")
 BenefitSelectionForm = get_class("offers_dashboard.forms", "BenefitSelectionForm")
 ConditionSelectionForm = get_class("offers_dashboard.forms", "ConditionSelectionForm")
 RestrictionsForm = get_class("offers_dashboard.forms", "RestrictionsForm")
-
-OscarOfferListView = get_class("offers_dashboard.views", "OfferListView")
 
 
 class OfferWizardStepView(views.OfferWizardStepView):
@@ -158,18 +155,18 @@ class OfferConditionView(OfferWizardStepView):
     previous_view = OfferBenefitView
 
 
-class OfferListView(OscarOfferListView):
-    form_class = OfferSearForm
+class OfferListView(views.OfferListView):
+    form_class = OfferSearchForm
 
     def get_queryset(self):
         qs = super().get_queryset()
-        self.form = self.form_class(self.request.GET)
-
         if self.form.is_valid():
-            offer_group = self.form.cleaned_data["offer_group"]
-            if offer_group:
-                qs = qs.filter(offer_group__slug__icontains=offer_group).distinct()
-                self.search_filters.append(_('Offer Group matches "%s"') % offer_group)
+            offer_group_slug = self.form.cleaned_data["offer_group"]
+            if offer_group_slug:
+                qs = qs.filter(offer_group__slug=offer_group_slug).distinct()
+                self.search_filters.append(
+                    _('Offer Group matches "%s"') % offer_group_slug
+                )
         return qs
 
 

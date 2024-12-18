@@ -1,7 +1,11 @@
 import React from "react";
 import classNames from "classnames";
 import { listOfferGroups } from "../utils/api";
-import { IOfferGroup, IOffer } from "../utils/api.interfaces";
+import {
+    IOffer,
+    IOfferGroup,
+    IOfferGroupWithPagination,
+} from "../utils/api.interfaces";
 
 import "./OfferGroupTable.scss";
 
@@ -11,7 +15,7 @@ export interface IProps {
 
 export interface IState {
     isLoading: boolean;
-    groups: IOfferGroup[];
+    groups: IOfferGroupWithPagination[];
 }
 
 class OfferGroupTable extends React.Component<IProps, IState> {
@@ -33,6 +37,39 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         };
         load().catch(console.log);
     }
+
+    private onLoadMoreOffers = async (groupID: number) => {
+        try {
+            const currentGroups = [...this.state.groups];
+            const groupIdx = currentGroups.findIndex((g) => g.id === groupID);
+
+            if (groupIdx === -1) return;
+
+            const currentGroup = currentGroups[groupIdx];
+            const nextPage = (currentGroup.current_offers_page || 1) + 1;
+
+            // Fetch next page of offers for this group
+            const updatedGroups = await listOfferGroups(
+                this.props.endpoint,
+                nextPage,
+            );
+
+            // Merge offers from previous and new pages
+            const mergedGroup = {
+                ...currentGroup,
+                offers: [
+                    ...currentGroup.offers,
+                    ...updatedGroups[groupIdx].offers,
+                ],
+                current_offers_page: nextPage,
+                has_more_offers: updatedGroups[groupIdx].has_more_offers,
+            };
+            currentGroups[groupIdx] = mergedGroup;
+            this.setState({ groups: currentGroups });
+        } catch (error) {
+            console.error("Failed to load more offers:", error);
+        }
+    };
 
     private buildGroupActions(group: IOfferGroup) {
         const hasOffers = group.offers.length > 0;
@@ -154,7 +191,7 @@ class OfferGroupTable extends React.Component<IProps, IState> {
         return elems;
     }
 
-    private buildOfferList(group: IOfferGroup) {
+    private buildOfferList(group: IOfferGroupWithPagination) {
         const rows = group.offers
             .filter((offer) => {
                 // Don't display voucher offers who's voucher has been deleted
@@ -173,26 +210,36 @@ class OfferGroupTable extends React.Component<IProps, IState> {
                     : this.buildOfferRow(index, offer);
             });
         return (
-            <table className="table table-bordered table-striped offergroup-subtable">
-                <caption>{group.name}</caption>
-                <thead>
-                    <tr>
-                        <th className="offergroup__offer__index">
-                            {gettext("#")}
-                        </th>
-                        <th className="offergroup__offer__name">
-                            {gettext("Name")}
-                        </th>
-                        <th className="offergroup__offer__priority">
-                            {gettext("Priority")}
-                        </th>
-                        <th className="offergroup__offer__type">
-                            {gettext("Type")}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>{rows}</tbody>
-            </table>
+            <>
+                <table className="table table-bordered table-striped offergroup-subtable">
+                    <caption>{group.name}</caption>
+                    <thead>
+                        <tr>
+                            <th className="offergroup__offer__index">
+                                {gettext("#")}
+                            </th>
+                            <th className="offergroup__offer__name">
+                                {gettext("Name")}
+                            </th>
+                            <th className="offergroup__offer__priority">
+                                {gettext("Priority")}
+                            </th>
+                            <th className="offergroup__offer__type">
+                                {gettext("Type")}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>{rows}</tbody>
+                </table>
+                {group.has_more_offers && (
+                    <button
+                        onClick={() => this.onLoadMoreOffers(group.id)}
+                        className="btn btn-block btn-primary"
+                    >
+                        {gettext("Load More Offers")}
+                    </button>
+                )}
+            </>
         );
     }
 

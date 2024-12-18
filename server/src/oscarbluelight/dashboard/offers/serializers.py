@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.utils.serializer_helpers import ReturnList
 from oscarbluelight.offer.models import OfferGroup, ConditionalOffer
 from oscarbluelight.voucher.models import Voucher
-
-DEFAULT_OFFER_LIMIT_TO_DISPLAY = 1000
 
 
 class VoucherSerializer(serializers.ModelSerializer):
@@ -71,14 +72,22 @@ class OfferSerializer(serializers.ModelSerializer):
         return obj.mobile_image.url if obj.mobile_image else ""
 
 
+class OffersInGroupPagination(PageNumberPagination):
+    page_query_param = "offers_page"
+    page_size_query_param = "offers_page_size"
+    page_size = 200
+    max_page_size = 1000
+
+
 class OfferGroupSerializer(serializers.ModelSerializer):
-    offers = serializers.SerializerMethodField()
     update_link = serializers.HyperlinkedIdentityField(
         view_name="dashboard:offergroup-update"
     )
     delete_link = serializers.HyperlinkedIdentityField(
         view_name="dashboard:offergroup-delete"
     )
+    offers = serializers.SerializerMethodField()
+    total_offers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = OfferGroup
@@ -89,29 +98,19 @@ class OfferGroupSerializer(serializers.ModelSerializer):
             "priority",
             "is_system_group",
             "offers",
+            "total_offers_count",
             "update_link",
             "delete_link",
         )
 
-    @staticmethod
-    def _limit_displayed_offers(offer_group):
-        """
-        Sometimes, an offer group might have an excessive number of offers attached to it, and each offer might
-        include a large number of vouchers.
+    def get_offers(self, obj: OfferGroup) -> ReturnList:
+        offers = obj.offers.all()
+        paginator = OffersInGroupPagination()
+        try:
+            page = paginator.paginate_queryset(offers, self.context.get("request"))
+        except NotFound:
+            page = obj.offers.none()
+        return OfferSerializer(page, many=True, context=self.context).data
 
-        For example:
-
-        One offer group contains 500 offers.
-        Each offer has 10,000 vouchers.
-
-        This can significantly increase the render time on the Oscar offer dashboard page.
-        To mitigate this, the number of offers displayed is limited to a certain threshold.
-        """
-        if offer_group.offers.count() > DEFAULT_OFFER_LIMIT_TO_DISPLAY:
-            return offer_group.offers.all()[:DEFAULT_OFFER_LIMIT_TO_DISPLAY]
-        else:
-            return offer_group.offers.all()
-
-    def get_offers(self, obj):
-        offers = self._limit_displayed_offers(obj)
-        return OfferSerializer(offers, many=True, context=self.context).data
+    def get_total_offers_count(self, obj: OfferGroup) -> int:
+        return obj.offers.count()
