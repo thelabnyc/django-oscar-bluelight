@@ -1,5 +1,22 @@
 # Changes
 
+## v5.6.0 (2024-12-23)
+
+### Feat
+
+- add loading state to offer groups load more button (#25405)
+- implement pagination for offers within each offer group on the Offer Groups dashboard view (#25405)
+- Add offer group filter to offer dashboard view and limit the number of offers displayed for an offer group (#25405)
+
+### Fix
+
+- **deps**: update dependency django to ^4.2.17
+- **deps**: update dependency core-js to ^3.39.0
+- **deps**: update dependency tslib to ^2.8.1
+- **deps**: update dependency superagent to ^10.1.1
+- **deps**: update dependency tslib to ^2.8.0
+- remove @babel/plugin-syntax-dynamic-import plugin
+
 ## v5.5.15 (2024-09-25)
 
 ### Fix
