@@ -14,11 +14,14 @@ Range = get_model("offer", "Range")
 RangeProductFileUpload = get_model("offer", "RangeProductFileUpload")
 
 
-class RangeSearchForm(forms.Form):
-    text = forms.CharField(required=False, label=_("Search"))
+class BaseRangeSearchForm(forms.Form):
     product_name = forms.CharField(required=False, label=_("Product Name"))
     upc = forms.CharField(required=False, label=_("UPC"))
     sku = forms.CharField(required=False, label=_("SKU"))
+
+
+class RangeSearchForm(BaseRangeSearchForm):
+    text = forms.CharField(required=False, label=_("Search"))
 
     def filter_queryset(self, qs):
         is_filtered = False
@@ -60,6 +63,10 @@ class RangeSearchForm(forms.Form):
             is_filtered = True
 
         return qs, is_filtered
+
+
+class RangeProductSearchForm(BaseRangeSearchForm):
+    pass
 
 
 class BatchPriceUpdateForm(forms.Form):

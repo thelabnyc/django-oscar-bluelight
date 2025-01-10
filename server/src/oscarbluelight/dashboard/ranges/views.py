@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.views.generic import UpdateView
 from django.utils.translation import ngettext, gettext_lazy as _
@@ -9,7 +10,7 @@ from oscar.apps.dashboard.ranges.views import (
     RangeListView as BaseRangeListView,
     RangeProductListView as BaseRangeProductListView,
 )
-from .forms import RangeSearchForm, RangeProductForm
+from .forms import RangeSearchForm, RangeProductForm, RangeProductSearchForm
 import logging
 
 logger = logging.getLogger(__name__)
@@ -128,6 +129,7 @@ class RangeExcludedProductsView(UpdateView):
 
 class RangeProductListView(BaseRangeProductListView):
     form_class = RangeProductForm
+    search_form_class = RangeProductSearchForm
 
     def get_queryset(self):
         """
@@ -137,11 +139,30 @@ class RangeProductListView(BaseRangeProductListView):
         range_instance = self.get_product_range()
         products = (
             range_instance.all_products_consistent()
+            .prefetch_related("stockrecords")
             .order_by("rangeproduct__display_order")
             .distinct()
         )
-
+        search_form = self.search_form_class(self.request.GET)
+        if search_form.is_valid():
+            data = search_form.cleaned_data
+            filter_q = Q()
+            if data.get("product_name"):
+                filter_q &= Q(title__search=data["product_name"])
+            if data.get("upc"):
+                filter_q &= Q(upc__iexact=data["upc"])
+            if data.get("sku"):
+                filter_q &= Q(stockrecords__partner_sku__iexact=data["sku"])
+            if filter_q:
+                products = products.filter(filter_q)
         return products
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add search form to context
+        if "search_form" not in context:
+            context["search_form"] = self.search_form_class(self.request.GET)
+        return context
 
     def handle_query_products(self, request, product_range, form):
         products = form.get_products()

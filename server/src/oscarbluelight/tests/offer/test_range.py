@@ -1,7 +1,14 @@
-from django.test import TransactionTestCase
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.test import RequestFactory, TestCase, TransactionTestCase
 from oscarbluelight.offer import models
 from oscar.apps.catalogue import models as catalogue_models
-from oscar.test.factories import create_product
+from oscar.core.loading import get_class
+from oscar.test.factories import create_product, create_stockrecord
+from unittest.mock import patch
+
+RangeProductSearchForm = get_class("ranges_dashboard.forms", "RangeProductSearchForm")
+RangeProductListView = get_class("ranges_dashboard.views", "RangeProductListView")
 
 
 class TestWholeSiteRange(TransactionTestCase):
@@ -340,3 +347,127 @@ class TestRangeExcludeProductBatch(TransactionTestCase):
         self.assertTrue(rng2.contains_product(product2))
         self.assertTrue(rng2.contains_product(product3))
         self.assertFalse(rng2.contains_product(product4))
+
+
+class TestRangeProductListView(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_superuser(
+            username="john", email="test@example.com", password="password"
+        )
+        # Create a product range
+        rng = models.Range.objects.create(name="Products Range", slug="products-range")
+        # Create products with different attributes
+        self.product1 = create_product(title="Test Product 1", upc="1234567890")
+        self.product2 = create_product(title="Different Product", upc="0987654321")
+        self.product3 = create_product(title="Special Item", upc="5555555555")
+        # Create stock records
+        create_stockrecord(product=self.product1, partner_sku="SKU001")
+        create_stockrecord(product=self.product2, partner_sku="SKU002")
+        create_stockrecord(product=self.product3, partner_sku="SKU003")
+        # Add products to range with specific display order
+        models.RangeProduct.objects.create(
+            range=rng, product=self.product1, display_order=1
+        )
+        models.RangeProduct.objects.create(
+            range=rng, product=self.product2, display_order=2
+        )
+        models.RangeProduct.objects.create(
+            range=rng, product=self.product3, display_order=3
+        )
+        # Initialize the view
+        self.view = RangeProductListView()
+        self.view.kwargs = {"pk": rng.pk}
+
+    @staticmethod
+    def mock_title_search():
+        """
+        Mock the Q object to replace `title__search` with `title__icontains`
+        as the __search lookup might not properly be configured in test environment db.
+        """
+
+        def replace_q(*args, **kwargs):
+            if "title__search" in kwargs:
+                # Replace lookup
+                kwargs["title__icontains"] = kwargs.pop("title__search")
+            return Q(*args, **kwargs)
+
+        return patch("oscarbluelight.dashboard.ranges.views.Q", side_effect=replace_q)
+
+    @mock_title_search()
+    def test_get_queryset_no_search(self, mock_q):
+        request = self.factory.get("/")
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 3)
+        self.assertEqual(list(queryset), [self.product1, self.product2, self.product3])
+
+    @mock_title_search()
+    def test_get_queryset_search_by_product_name(self, mock_q):
+        request = self.factory.get("/", {"product_name": "Test Product"})
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.product1)
+
+    @mock_title_search()
+    def test_get_queryset_search_by_upc(self, mock_q):
+        request = self.factory.get("/", {"upc": "1234567890"})
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.product1)
+
+    @mock_title_search()
+    def test_get_queryset_search_by_sku(self, mock_q):
+        request = self.factory.get("/", {"sku": "SKU002"})
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.product2)
+
+    @mock_title_search()
+    def test_get_queryset_multiple_filters(self, mock_q):
+        request = self.factory.get(
+            "/", {"product_name": "Special", "upc": "5555555555"}
+        )
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.product3)
+
+    @mock_title_search()
+    def test_get_queryset_case_insensitive(self, mock_q):
+        request = self.factory.get("/", {"product_name": "test PRODUCT"})
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.product1)
+
+    @mock_title_search()
+    def test_get_queryset_no_results(self, mock_q):
+        request = self.factory.get("/", {"product_name": "Fake Product"})
+        request.user = self.user
+        self.view.request = request
+        queryset = self.view.get_queryset()
+        self.assertEqual(queryset.count(), 0)
+
+    @mock_title_search()
+    def test_get_context_data(self, mock_q):
+        request = self.factory.get("/", {"product_name": "Different Product"})
+        request.user = self.user
+        self.view.request = request
+        self.view.object_list = self.view.get_queryset()
+        self.view.upload_type = ""
+        context = self.view.get_context_data()
+        self.assertIn("search_form", context)
+        self.assertIsInstance(context["search_form"], RangeProductSearchForm)
+        self.assertEqual(
+            context["search_form"].data.get("product_name"), "Different Product"
+        )
