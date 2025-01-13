@@ -80,7 +80,7 @@ INSTALLED_APPS = [
     "oscarbluelight.dashboard.offers.apps.OffersDashboardConfig",  # oscar.apps.dashboard.offers.apps.OffersDashboardConfig
     "oscar.apps.dashboard.partners.apps.PartnersDashboardConfig",
     "oscar.apps.dashboard.pages.apps.PagesDashboardConfig",
-    "oscar.apps.dashboard.ranges.apps.RangesDashboardConfig",
+    "oscarbluelight.dashboard.ranges.apps.RangesDashboardConfig",  # "oscar.apps.dashboard.ranges.apps.RangesDashboardConfig",
     "oscar.apps.dashboard.reviews.apps.ReviewsDashboardConfig",
     "oscarbluelight.dashboard.vouchers.apps.VouchersDashboardConfig",  # oscar.apps.dashboard.vouchers.apps.VouchersDashboardConfig
     "oscar.apps.dashboard.communications.apps.CommunicationsDashboardConfig",
