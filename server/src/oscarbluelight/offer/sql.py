@@ -1,4 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from django.core.exceptions import ImproperlyConfigured
+
+if TYPE_CHECKING:
+    from oscar.apps.order.models import Order, OrderDiscount
+    from psycopg2.sql import Composed
+
+    from .models import ConditionalOffer
 
 try:
     try:
@@ -113,11 +123,11 @@ ORDER BY range_id, product_id;
 
 
 def get_recalculate_offer_application_totals_sql(
-    Order,
-    OrderDiscount,
-    ConditionalOffer,
-    ignored_order_statuses,
-):
+    Order: type[Order],
+    OrderDiscount: type[OrderDiscount],
+    ConditionalOffer: type[ConditionalOffer],
+    ignored_order_statuses: list[str],
+) -> Composed:
     status_filter = sql.SQL("")
     if len(ignored_order_statuses) > 0:
         status_filter = sql.SQL("AND o.status NOT IN ({statuses})").format(

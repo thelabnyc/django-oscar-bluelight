@@ -1,17 +1,22 @@
-from django.utils.translation import gettext_lazy as _
+from django.db.models import QuerySet
+from django.http import HttpResponse
 from django.utils.encoding import force_str
+from django.utils.html import strip_tags
+from django.utils.translation import gettext_lazy as _
 from oscar.apps.offer.reports import (
     OfferReportCSVFormatter as BaseOfferReportCSVFormatter,
-    OfferReportGenerator as BaseOfferReportGenerator,
 )
-from django.utils.html import strip_tags
-from oscar.core.loading import get_model
+from oscar.apps.offer.reports import OfferReportGenerator as BaseOfferReportGenerator
 
-ConditionalOffer = get_model("offer", "ConditionalOffer")
+from .models import ConditionalOffer
 
 
 class OfferReportCSVFormatter(BaseOfferReportCSVFormatter):
-    def generate_csv(self, response, offers):
+    def generate_csv(
+        self,
+        response: HttpResponse,
+        offers: QuerySet[ConditionalOffer],
+    ) -> None:
         writer = self.get_csv_writer(response)
         header_row = [
             _("ID"),
@@ -68,7 +73,7 @@ class OfferReportGenerator(BaseOfferReportGenerator):
         "CSV_formatter": OfferReportCSVFormatter,
     }
 
-    def generate(self):
+    def generate(self) -> HttpResponse:
         offers = ConditionalOffer.objects.exclude(
             offer_type=ConditionalOffer.VOUCHER
         ).all()

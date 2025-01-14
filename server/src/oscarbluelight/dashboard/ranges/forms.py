@@ -1,17 +1,20 @@
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any
+
 from django import forms
-from django.db.models import Q
-from django.utils.translation import gettext_lazy as _
 from django.contrib.postgres.search import SearchVector
-from oscar.apps.dashboard.ranges.forms import (
-    RangeProductForm as BaseRangeProductForm,
-    UPC_SET_REGEX,
-)
+from django.db.models import Q, QuerySet
+from django.utils.translation import gettext_lazy as _
+from oscar.apps.dashboard.ranges.forms import UPC_SET_REGEX
+from oscar.apps.dashboard.ranges.forms import RangeProductForm as BaseRangeProductForm
 from oscar.core.loading import get_model
 
+from oscarbluelight.offer.models import Range, RangeProductFileUpload
 
-Product = get_model("catalogue", "Product")
-Range = get_model("offer", "Range")
-RangeProductFileUpload = get_model("offer", "RangeProductFileUpload")
+if TYPE_CHECKING:
+    from oscar.apps.catalogue.models import Product
+else:
+    Product = get_model("catalogue", "Product")
 
 
 class BaseRangeSearchForm(forms.Form):
@@ -23,7 +26,7 @@ class BaseRangeSearchForm(forms.Form):
 class RangeSearchForm(BaseRangeSearchForm):
     text = forms.CharField(required=False, label=_("Search"))
 
-    def filter_queryset(self, qs):
+    def filter_queryset(self, qs: QuerySet[Range]) -> tuple[QuerySet[Range], bool]:
         is_filtered = False
         if not self.is_valid():
             return qs, is_filtered
@@ -85,10 +88,19 @@ class BatchPriceUpdateForm(forms.Form):
     )
     amount = forms.DecimalField(initial=0, decimal_places=2, max_digits=12)
 
-    def __init__(self, instance=None, *args, **kwargs):
+    def __init__(
+        self,
+        instance: Range | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
-    def apply_discount(self, price_retail, price_excl_tax):
+    def apply_discount(
+        self,
+        price_retail: Decimal,
+        price_excl_tax: Decimal,
+    ) -> Decimal:
         otype = self.cleaned_data["operation_type"]
         amount = self.cleaned_data["amount"]
         operations = {
@@ -114,7 +126,7 @@ class RangeExcludedProductsUpdateForm(forms.ModelForm):
 
 
 class RangeProductForm(BaseRangeProductForm):
-    def clean_query_with_upload_type(self, raw, upload_type):
+    def clean_query_with_upload_type(self, raw: str, upload_type: str) -> None:
         # Check that the search matches some products
         ids = set(UPC_SET_REGEX.findall(raw))
         # switch for included or excluded products

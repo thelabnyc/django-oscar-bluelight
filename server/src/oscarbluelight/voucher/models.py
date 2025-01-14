@@ -1,32 +1,54 @@
-from django.db import models, transaction, connection
-from django.conf import settings
-from django.utils.module_loading import import_string
-from django.utils.translation import gettext_lazy as _
-from django.core.cache import cache
-from oscar.models.fields import NullCharField
-from oscar.apps.voucher.abstract_models import AbstractVoucher
-from . import tasks, sql
+from __future__ import annotations
+
+from collections.abc import Collection, Iterable, Sequence
+from datetime import datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 import time
 
+from django.conf import settings
+from django.contrib.auth.models import AnonymousUser, User
+from django.core.cache import cache
+from django.db import connection, models, transaction
+from django.db.models.base import ModelBase
+from django.utils.module_loading import import_string
+from django.utils.translation import gettext_lazy as _
+from oscar.apps.voucher.abstract_models import AbstractVoucher
+from oscar.models.fields import NullCharField
+from typing_extensions import Self
 
-class VoucherQuerySet(models.QuerySet):
-    def exclude_children(self):
+from ..offer.models import Benefit, Condition, OfferGroup
+from . import sql, tasks
+
+if TYPE_CHECKING:
+    from django_stubs_ext import StrOrPromise
+    from oscar.apps.order.models import Order
+
+
+class VoucherQuerySet(models.QuerySet["Voucher"]):
+    def exclude_children(self) -> Self:
         return self.filter(parent=None)
 
-    def select_for_update(self):
+    def select_for_update(
+        self,
+        nowait: bool = False,
+        skip_locked: bool = False,
+        of: Sequence[str] = (),
+        no_key: bool = False,
+    ) -> Self:
         """
         To do a select_for_updarte, we have to reset the query ordering so that it doesn't try to do
         outer joins to the ConditionalOffer and OfferGroup tables.
         """
         qs = self.order_by("pk")
-        return models.QuerySet.select_for_update(qs)
+        return models.QuerySet.select_for_update(qs, nowait, skip_locked, of, no_key)
 
 
-class VoucherManager(models.Manager):
-    def get_queryset(self):
+class VoucherManager(models.Manager["Voucher"]):
+    def get_queryset(self) -> VoucherQuerySet:
         return VoucherQuerySet(self.model, using=self._db)
 
-    def exclude_children(self):
+    def exclude_children(self) -> VoucherQuerySet:
         return self.get_queryset().exclude_children()
 
 
@@ -63,11 +85,16 @@ class Voucher(AbstractVoucher):
         ordering = ("-offers__offer_group__priority", "-offers__priority", "pk")
 
     @classmethod
-    def from_db(cls, db, field_names, values):
+    def from_db(
+        cls,
+        db: Optional[str],
+        field_names: Collection[str],
+        values: Collection[Any],
+    ) -> "Voucher":
         instance = super().from_db(db, field_names, values)
 
         # Child codes always get the parent's name
-        def _get_parent_name():
+        def _get_parent_name() -> StrOrPromise | None:
             return instance.parent.name if instance.parent else None
 
         if instance.parent_id:
@@ -77,58 +104,61 @@ class Voucher(AbstractVoucher):
             instance.name = parent_name
         return instance
 
-    def _get_parent_name_cache_key(self, parent_id=None):
+    def _get_parent_name_cache_key(self, parent_id: Optional[int] = None) -> str:
         if parent_id is None:
             parent_id = self.parent_id
         return f"oscarbluelight.Voucher.parent_name.{parent_id}"
 
-    def is_active(self, test_datetime=None):
+    def is_active(self, test_datetime: datetime | None = None) -> bool:
         ret = super().is_active(test_datetime)
         if self.is_suspended:
             return False
         return ret
 
     @property
-    def offer_group(self):
+    def offer_group(self) -> OfferGroup | None:
         offer = self.offers.first()
         return offer.offer_group if offer else None
 
     @property
-    def priority(self):
+    def priority(self) -> int:
         offer = self.offers.first()
         return offer.priority if offer else 0
 
     @property
-    def condition(self):
+    def condition(self) -> Condition | None:
         offer = self.offers.first()
         return offer.condition if offer else None
 
     @property
-    def benefit(self):
+    def benefit(self) -> Benefit | None:
         offer = self.offers.first()
         return offer.benefit if offer else None
 
     @property
-    def is_open(self):
+    def is_open(self) -> bool:
         return self.status == self.OPEN
 
     @property
-    def is_suspended(self):
+    def is_suspended(self) -> bool:
         return self.status == self.SUSPENDED
 
-    def suspend(self):
+    def suspend(self) -> None:
         self.status = self.SUSPENDED
         self.save()
 
-    suspend.alters_data = True
+    suspend.alters_data = True  # type:ignore[attr-defined]
 
-    def unsuspend(self):
+    def unsuspend(self) -> None:
         self.status = self.OPEN
         self.save()
 
-    unsuspend.alters_data = True
+    unsuspend.alters_data = True  # type:ignore[attr-defined]
 
-    def is_available_to_user(self, user=None):
+    def is_available_to_user(
+        self,
+        user: Optional[Union[User, AnonymousUser]] = None,
+    ) -> tuple[bool, str]:
         is_available, message = True, ""
         rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_AVAILABILITY_RULES", [])
         for path, desc in rule_classes:
@@ -140,11 +170,15 @@ class Voucher(AbstractVoucher):
                 break
         return is_available, message
 
-    def list_children(self):
+    def list_children(self) -> models.QuerySet[Voucher]:
         return self.children.select_related("parent").all()
 
     @transaction.atomic
-    def create_children(self, auto_generate_count=0, custom_codes=[]):
+    def create_children(
+        self,
+        auto_generate_count: int = 0,
+        custom_codes: Sequence[Any] = [],
+    ) -> tuple[list[StrOrPromise], int]:
         if self.parent is not None:
             raise RuntimeError(
                 _(
@@ -174,7 +208,7 @@ class Voucher(AbstractVoucher):
         return errors, success_count
 
     @transaction.atomic
-    def update_children(self):
+    def update_children(self) -> None:
         """
         If logic here changes, make sure to also update the single-child update
         version (`Voucher._update_child`)
@@ -201,7 +235,14 @@ class Voucher(AbstractVoucher):
             for query in queries:
                 cursor.execute(query, params)
 
-    def save(self, update_children=True, *args, **kwargs):
+    def save(  # type:ignore[override]
+        self,
+        update_children: bool = True,
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
         # Child codes use the parent's name and always store Null for their own name
         _orig_name = self.name
         if self.parent:
@@ -210,7 +251,12 @@ class Voucher(AbstractVoucher):
         else:
             cache.delete(self._get_parent_name_cache_key(self.pk))
         # Save the object
-        rc = super().save(*args, **kwargs)
+        rc = super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
         # Update children?
         if update_children:
             tasks.update_child_vouchers.apply_async(args=(self.id,), countdown=10)
@@ -220,7 +266,7 @@ class Voucher(AbstractVoucher):
         return rc
 
     @transaction.atomic
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         offers = self.offers.all()
         rc = super().delete(*args, **kwargs)
         for offer in offers:
@@ -231,7 +277,7 @@ class Voucher(AbstractVoucher):
                 condition.delete()
         return rc
 
-    def record_usage(self, order, user, *args, **kwargs):
+    def record_usage(self, order: Order, user: User, *args: Any, **kwargs: Any) -> None:
         if self.parent:
             if user.is_authenticated:
                 self.parent.applications.create(
@@ -244,9 +290,14 @@ class Voucher(AbstractVoucher):
 
         return super().record_usage(order, user, *args, **kwargs)
 
-    record_usage.alters_data = True
+    record_usage.alters_data = True  # type:ignore[attr-defined]
 
-    def record_discount(self, discount, *args, **kwargs):
+    def record_discount(
+        self,
+        discount: dict[str, Decimal],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """Extends parent class to record discount on the parent Voucher
         Ensures that parent save does not save it's children which would cause
         excessive writes."""
@@ -255,14 +306,19 @@ class Voucher(AbstractVoucher):
             self.parent.save(update_children=False)
         return super().record_discount(discount, *args, **kwargs)
 
-    record_discount.alters_data = True
+    record_discount.alters_data = True  # type:ignore[attr-defined]
 
-    def _create_child(self, code, update_children=True):
+    def _create_child(self, code: str, update_children: bool = True) -> Voucher | None:
         self._create_child_batch([code], update_children=update_children)
         obj = self.children.filter(code=code).first()
         return obj
 
-    def _create_child_batch(self, codes, batch_size=1_000, update_children=True):
+    def _create_child_batch(
+        self,
+        codes: Sequence[str],
+        batch_size: int = 1_000,
+        update_children: bool = True,
+    ) -> set[str]:
         children = []
         copy_fields = (
             "usage",
@@ -289,7 +345,7 @@ class Voucher(AbstractVoucher):
         # Return the newly created codes as a set
         return {obj.code for obj in objs}
 
-    def _get_child_code_batch(self, num_codes):
+    def _get_child_code_batch(self, num_codes: int) -> list[str]:
         # The empty .order_by() clause is important here to prevent introducing
         # a bunch of JOINs for ordering by priority.
         existing_codes = set(
@@ -299,7 +355,7 @@ class Voucher(AbstractVoucher):
             .iterator()
         )
 
-        def check_code_is_unique(code):
+        def check_code_is_unique(code: str) -> bool:
             return code not in existing_codes
 
         new_codes = []
@@ -314,11 +370,15 @@ class Voucher(AbstractVoucher):
         return new_codes
 
     def _get_child_code(
-        self, code_index, max_index, max_tries=50, check_code_is_unique=None
-    ):
+        self,
+        code_index: int,
+        max_index: int,
+        max_tries: int = 50,
+        check_code_is_unique: Optional[Callable] = None,
+    ) -> str:
         if check_code_is_unique is None:
 
-            def check_code_is_unique(code):
+            def check_code_is_unique(code: str) -> bool:
                 try:
                     self.__class__.objects.get(code=code)
                     return False
@@ -338,7 +398,9 @@ class Voucher(AbstractVoucher):
             _("Couldn't find a unique child code after %s iterations.") % try_count
         )
 
-    def _get_code_uniquifier(self, code_index, max_index, extra_length=3):
+    def _get_code_uniquifier(
+        self, code_index: int, max_index: int, extra_length: int = 3
+    ) -> str:
         # Make sure all codes are the same length
         index = str(code_index).zfill(len(str(max_index)))
         # Append some digits to the end to make the codes non-sequential
@@ -346,4 +408,4 @@ class Voucher(AbstractVoucher):
         return "%s%s" % (index, suffix)
 
 
-from oscar.apps.voucher.models import *  # noqa
+from oscar.apps.voucher.models import *  # type:ignore[assignment]  # NOQA

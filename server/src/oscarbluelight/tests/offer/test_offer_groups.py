@@ -1,28 +1,27 @@
 from datetime import datetime, timedelta
 from decimal import Decimal as D
 from unittest import mock
-from django.contrib.auth.models import User
-from django.test import TestCase
-from django.test import Client
-from django.urls import reverse
-from django_redis import get_redis_connection
-from oscar.core.loading import get_model, get_class
-from oscar.test.factories import create_basket, create_product, create_stockrecord
 from urllib.parse import urlencode, urljoin
 
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+from django_redis import get_redis_connection
+from oscar.test.factories import create_basket, create_product, create_stockrecord
+
+from oscarbluelight.dashboard.offers.forms import OfferGroupForm
+from oscarbluelight.offer.applicator import Applicator
 from oscarbluelight.offer.constants import Conjunction
-
-OfferGroup = get_model("offer", "OfferGroup")
-Benefit = get_model("offer", "Benefit")
-Range = get_model("offer", "Range")
-Condition = get_model("offer", "Condition")
-CompoundCondition = get_model("offer", "CompoundCondition")
-ConditionalOffer = get_model("offer", "ConditionalOffer")
-Voucher = get_model("voucher", "Voucher")
-
-Applicator = get_class("offer.applicator", "Applicator")
-BasketDiscount = get_class("offer.results", "BasketDiscount")
-OfferGroupForm = get_class("offers_dashboard.forms", "OfferGroupForm")
+from oscarbluelight.offer.models import (
+    Benefit,
+    CompoundCondition,
+    Condition,
+    ConditionalOffer,
+    OfferGroup,
+    Range,
+)
+from oscarbluelight.offer.results import BasketDiscount
+from oscarbluelight.voucher.models import Voucher
 
 
 class OfferGroupModelTest(TestCase):

@@ -1,20 +1,35 @@
+from __future__ import annotations
+
 from contextlib import contextmanager
+from decimal import Decimal
+from itertools import chain, groupby
+from typing import TYPE_CHECKING, Generator, Optional
+
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
 from django.utils.timezone import now
-from itertools import groupby, chain
+from oscar.apps.offer import results
 from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
-from oscar.apps.offer import results
+
+from ..caching import CacheNamespace, FluentCache
+from .models import ConditionalOffer
 from .signals import (
-    pre_offers_apply,
+    post_offer_group_apply,
     post_offers_apply,
     pre_offer_group_apply,
-    post_offer_group_apply,
+    pre_offers_apply,
 )
-from ..caching import CacheNamespace, FluentCache
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+    from oscar.apps.catalogue.models import Product
+    from oscar.apps.partner.strategy import Base as BaseStrategy
+
+    from ..mixins import BluelightBasketMixin
 
 
 pricing_cache_ns = CacheNamespace(cache, "oscarbluelight.pricing")
@@ -26,7 +41,7 @@ cosmetic_price_cache = (
 )
 
 
-def group_offers(offers):
+def group_offers(offers: list[ConditionalOffer]) -> groupby[int, ConditionalOffer]:
     # Figure out the priority for the "null-group", the implicit group of offers which don't belong to
     # any other group. This group is applied last, and is therefore given the lowest priority.
     offer_group_priorities = [
@@ -37,7 +52,7 @@ def group_offers(offers):
     )
     null_group_priority = min_offer_group_priority - 1
 
-    def get_offer_group_priority(offer):
+    def get_offer_group_priority(offer: ConditionalOffer) -> int:
         return offer.offer_group.priority if offer.offer_group else null_group_priority
 
     # Sort the list of offers by their offer group's priority, descending
@@ -59,14 +74,17 @@ class Applicator(BaseApplicator):
         "condition__range",
     ]
 
-    def get_site_offers(self):
-        ConditionalOffer = get_model("offer", "ConditionalOffer")
+    def get_site_offers(self) -> QuerySet[ConditionalOffer]:
         qs = ConditionalOffer.active.filter(offer_type=ConditionalOffer.SITE)
         return qs.select_related(*self._offer_select_related_fields)
 
-    def get_basket_offers(self, basket, user):
-        offers = []
-        if not basket.id or not user:
+    def get_basket_offers(
+        self,
+        basket: BluelightBasketMixin,
+        user: Optional[User],
+    ) -> list[ConditionalOffer]:
+        offers: list[ConditionalOffer] = []
+        if not basket.pk or not user:
             return offers
 
         # Ordering by PK / Distinct is necessary here to avoid selecting
@@ -84,13 +102,13 @@ class Applicator(BaseApplicator):
                 offers = list(chain(offers, basket_offers))
         return offers
 
-    def get_user_offers(self, user):
+    def get_user_offers(self, user: Optional[User]) -> QuerySet[ConditionalOffer]:
         """
         Return user offers that are available to current user
         """
         if not user or user.is_anonymous:
-            return []
-        ConditionalOffer = get_model("offer", "ConditionalOffer")
+            return ConditionalOffer.objects.none()
+
         cutoff = now()
         date_based = Q(
             Q(start_datetime__lte=cutoff),
@@ -107,10 +125,17 @@ class Applicator(BaseApplicator):
         )
         return qs.select_related(*self._offer_select_related_fields)
 
-    def get_session_offers(self, request):
+    def get_session_offers(
+        self,
+        request: Optional[list[ConditionalOffer]],
+    ) -> list[ConditionalOffer]:
         return []
 
-    def apply_offers(self, basket, offers):
+    def apply_offers(
+        self,
+        basket: BluelightBasketMixin,
+        offers: list[ConditionalOffer],
+    ) -> None:
         """
         Apply offers to the basket in priority order
 
@@ -130,9 +155,9 @@ class Applicator(BaseApplicator):
         if self._is_applying_cosmetic_prices:
             offers = [offer for offer in offers if offer.affects_cosmetic_pricing]
 
-        for group_priority, offers_in_group in group_offers(offers):
+        for group_priority, iter_offers_in_group in group_offers(offers):
             # Get the OfferGroup object from the list of offers
-            offers_in_group = list(offers_in_group)
+            offers_in_group = list(iter_offers_in_group)
             group = offers_in_group[0].offer_group if len(offers_in_group) > 0 else None
 
             # Signal the lines that we're about to start applying an offer group
@@ -190,24 +215,29 @@ class Applicator(BaseApplicator):
         post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
     @contextmanager
-    def _cosmetic_pricing(self):
+    def _cosmetic_pricing(self) -> Generator[None, None, None]:
         self._is_applying_cosmetic_prices = True
         try:
             yield
         finally:
             self._is_applying_cosmetic_prices = False
 
-    def get_cosmetic_price(self, strategy, product, quantity=1):
+    def get_cosmetic_price(
+        self,
+        strategy: BaseStrategy,
+        product: Product,
+        quantity: int = 1,
+    ) -> Decimal:
         price_cache = cosmetic_price_cache.concrete(
             product=product.pk, quantity=quantity
         )
 
-        def _inner():
-            Basket = get_model("basket", "Basket")
+        def _inner() -> Decimal:
+            Basket: type[BluelightBasketMixin] = get_model("basket", "Basket")
             # Calculate the price by simulating adding the product to the basket and comparing
             # the basket's total price before and after the new line item
-            total_excl_tax_before = None
-            total_excl_tax_after = None
+            total_excl_tax_before: Optional[Decimal] = None
+            total_excl_tax_after: Optional[Decimal] = None
             try:
                 with transaction.atomic():
                     with self._cosmetic_pricing():
@@ -225,6 +255,8 @@ class Applicator(BaseApplicator):
             except RuntimeError:
                 pass
             # Use the before/after price difference to calculate the unit price for the product
+            if total_excl_tax_after is None or total_excl_tax_before is None:
+                raise ValueError("Failed to get cosmetic price")
             unit_cosmetic_excl_tax = (
                 total_excl_tax_after - total_excl_tax_before
             ) / quantity

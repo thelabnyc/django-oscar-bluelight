@@ -1,32 +1,43 @@
-from django.contrib import messages
-from django.urls import reverse
-from django.db import transaction
-from django.db.models import Q
-from django.http import HttpResponseRedirect
-from django.views.generic import UpdateView
-from django.utils.translation import ngettext, gettext_lazy as _
-from oscar.core.loading import get_class, get_model
-from oscar.apps.dashboard.ranges.views import (
-    RangeListView as BaseRangeListView,
-    RangeProductListView as BaseRangeProductListView,
-)
-from .forms import RangeSearchForm, RangeProductForm, RangeProductSearchForm
+from __future__ import annotations
+
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
 import logging
 
-logger = logging.getLogger(__name__)
-
-Range = get_model("offer", "Range")
-RangeProductFileUpload = get_model("offer", "RangeProductFileUpload")
-BatchPriceUpdateForm = get_class("ranges_dashboard.forms", "BatchPriceUpdateForm")
-RangeExcludedProductsUpdateForm = get_class(
-    "ranges_dashboard.forms", "RangeExcludedProductsUpdateForm"
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import Q, QuerySet
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
+from django.views.generic import UpdateView
+from oscar.apps.dashboard.ranges.views import RangeListView as BaseRangeListView
+from oscar.apps.dashboard.ranges.views import (
+    RangeProductListView as BaseRangeProductListView,
 )
+
+from oscarbluelight.offer.models import Range, RangeProductFileUpload
+
+from .forms import (
+    BatchPriceUpdateForm,
+    RangeExcludedProductsUpdateForm,
+    RangeProductForm,
+    RangeProductSearchForm,
+    RangeSearchForm,
+)
+
+if TYPE_CHECKING:
+    from oscar.apps.catalogue.managers import ProductQuerySet
+    from oscar.apps.partner.models import StockRecord
+
+logger = logging.getLogger(__name__)
 
 
 class RangeListView(BaseRangeListView):
     form_class = RangeSearchForm
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Range]:
         qs = (
             super()
             .get_queryset()
@@ -38,11 +49,17 @@ class RangeListView(BaseRangeListView):
         self.is_filtered = is_filtered
         return qs
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["form"] = self.form
         ctx["is_filtered"] = self.is_filtered
         return ctx
+
+
+class BatchChangePreview(TypedDict):
+    price: Decimal
+    difference: Decimal
+    direction: Literal["more", "less"]
 
 
 class RangePriceListView(UpdateView):
@@ -51,14 +68,14 @@ class RangePriceListView(UpdateView):
     form_class = BatchPriceUpdateForm
     template_name = "oscar/dashboard/ranges/range_price_list.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         return context
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         return reverse("dashboard:range-prices", args=(self.get_object().pk,))
 
-    def form_valid(self, form):
+    def form_valid(self, form: BatchPriceUpdateForm) -> HttpResponse:
         rng = self.get_object()
 
         if "apply" in self.request.POST:
@@ -72,12 +89,17 @@ class RangePriceListView(UpdateView):
             self.get_context_data(form=form, preview=True, changes=changes)
         )
 
-    def _build_changes_preview(self, rng, form):
-        changes = {}
+    def _build_changes_preview(
+        self, rng: Range, form: BatchPriceUpdateForm
+    ) -> dict[int, BatchChangePreview]:
+        changes: dict[int, BatchChangePreview] = {}
 
-        def do_discount_preview(sr):
+        def do_discount_preview(sr: StockRecord) -> None:
+            if sr.price is None:
+                return
             new_price = form.apply_discount(
-                getattr(sr, "price_retail", sr.price), sr.price
+                getattr(sr, "price_retail", sr.price),
+                sr.price,
             )
             difference = new_price - sr.price
             changes[sr.id] = {
@@ -96,11 +118,14 @@ class RangePriceListView(UpdateView):
         return changes
 
     @transaction.atomic
-    def _apply_changes(self, rng, form):
-        def do_discount(sr):
+    def _apply_changes(self, rng: Range, form: BatchPriceUpdateForm) -> None:
+        def do_discount(sr: StockRecord) -> None:
+            if sr.price is None:
+                return
             old_price = sr.price
             new_price = form.apply_discount(
-                getattr(sr, "price_retail", sr.price), sr.price
+                getattr(sr, "price_retail", sr.price),
+                sr.price,
             )
             sr.price = new_price
             sr.save()
@@ -123,7 +148,7 @@ class RangeExcludedProductsView(UpdateView):
     form_class = RangeExcludedProductsUpdateForm
     template_name = "oscar/dashboard/ranges/range_excluded_products.html"
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         return reverse("dashboard:range-list")
 
 
@@ -131,7 +156,7 @@ class RangeProductListView(BaseRangeProductListView):
     form_class = RangeProductForm
     search_form_class = RangeProductSearchForm
 
-    def get_queryset(self):
+    def get_queryset(self) -> ProductQuerySet:
         """
         Override default query for RangeProductList
         Retrieve the product queryset directly from the database for accuracy in the dashboard
@@ -157,14 +182,16 @@ class RangeProductListView(BaseRangeProductListView):
                 products = products.filter(filter_q)
         return products
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         # Add search form to context
         if "search_form" not in context:
             context["search_form"] = self.search_form_class(self.request.GET)
         return context
 
-    def handle_query_products(self, request, product_range, form):
+    def handle_query_products(
+        self, request: HttpRequest, product_range: Range, form: RangeProductForm
+    ) -> None:
         products = form.get_products()
         if not products:
             return

@@ -1,19 +1,21 @@
 from decimal import Decimal as D
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+from oscar.test.factories import create_basket, create_product, create_stockrecord
+
+from oscarbluelight.offer.applicator import Applicator
+from oscarbluelight.offer.constants import Conjunction
 from oscarbluelight.offer.models import (
+    Benefit,
+    CompoundCondition,
     Condition,
     ConditionalOffer,
     Range,
-    Benefit,
-    CompoundCondition,
 )
-from oscarbluelight.offer.applicator import Applicator
-from oscar.test.factories import create_basket, create_product, create_stockrecord
-from oscarbluelight.offer.constants import Conjunction
+
 from .base import BaseTest
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.urls import reverse
-from django.test import Client
 
 
 class CountConditionTest(BaseTest):

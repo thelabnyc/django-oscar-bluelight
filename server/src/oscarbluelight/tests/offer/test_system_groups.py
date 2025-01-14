@@ -1,14 +1,16 @@
 from unittest import mock
+
 from django.test import TestCase
 from django_redis import get_redis_connection
+
 from oscarbluelight.offer.applicator import Applicator
-from oscarbluelight.offer.models import OfferGroup
-from oscarbluelight.offer.signals import pre_offer_group_apply, post_offer_group_apply
 from oscarbluelight.offer.groups import (
-    register_system_offer_group,
-    pre_offer_group_apply_receiver,
     post_offer_group_apply_receiver,
+    pre_offer_group_apply_receiver,
+    register_system_offer_group,
 )
+from oscarbluelight.offer.models import OfferGroup
+from oscarbluelight.offer.signals import post_offer_group_apply, pre_offer_group_apply
 
 
 class OfferGroupModelTest(TestCase):

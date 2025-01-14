@@ -1,17 +1,21 @@
-from django.utils.translation import gettext_lazy as _
+from collections.abc import Sequence
+
+from django.http import HttpResponse
 from django.utils.encoding import force_str
+from django.utils.html import strip_tags
+from django.utils.translation import gettext_lazy as _
 from oscar.apps.voucher.reports import (
     VoucherReportCSVFormatter as BaseVoucherReportCSVFormatter,
+)
+from oscar.apps.voucher.reports import (
     VoucherReportGenerator as BaseVoucherReportGenerator,
 )
-from django.utils.html import strip_tags
-from oscar.core.loading import get_model
 
-Voucher = get_model("voucher", "Voucher")
+from .models import Voucher
 
 
 class VoucherReportCSVFormatter(BaseVoucherReportCSVFormatter):
-    def generate_csv(self, response, vouchers):
+    def generate_csv(self, response: HttpResponse, vouchers: Sequence[Voucher]) -> None:
         writer = self.get_csv_writer(response)
         header_row = [
             _("ID"),
@@ -79,6 +83,6 @@ class VoucherReportGenerator(BaseVoucherReportGenerator):
         "CSV_formatter": VoucherReportCSVFormatter,
     }
 
-    def generate(self):
+    def generate(self) -> HttpResponse:
         vouchers = Voucher.objects.filter(parent__isnull=True).all()
         return self.formatter.generate_response(vouchers)

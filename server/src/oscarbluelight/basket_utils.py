@@ -1,21 +1,29 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from decimal import Decimal
-from oscar.core.decorators import deprecated
+from typing import TYPE_CHECKING, Iterator, Optional
+
 from oscar.apps.basket.utils import DiscountApplication
+from oscar.core.decorators import deprecated
+
+if TYPE_CHECKING:
+    from .mixins import BluelightBasketLineMixin as Line
+    from .offer.models import ConditionalOffer
 
 ZERO = Decimal("0.00")
 
 
-class BluelightLineOfferConsumer(object):
+class BluelightLineOfferConsumer:
     """
     Version of ``oscar.app.basket.utils.LineOfferConsumer`` which supports OfferGroups.
     """
 
-    def __init__(self, line):
+    def __init__(self, line: Line) -> None:
         self._line = line
-        self._offers = dict()
+        self._offers: dict[int, ConditionalOffer] = dict()
         self._affected_quantity = 0
-        self._consumptions = defaultdict(int)
+        self._consumptions: defaultdict[int, int] = defaultdict(int)
 
         # The built-in _affected_quantity property simply tracks how many items in the line aren't available
         # for use by offers. This property tracks what subset of that number was actually discounted (versus
@@ -26,16 +34,20 @@ class BluelightLineOfferConsumer(object):
         # This property refers to the affected quantity global of OfferGroups
         self._global_affected_quantity = 0
 
-    def _cache(self, offer):
+    def _cache(self, offer: ConditionalOffer) -> None:
         self._offers[offer.pk] = offer
 
-    def _update_affected_quantity(self, quantity):
+    def _update_affected_quantity(self, quantity: int) -> None:
         available_in_group = int(self._line.quantity - self._affected_quantity)
         available_global = int(self._line.quantity - self._global_affected_quantity)
         self._affected_quantity += min(available_in_group, quantity)
         self._global_affected_quantity += min(available_global, quantity)
 
-    def consume(self, quantity, offer=None):
+    def consume(
+        self,
+        quantity: int,
+        offer: Optional[ConditionalOffer] = None,
+    ) -> None:
         """
         Mark a basket line as consumed by an offer in the current offer group.
 
@@ -49,10 +61,10 @@ class BluelightLineOfferConsumer(object):
             self._consumptions[offer.pk] += min(available, quantity)
 
     @deprecated
-    def consumed(self, offer=None):
+    def consumed(self, offer: Optional[ConditionalOffer] = None) -> int:
         return self.num_consumed(offer)
 
-    def num_consumed(self, offer=None):
+    def num_consumed(self, offer: Optional[ConditionalOffer] = None) -> int:
         """
         Check how many items on this line have been consumed by an offer in the current offer group.
 
@@ -63,10 +75,10 @@ class BluelightLineOfferConsumer(object):
         return int(self._consumptions[offer.pk])
 
     @property
-    def consumers(self):
+    def consumers(self) -> list[ConditionalOffer]:
         return [x for x in self._offers.values() if self.num_consumed(x)]
 
-    def available(self, offer=None):
+    def available(self, offer: Optional[ConditionalOffer] = None) -> int:
         """
         Check how many items are available for offers
         """
@@ -82,19 +94,25 @@ class BluelightLineOfferConsumer(object):
         consumed = self.num_consumed(offer)
         return int(self._line.quantity - consumed)
 
-    def discount(self, amount, quantity, incl_tax=True, offer=None):
+    def discount(
+        self,
+        amount: Decimal,
+        quantity: int,
+        incl_tax: bool = True,
+        offer: Optional[ConditionalOffer] = None,
+    ) -> None:
         """
         Update the discounted quantity.
         """
         self._discounted_quantity += quantity
 
-    def discounted(self):
+    def discounted(self) -> int:
         """
         Get the number of items that have been discounted in the current offer group.
         """
         return self._discounted_quantity
 
-    def begin_offer_group_application(self):
+    def begin_offer_group_application(self) -> None:
         """
         Signal that the Applicator will begin to apply a new group of offers.
 
@@ -105,13 +123,13 @@ class BluelightLineOfferConsumer(object):
         self._affected_quantity = 0
         self._discounted_quantity = 0
 
-    def end_offer_group_application(self):
+    def end_offer_group_application(self) -> None:
         """
         Signal that the Applicator has finished applying a group of offers.
         """
         self._discounted_quantity = 0
 
-    def finalize_offer_group_applications(self):
+    def finalize_offer_group_applications(self) -> None:
         """
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
@@ -121,13 +139,19 @@ class BluelightLineOfferConsumer(object):
 
 
 class BluelightLineDiscountRegistry(BluelightLineOfferConsumer):
-    def __init__(self, line):
+    def __init__(self, line: Line):
         super().__init__(line)
-        self._discounts = []
-        self._discount_excl_tax = None
-        self._discount_incl_tax = None
+        self._discounts: list[DiscountApplication] = []
+        self._discount_excl_tax: Optional[Decimal] = None
+        self._discount_incl_tax: Optional[Decimal] = None
 
-    def discount(self, amount, quantity, incl_tax=True, offer=None):
+    def discount(
+        self,
+        amount: Decimal,
+        quantity: int,
+        incl_tax: bool = True,
+        offer: Optional[ConditionalOffer] = None,
+    ) -> None:
         super().discount(amount, quantity, incl_tax=incl_tax, offer=offer)
         self._discounts.append(DiscountApplication(amount, quantity, incl_tax, offer))
         self.consume(quantity, offer=offer)
@@ -137,7 +161,7 @@ class BluelightLineDiscountRegistry(BluelightLineOfferConsumer):
             self._discount_excl_tax = None
 
     @property
-    def excl_tax(self):
+    def excl_tax(self) -> Decimal:
         if self._discount_excl_tax is None:
             self._discount_excl_tax = sum(
                 [d.amount for d in self._discounts if not d.incl_tax],
@@ -146,7 +170,7 @@ class BluelightLineDiscountRegistry(BluelightLineOfferConsumer):
         return self._discount_excl_tax
 
     @property
-    def incl_tax(self):
+    def incl_tax(self) -> Decimal:
         if self._discount_incl_tax is None:
             self._discount_incl_tax = sum(
                 [d.amount for d in self._discounts if d.incl_tax],
@@ -155,11 +179,11 @@ class BluelightLineDiscountRegistry(BluelightLineOfferConsumer):
         return self._discount_incl_tax
 
     @property
-    def total(self):
+    def total(self) -> Decimal:
         return sum([d.amount for d in self._discounts], ZERO)
 
-    def all(self):
+    def all(self) -> list[DiscountApplication]:
         return self._discounts
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[DiscountApplication]:
         return iter(self._discounts)

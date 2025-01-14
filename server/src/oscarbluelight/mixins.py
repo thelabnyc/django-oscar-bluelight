@@ -1,55 +1,72 @@
-from collections import namedtuple
+from __future__ import annotations
+
 from decimal import Decimal
-from django.utils.translation import gettext_lazy as _
-from oscar.core.utils import round_half_up
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional
 import itertools
 
+from django.utils.translation import gettext_lazy as _
+from oscar.core.utils import round_half_up
 
-PriceBreakdownStackEntry = namedtuple(
-    "PriceBreakdownStackEntry",
-    (
-        "quantity_with_discount",
-        "discount_delta_unit",
-    ),
-)
+if TYPE_CHECKING:
+    from oscar.apps.basket.abstract_models import AbstractBasket, AbstractLine
 
-LineDiscountDescription = namedtuple(
-    "LineDiscountDescription",
-    (
-        "amount",
-        "offer_name",
-        "offer_description",
-        "voucher_name",
-        "voucher_code",
-    ),
-)
+    from .offer import results
+    from .offer.models import ConditionalOffer
+    from .offer.upsells import OfferUpsell
+    from .voucher.models import Voucher
+else:
+
+    class AbstractBasket:
+        pass
+
+    class AbstractLine:
+        pass
 
 
-class BluelightBasketMixin(object):
+class PriceBreakdownStackEntry(NamedTuple):
+    quantity_with_discount: int
+    discount_delta_unit: Decimal
+
+
+class LineDiscountDescription(NamedTuple):
+    amount: Decimal
+    offer_name: str
+    offer_description: str
+    voucher_name: Optional[str]
+    voucher_code: Optional[str]
+
+
+class LinePriceBreakdownItem(NamedTuple):
+    unit_price_incl_tax: Decimal
+    unit_price_excl_tax: Decimal
+    quantity: int
+
+
+class BluelightBasketMixin(AbstractBasket):
     @property
-    def offer_post_order_actions(self):
+    def offer_post_order_actions(self) -> list["results.PostOrderAction"]:
         """
         Return post order actions from offers
         """
         return self.offer_applications.offer_post_order_actions
 
     @property
-    def voucher_post_order_actions(self):
+    def voucher_post_order_actions(self) -> list["results.PostOrderAction"]:
         """
         Return post order actions from offers
         """
         return self.offer_applications.voucher_post_order_actions
 
-    def clear_offer_upsells(self):
+    def clear_offer_upsells(self) -> None:
         for line in self.all_lines():
             line.clear_offer_upsells()
 
-    def add_offer_upsell(self, offer_upsell):
+    def add_offer_upsell(self, offer_upsell: OfferUpsell) -> None:
         for line in self.all_lines():
             if line.product and offer_upsell.is_relevant_to_product(line.product):
                 line.add_offer_upsell(offer_upsell)
 
-    def get_offer_upsells(self):
+    def get_offer_upsells(self) -> list[OfferUpsell]:
         offer_upsells = set([])
         for line in self.all_lines():
             for upsell in line.get_offer_upsells():
@@ -57,8 +74,8 @@ class BluelightBasketMixin(object):
         return list(offer_upsells)
 
 
-class BluelightBasketLineMixin(object):
-    def __init__(self, *args, **kwargs):
+class BluelightBasketLineMixin(AbstractLine):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         # Keep track of the discount amount at the start of offer group application, so that we can tell what
@@ -66,16 +83,16 @@ class BluelightBasketLineMixin(object):
         self._offer_group_starting_discount = Decimal("0.00")
 
         # Used to record a "stack" of prices as they decrease via offer group application, used when calculating the price breakdown.
-        self._price_breakdown_stack = []
+        self._price_breakdown_stack: list[PriceBreakdownStackEntry] = []
 
         # Used to track descriptions of why discounts where applied to the line.
-        self._discount_descriptions = []
+        self._discount_descriptions: list[LineDiscountDescription] = []
 
         # Used to track offer upsell messages
-        self._offer_upsells = []
+        self._offer_upsells: list[OfferUpsell] = []
 
     @property
-    def unit_effective_price(self):
+    def unit_effective_price(self) -> Decimal:
         """
         The price to use for offer calculations.
 
@@ -145,12 +162,14 @@ class BluelightBasketLineMixin(object):
         return unit_price_discounted
 
     @property
-    def line_price_incl_tax_incl_discounts(self):
+    def line_price_incl_tax_incl_discounts(self) -> Optional[Decimal]:
         if self.line_price_incl_tax is not None:
-            return max(0, round_half_up(self.line_price_incl_tax - self.discount_value))
+            return Decimal(
+                max(0, round_half_up(self.line_price_incl_tax - self.discount_value))
+            )
         return None
 
-    def clear_discount(self):
+    def clear_discount(self) -> None:
         """
         Remove any discounts from this line.
         """
@@ -159,7 +178,13 @@ class BluelightBasketLineMixin(object):
         self._price_breakdown_stack = []
         self._discount_descriptions = []
 
-    def discount(self, discount_value, affected_quantity, incl_tax=True, offer=None):
+    def discount(
+        self,
+        discount_value: Decimal,
+        affected_quantity: int,
+        incl_tax: bool = True,
+        offer: Optional[ConditionalOffer] = None,
+    ) -> None:
         """
         Apply a discount to this line.
 
@@ -186,7 +211,7 @@ class BluelightBasketLineMixin(object):
 
         # Push description of discount onto the stack
         if offer:
-            voucher = offer.get_voucher()
+            voucher: Voucher | None = offer.get_voucher()
             descr = LineDiscountDescription(
                 amount=discount_value,
                 offer_name=offer.name,
@@ -196,10 +221,10 @@ class BluelightBasketLineMixin(object):
             )
             self._discount_descriptions.append(descr)
 
-    def get_discount_descriptions(self):
+    def get_discount_descriptions(self) -> list[LineDiscountDescription]:
         return self._discount_descriptions
 
-    def begin_offer_group_application(self):
+    def begin_offer_group_application(self) -> None:
         """
         Signal that the Applicator will begin to apply a new group of offers.
 
@@ -211,7 +236,7 @@ class BluelightBasketLineMixin(object):
         self.discounts.begin_offer_group_application()
         self._offer_group_starting_discount = self.discount_value
 
-    def end_offer_group_application(self):
+    def end_offer_group_application(self) -> None:
         """
         Signal that the Applicator has finished applying a group of offers.
         """
@@ -226,23 +251,23 @@ class BluelightBasketLineMixin(object):
             self._price_breakdown_stack.append(item)
             self.discounts.end_offer_group_application()
 
-    def finalize_offer_group_applications(self):
+    def finalize_offer_group_applications(self) -> None:
         """
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
         self.discounts.finalize_offer_group_applications()
         self._offer_group_starting_discount = self.discount_value
 
-    def clear_offer_upsells(self):
+    def clear_offer_upsells(self) -> None:
         self._offer_upsells = []
 
-    def add_offer_upsell(self, offer_upsell):
+    def add_offer_upsell(self, offer_upsell: OfferUpsell) -> None:
         self._offer_upsells.append(offer_upsell)
 
-    def get_offer_upsells(self):
+    def get_offer_upsells(self) -> list[OfferUpsell]:
         return self._offer_upsells
 
-    def get_price_breakdown(self):
+    def get_price_breakdown(self) -> list[LinePriceBreakdownItem]:
         """
         Return a breakdown of line prices after discounts have been applied.
 
@@ -254,7 +279,7 @@ class BluelightBasketLineMixin(object):
             )
 
         # Create an array of the pre-discount unit prices with length equal to the line quantity
-        item_prices = []
+        item_prices: list[Decimal] = []
         for i in range(self.quantity):
             item_prices.append(self.unit_price_excl_tax)
 
@@ -280,20 +305,26 @@ class BluelightBasketLineMixin(object):
 
         # Remove the duplicate unit prices, resulting in a list of tuples containing a unit price and the quantity at that unit price
         price_qtys = []
-        for price, prices in itertools.groupby(sorted(item_prices)):
-            qty = len(list(prices))
+        for price, _prices in itertools.groupby(sorted(item_prices)):
+            qty = len(list(_prices))
             price_qty = (price, qty)
             price_qtys.append(price_qty)
 
         # Return a list of (unit_price_incl_tax, unit_price_excl_tax, quantity)
-        prices = []
+        prices: list[LinePriceBreakdownItem] = []
         line_price_excl_tax_incl_discounts = self.line_price_excl_tax_incl_discounts
         line_tax = self.line_tax
 
         # Avoid a divide by 0 error when the line is completely free, but still has tax applied to it.
         free = Decimal("0.00")
         if line_price_excl_tax_incl_discounts <= free:
-            prices.append((line_tax, free, self.quantity))
+            prices.append(
+                LinePriceBreakdownItem(
+                    unit_price_incl_tax=line_tax,
+                    unit_price_excl_tax=free,
+                    quantity=self.quantity,
+                )
+            )
             return prices
 
         # When the line isn't free, distribute tax evenly based on what share of the total line price this unit prices accounts for.
@@ -304,6 +335,12 @@ class BluelightBasketLineMixin(object):
             unit_price_incl_tax = (unit_price_excl_tax + unit_tax).quantize(
                 unit_price_excl_tax
             )
-            prices.append((unit_price_incl_tax, unit_price_excl_tax, quantity))
+            prices.append(
+                LinePriceBreakdownItem(
+                    unit_price_incl_tax=unit_price_incl_tax,
+                    unit_price_excl_tax=unit_price_excl_tax,
+                    quantity=quantity,
+                )
+            )
 
         return prices

@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta
-from django.contrib.auth.models import User
-from django.test import TestCase, Client
-from django.urls import reverse
 from urllib.parse import urlencode
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
 from oscarbluelight.offer.models import (
-    ConditionalOffer,
-    Range,
     BluelightCountCondition,
     BluelightPercentageDiscountBenefit,
+    ConditionalOffer,
+    Range,
 )
 
 

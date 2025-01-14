@@ -1,14 +1,16 @@
 from decimal import Decimal as D
+
 from django.test import TestCase, override_settings
 from oscar.core.loading import get_model
 from oscar.test import factories
 
-Range = get_model("offer", "Range")
-BluelightAbsoluteDiscountBenefit = get_model(
-    "offer", "BluelightAbsoluteDiscountBenefit"
+from oscarbluelight.offer.models import (
+    BluelightAbsoluteDiscountBenefit,
+    BluelightCountCondition,
+    ConditionalOffer,
+    Range,
 )
-BluelightCountCondition = get_model("offer", "BluelightCountCondition")
-ConditionalOffer = get_model("offer", "ConditionalOffer")
+
 OrderDiscount = get_model("order", "OrderDiscount")
 
 

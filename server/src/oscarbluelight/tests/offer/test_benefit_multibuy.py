@@ -1,15 +1,17 @@
 from decimal import Decimal as D
+from unittest import mock
+
 from django.test import TestCase
-from oscar.test.basket import add_product, add_products
-from oscar.test import factories
 from django_redis import get_redis_connection
+from oscar.test import factories
+from oscar.test.basket import add_product, add_products
+
 from oscarbluelight.offer.models import (
-    Range,
     BluelightCountCondition,
     BluelightMultibuyDiscountBenefit,
     BluelightValueCondition,
+    Range,
 )
-from unittest import mock
 
 
 class TestAMultibuyDiscountAppliedWithCountCondition(TestCase):

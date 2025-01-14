@@ -1,16 +1,18 @@
 from datetime import datetime
-from django.contrib.auth.models import AnonymousUser, User, Group
+
+from django.contrib.auth.models import AnonymousUser, Group, User
 from django.test import TestCase
 from django.utils import timezone
+from oscar.test.factories import create_order
+
 from oscarbluelight.voucher.models import Voucher
 from oscarbluelight.voucher.rules import (
     VoucherHasChildrenRule,
-    VoucherSuspendedRule,
     VoucherLimitUsageByGroupRule,
-    VoucherSingleUseRule,
     VoucherSingleUsePerCustomerRule,
+    VoucherSingleUseRule,
+    VoucherSuspendedRule,
 )
-from oscar.test.factories import create_order
 
 
 class VoucherHasChildrenRuleTest(TestCase):

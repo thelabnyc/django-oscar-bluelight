@@ -51,4 +51,4 @@ ENV TOX_WORK_DIR='/oscarbluelight/tox'
 
 # Set entry point so that packages are always updated before compiling things
 ENTRYPOINT ["/oscarbluelight/server/entrypoint.sh"]
-CMD ["python", "sandbox/manage.py", "runserver"]
+CMD ["python", "manage.py", "runserver"]

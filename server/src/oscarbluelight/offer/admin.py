@@ -1,12 +1,13 @@
 from django.contrib import admin
-from oscar.core.loading import get_model
 
-ConditionalOffer = get_model("offer", "ConditionalOffer")
-Condition = get_model("offer", "Condition")
-Benefit = get_model("offer", "Benefit")
-Range = get_model("offer", "Range")
-CompoundCondition = get_model("offer", "CompoundCondition")
-OfferGroup = get_model("offer", "OfferGroup")
+from .models import (
+    Benefit,
+    CompoundCondition,
+    Condition,
+    ConditionalOffer,
+    OfferGroup,
+    Range,
+)
 
 
 @admin.register(Benefit)

@@ -1,15 +1,20 @@
-from django.urls import path
+from __future__ import annotations
+
+from typing import Union
+
 from django.conf.urls import include
+from django.urls import path
+from django.urls.resolvers import URLPattern, URLResolver
 from django.views.i18n import JavaScriptCatalog
-from rest_framework import routers
 from oscar.apps.dashboard.offers import apps
 from oscar.core.loading import get_class
+from rest_framework import routers
 
 
 class OffersDashboardConfig(apps.OffersDashboardConfig):
     name = "oscarbluelight.dashboard.offers"
 
-    def ready(self):
+    def ready(self) -> None:
         from .views import OfferListView
 
         self.list_view = OfferListView
@@ -25,23 +30,23 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
         self.delete_view = get_class("offers_dashboard.views", "OfferDeleteView")
         self.detail_view = get_class("offers_dashboard.views", "OfferDetailView")
 
-    def get_urls(self):
-        from .api_views import OfferGroupViewSet, OfferAPIView
+    def get_urls(self) -> list[Union[URLPattern, URLResolver]]:
+        from .api_views import OfferAPIView, OfferGroupViewSet
         from .views import (
-            BenefitListView,
-            BenefitDeleteView,
             BenefitCreateView,
-            CompoundBenefitCreateView,
+            BenefitDeleteView,
+            BenefitListView,
             BenefitUpdateView,
-            ConditionListView,
-            ConditionDeleteView,
-            ConditionCreateView,
+            CompoundBenefitCreateView,
             CompoundConditionCreateView,
+            ConditionCreateView,
+            ConditionDeleteView,
+            ConditionListView,
             ConditionUpdateView,
             OfferGroupCreateView,
+            OfferGroupDeleteView,
             OfferGroupListView,
             OfferGroupUpdateView,
-            OfferGroupDeleteView,
         )
 
         base_urls = super().get_urls()

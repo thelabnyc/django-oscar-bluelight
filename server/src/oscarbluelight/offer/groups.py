@@ -1,17 +1,38 @@
+from __future__ import annotations
+
+from collections.abc import Hashable
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypedDict, TypeVar, Unpack
+import collections
+import logging
+
 from django.db import transaction
 from django.db.models import Max
+from django.dispatch.dispatcher import Signal
 from django.utils.functional import SimpleLazyObject
-from .signals import pre_offer_group_apply, post_offer_group_apply
-import logging
-import collections
+
+from .signals import post_offer_group_apply, pre_offer_group_apply
+
+if TYPE_CHECKING:
+    from .models import OfferGroup
 
 logger = logging.getLogger(__name__)
-_system_group_registry = collections.deque()
-_receivers = collections.deque()
+_system_group_registry: collections.deque[SimpleLazyObject] = collections.deque()
+_receivers: collections.deque[Callable[[Any], Any]] = collections.deque()
+
+T = TypeVar("T", bound=Callable)
+
+
+class ConnectKwargs(TypedDict, total=False):
+    sender: type[Any]
+    weak: bool
+    dispatch_uid: Hashable
 
 
 @transaction.atomic
-def insupd_system_offer_group(slug, default_name=None):
+def insupd_system_offer_group(
+    slug: str,
+    default_name: Optional[str] = None,
+) -> OfferGroup:
     """
     Get or create a system offer group with the given ``slug``. If creating, assign the name from ``default_name``.
     """
@@ -38,7 +59,10 @@ def insupd_system_offer_group(slug, default_name=None):
     return group
 
 
-def register_system_offer_group(slug, default_name=None):
+def register_system_offer_group(
+    slug: str,
+    default_name: Optional[str] = None,
+) -> SimpleLazyObject:
     """
     Register a system offer group (an offer group that referenced by code). Returns the OfferGroup instance.
 
@@ -51,7 +75,7 @@ def register_system_offer_group(slug, default_name=None):
     return lazy_group
 
 
-def ensure_all_system_groups_exist():
+def ensure_all_system_groups_exist() -> None:
     """
     Force evaluation of all the lazy objects created thus far by ``register_system_offer_group``.
     """
@@ -61,7 +85,10 @@ def ensure_all_system_groups_exist():
             group._setup()
 
 
-def pre_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
+def pre_offer_group_apply_receiver(
+    offer_group_slug: str,
+    **decorator_kwargs: Unpack[ConnectKwargs],
+) -> Callable[[T], T]:
     """
     Decorator used to connect a signal receive to the pre_offer_group_apply signal *for a specific system offer group.*
     Handler will only be called when ``pre_offer_group_apply`` is sent with an offer_group object matching the
@@ -72,7 +99,10 @@ def pre_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
     )
 
 
-def post_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
+def post_offer_group_apply_receiver(
+    offer_group_slug: str,
+    **decorator_kwargs: Unpack[ConnectKwargs],
+) -> Callable[[T], T]:
     """
     Decorator used to connect a signal receive to the post_offer_group_apply signal *for a specific system offer group.*
     Handler will only be called when ``post_offer_group_apply`` is sent with an offer_group object matching the
@@ -83,16 +113,20 @@ def post_offer_group_apply_receiver(offer_group_slug, **decorator_kwargs):
     )
 
 
-def _offer_group_receiver(signal, offer_group_slug, **decorator_kwargs):
+def _offer_group_receiver(
+    signal: Signal,
+    offer_group_slug: str,
+    **decorator_kwargs: Unpack[ConnectKwargs],
+) -> Callable[[T], T]:
     """
     Private function used to implement the pre_offer_group_apply_receiver and post_offer_group_apply_receiver decorators.
     """
 
-    def _decorator(func):
+    def _decorator(func: T) -> T:
         from .models import OfferGroup
 
         # Build an interim lambda function to filter signal events down to just the group instance we're looking for
-        def _receiver(sender, **kwargs):
+        def _receiver(sender: type[Any], **kwargs: Any) -> Any:
             ensure_all_system_groups_exist()
             offer_group = OfferGroup.objects.filter(slug=offer_group_slug).first()
             if not offer_group:

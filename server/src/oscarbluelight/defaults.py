@@ -1,16 +1,28 @@
+from typing import TYPE_CHECKING
+
 from django.utils.translation import gettext_lazy as _
 from oscar.defaults import OSCAR_DASHBOARD_NAVIGATION
 
+if TYPE_CHECKING:
+    from django_stubs_ext import StrOrPromise
 
-def insert_nav_item(after_name, label, url_name):
+
+def insert_nav_item(after_name: str, label: "StrOrPromise", url_name: str) -> None:
     new_entry = {
         "label": label,
         "url_name": url_name,
     }
     for i, section in enumerate(OSCAR_DASHBOARD_NAVIGATION):
-        for j, entry in enumerate(section.get("children", [])):
+        for j, entry in enumerate(  # type:ignore[var-annotated]
+            section.get("children", [])  # type:ignore[arg-type]
+        ):
             if entry.get("url_name") == after_name:
-                OSCAR_DASHBOARD_NAVIGATION[i]["children"].insert(j + 1, new_entry)
+                OSCAR_DASHBOARD_NAVIGATION[i][
+                    "children"
+                ].insert(  # type:ignore[attr-defined]
+                    j + 1,
+                    new_entry,
+                )
 
 
 insert_nav_item("dashboard:offer-list", _("Offer Groups"), "dashboard:offergroup-list")
@@ -108,4 +120,4 @@ BLUELIGHT_VOUCHER_AVAILABILITY_RULES = [
     ),
 ]
 
-BLUELIGHT_IGNORED_ORDER_STATUSES = []
+BLUELIGHT_IGNORED_ORDER_STATUSES: list[str] = []

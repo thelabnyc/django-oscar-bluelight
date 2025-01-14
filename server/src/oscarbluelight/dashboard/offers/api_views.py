@@ -1,12 +1,15 @@
-from django.core.paginator import Paginator, EmptyPage
-from django.http import JsonResponse
-from django.views.generic import View
-from oscar.core.loading import get_model
-from rest_framework import viewsets, permissions
-from oscarbluelight.offer.models import OfferGroup
-from .serializers import OfferGroupSerializer
+from __future__ import annotations
 
-ConditionalOffer = get_model("offer", "ConditionalOffer")
+from typing import Any
+
+from django.core.paginator import EmptyPage, Paginator
+from django.http import HttpRequest, JsonResponse
+from django.views.generic import View
+from rest_framework import permissions, viewsets
+
+from oscarbluelight.offer.models import ConditionalOffer, OfferGroup
+
+from .serializers import OfferGroupSerializer
 
 
 class OfferGroupViewSet(viewsets.ModelViewSet):
@@ -19,7 +22,7 @@ class OfferGroupViewSet(viewsets.ModelViewSet):
 
 
 class OfferAPIView(View):
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> JsonResponse:
         # Get the page parameter or set default to 1
         page_number = request.GET.get("page", 1)
         query_filter = {

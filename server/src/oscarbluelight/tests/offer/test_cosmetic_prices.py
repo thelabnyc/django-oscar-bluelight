@@ -1,9 +1,11 @@
 from decimal import Decimal as D
-from django_redis import get_redis_connection
-from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
-from oscarbluelight.offer.applicator import Applicator
-from oscar.test.factories import create_basket, create_product, create_stockrecord
+
 from django.test import TransactionTestCase
+from django_redis import get_redis_connection
+from oscar.test.factories import create_basket, create_product, create_stockrecord
+
+from oscarbluelight.offer.applicator import Applicator
+from oscarbluelight.offer.models import Benefit, Condition, ConditionalOffer, Range
 
 
 class CosmeticPricingCalculationTest(TransactionTestCase):

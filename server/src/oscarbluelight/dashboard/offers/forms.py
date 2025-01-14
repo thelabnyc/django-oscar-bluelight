@@ -1,31 +1,40 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from django import forms
-from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import Group
-from django.utils.translation import gettext_lazy as _
-from oscar.forms.widgets import DatePickerInput
-from oscar.apps.dashboard.offers.forms import (
-    OfferSearchForm as BaseOfferSearchForm,
-    RestrictionsForm as BaseRestrictionsForm,
-)
+from django.db.models import Q, QuerySet
 from django.forms import ModelMultipleChoiceField
+from django.utils.translation import gettext_lazy as _
+from oscar.apps.dashboard.offers.forms import OfferSearchForm as BaseOfferSearchForm
+from oscar.apps.dashboard.offers.forms import RestrictionsForm as BaseRestrictionsForm
 from oscar.core.loading import get_model
+from oscar.forms.widgets import DatePickerInput
 
-ConditionalOffer = get_model("offer", "ConditionalOffer")
-CompoundBenefit = get_model("offer", "CompoundBenefit")
-Benefit = get_model("offer", "Benefit")
-CompoundCondition = get_model("offer", "CompoundCondition")
-Condition = get_model("offer", "Condition")
-Range = get_model("offer", "Range")
-OfferGroup = get_model("offer", "OfferGroup")
-Order = get_model("order", "Order")
-SourceType = get_model("payment", "SourceType")
+from oscarbluelight.offer.models import (
+    Benefit,
+    CompoundBenefit,
+    CompoundCondition,
+    Condition,
+    ConditionalOffer,
+    OfferGroup,
+    Range,
+)
+
+if TYPE_CHECKING:
+    from django_stubs_ext import StrOrPromise
+    from oscar.apps.order.models import Order, OrderDiscount
+    from oscar.apps.payment.models import SourceType
+else:
+    Order = get_model("order", "Order")
+    OrderDiscount = get_model("order", "OrderDiscount")
+    SourceType = get_model("payment", "SourceType")
 
 
-def get_offer_group_choices():
-    return (("", "---------"),) + tuple(
-        (og.slug, og.name) for og in OfferGroup.objects.all()
-    )
+def get_offer_group_choices() -> list[tuple[str, str]]:
+    return [("", "---------")] + [(og.slug, og.name) for og in OfferGroup.objects.all()]
 
 
 class BenefitSearchForm(forms.Form):
@@ -35,7 +44,7 @@ class BenefitSearchForm(forms.Form):
     )
     _benefit_classes = getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])
     _benefit_classes.append((compound_benefit_cpath, _("Compound Benefit")))
-    range = forms.ModelChoiceField(
+    range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
         required=False, queryset=Range.objects.order_by("name")
     )
     benefit_type = forms.ChoiceField(
@@ -51,7 +60,7 @@ class BenefitSearchForm(forms.Form):
 
 
 class ConditionSearchForm(forms.Form):
-    range = forms.ModelChoiceField(
+    range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
         required=False, queryset=Range.objects.order_by("name")
     )
 
@@ -76,22 +85,28 @@ class OrderDiscountSearchForm(forms.Form):
         required=False, label=_("Payment method"), choices=[]
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.fields["status"].choices = self.get_order_status_choices()
-        self.fields["payment_method"].choices = self.get_payment_method_choices()
+        self.fields["status"].choices = (  # type:ignore[attr-defined]
+            self.get_order_status_choices()
+        )
+        self.fields["payment_method"].choices = (  # type:ignore[attr-defined]
+            self.get_payment_method_choices()
+        )
 
-    def get_order_status_choices(self):
+    def get_order_status_choices(self) -> list[tuple[str, StrOrPromise]]:
         return [("", "---------")] + [(v, v) for v in Order.all_statuses()]
 
-    def get_payment_method_choices(self):
+    def get_payment_method_choices(self) -> list[tuple[str, StrOrPromise]]:
         return [("", "---------")] + [
             (src.code, src.name) for src in SourceType.objects.all()
         ]
 
-    def filter_queryset(self, qs):
+    def filter_queryset(
+        self, qs: QuerySet[OrderDiscount]
+    ) -> tuple[QuerySet[OrderDiscount], bool]:
         if not self.is_valid():
-            return qs
+            return qs, False
         data = self.cleaned_data
         is_filtered = False
         if data.get("number"):
@@ -232,7 +247,7 @@ class RestrictionsForm(BaseRestrictionsForm):
             "groups",
         ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.fields["priority"].widget = forms.HiddenInput()
         self.fields["priority"].disabled = True
@@ -241,7 +256,7 @@ class RestrictionsForm(BaseRestrictionsForm):
         self.fields["combinations"].widget = forms.HiddenInput()
         self.fields["combinations"].disabled = True
 
-    def clean_offer_type(self):
+    def clean_offer_type(self) -> str:
         data = self.cleaned_data["offer_type"]
         if (
             (self.instance.pk is not None)
@@ -254,7 +269,7 @@ class RestrictionsForm(BaseRestrictionsForm):
             )
         return data
 
-    def clean(self):
+    def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean()
         # If offer_type is _User_, require at least 1 group to be selected
         if cleaned_data["offer_type"] == ConditionalOffer.USER:
@@ -287,12 +302,12 @@ class OfferGroupForm(forms.ModelForm):
             "offers",
         )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
-            self.initial["offers"] = self.instance.offers.all()
+            self.initial["offers"] = self.instance.offers.all()  # type:ignore[index]
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> "OfferGroup":
         offer_group = super().save(*args, **kwargs)
         offer_group.offers.set(self.cleaned_data["offers"])
         return offer_group
