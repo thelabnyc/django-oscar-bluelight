@@ -1,5 +1,16 @@
 # Changes
 
+## v5.7.0 (2025-01-14)
+
+### Feat
+
+- add type annotations
+- add product search by name, UPC, and SKU within a product range
+
+### Fix
+
+- **deps**: update dependency core-js to ^3.40.0
+
 ## v5.6.0 (2024-12-23)
 
 ### Feat
