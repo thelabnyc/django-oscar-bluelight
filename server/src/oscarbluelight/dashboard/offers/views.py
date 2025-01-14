@@ -1,42 +1,65 @@
-from django.contrib import messages
-from django.core import serializers
-from django.urls import reverse_lazy, reverse
-from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponseRedirect
-from django.utils.translation import gettext_lazy as _
-from django.views.generic import DeleteView, ListView, CreateView, UpdateView
-from oscar.core.loading import get_class, get_model
-from oscar.apps.dashboard.offers.views import *  # noqa
-from oscar.apps.dashboard.offers import views
-from .forms import OfferSearchForm
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 import json
 
-ConditionalOffer = get_model("offer", "ConditionalOffer")
-CompoundBenefit = get_model("offer", "CompoundBenefit")
-Benefit = get_model("offer", "Benefit")
-CompoundCondition = get_model("offer", "CompoundCondition")
-Condition = get_model("offer", "Condition")
-OfferGroup = get_model("offer", "OfferGroup")
-Voucher = get_model("voucher", "Voucher")
+from django.contrib import messages
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from oscar.apps.dashboard.offers import views
+from oscar.apps.dashboard.offers.views import *  # noqa
+from oscar.core.loading import get_class
 
-BenefitSearchForm = get_class("offers_dashboard.forms", "BenefitSearchForm")
-BenefitForm = get_class("offers_dashboard.forms", "BenefitForm")
-OfferGroupForm = get_class("offers_dashboard.forms", "OfferGroupForm")
+from oscarbluelight.offer.models import (
+    Benefit,
+    CompoundBenefit,
+    CompoundCondition,
+    Condition,
+    ConditionalOffer,
+    OfferGroup,
+)
 
-ConditionSearchForm = get_class("offers_dashboard.forms", "ConditionSearchForm")
-ConditionForm = get_class("offers_dashboard.forms", "ConditionForm")
-CompoundBenefitForm = get_class("offers_dashboard.forms", "CompoundBenefitForm")
-CompoundConditionForm = get_class("offers_dashboard.forms", "CompoundConditionForm")
+from .forms import (
+    BenefitForm,
+    BenefitSearchForm,
+    BenefitSelectionForm,
+    CompoundBenefitForm,
+    CompoundConditionForm,
+    ConditionForm,
+    ConditionSearchForm,
+    ConditionSelectionForm,
+    MetaDataForm,
+    OfferGroupForm,
+    OfferSearchForm,
+    OrderDiscountSearchForm,
+    RestrictionsForm,
+)
 
-OrderDiscountSearchForm = get_class("offers_dashboard.forms", "OrderDiscountSearchForm")
-MetaDataForm = get_class("offers_dashboard.forms", "MetaDataForm")
-BenefitSelectionForm = get_class("offers_dashboard.forms", "BenefitSelectionForm")
-ConditionSelectionForm = get_class("offers_dashboard.forms", "ConditionSelectionForm")
-RestrictionsForm = get_class("offers_dashboard.forms", "RestrictionsForm")
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+    from django_stubs_ext import StrOrPromise
+    from oscar.apps.order.models import OrderDiscount
+
+T = TypeVar(
+    "T",
+    MetaDataForm,
+    BenefitSelectionForm,
+    ConditionSelectionForm,
+    RestrictionsForm,
+)
 
 
-class OfferWizardStepView(views.OfferWizardStepView):
-    def _store_form_kwargs(self, form):
+class OfferWizardStepView(  # type:ignore[no-redef]
+    views.OfferWizardStepView,
+    Generic[T],
+):
+    form_class: type[T]
+
+    def _store_form_kwargs(self, form: T) -> None:
         session_data = self.request.session.setdefault(self.wizard_name, {})
         # Adjust kwargs to avoid trying to save the instances
         form_data = form.cleaned_data.copy()
@@ -49,7 +72,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
         session_data[self._key()] = json_data
         self.request.session.save()
 
-    def _store_object(self, form):
+    def _store_object(self, form: T) -> None:
         session_data = self.request.session.setdefault(self.wizard_name, {})
 
         # Get a transient model instance to save to the session
@@ -61,10 +84,10 @@ class OfferWizardStepView(views.OfferWizardStepView):
         session_data[self._key(is_object=True)] = json_qs
         self.request.session.save()
 
-    def get_instance(self):
+    def get_instance(self) -> ConditionalOffer:
         return self.offer
 
-    def save_offer(self, offer, form):
+    def save_offer(self, offer: ConditionalOffer, form: T) -> HttpResponse:
         # We update the offer with the name/description from step 1
         session_offer = self._fetch_session_offer()
         offer.name = session_offer.name
@@ -112,7 +135,7 @@ class OfferWizardStepView(views.OfferWizardStepView):
             reverse("dashboard:offer-detail", kwargs={"pk": offer.pk})
         )
 
-    def form_valid(self, form):
+    def form_valid(self, form: T) -> HttpResponse:
         self._store_form_kwargs(form)
         self._store_object(form)
         # Save changes to this offer when updating and pressed save button
@@ -122,18 +145,18 @@ class OfferWizardStepView(views.OfferWizardStepView):
         return super().form_valid(form)
 
 
-class OfferMetaDataView(OfferWizardStepView):
+class OfferMetaDataView(OfferWizardStepView):  # type:ignore[no-redef]
     step_name = "metadata"
     form_class = MetaDataForm
     template_name = "oscar/dashboard/offers/metadata_form.html"
     url_name = "dashboard:offer-metadata"
     success_url_name = "dashboard:offer-benefit"
 
-    def get_title(self):
+    def get_title(self) -> StrOrPromise:
         return _("Name and description")
 
 
-class OfferBenefitView(OfferWizardStepView):
+class OfferBenefitView(OfferWizardStepView):  # type:ignore[no-redef]
     step_name = "benefit"
     form_class = BenefitSelectionForm
     template_name = "oscar/dashboard/offers/benefit_selection_form.html"
@@ -141,12 +164,12 @@ class OfferBenefitView(OfferWizardStepView):
     success_url_name = "dashboard:offer-condition"
     previous_view = OfferMetaDataView
 
-    def get_title(self):
+    def get_title(self) -> StrOrPromise:
         # This is referred to as the 'incentive' within the dashboard.
         return _("Incentive")
 
 
-class OfferConditionView(OfferWizardStepView):
+class OfferConditionView(OfferWizardStepView):  # type:ignore[no-redef]
     step_name = "condition"
     form_class = ConditionSelectionForm
     template_name = "oscar/dashboard/offers/condition_selection_form.html"
@@ -155,10 +178,10 @@ class OfferConditionView(OfferWizardStepView):
     previous_view = OfferBenefitView
 
 
-class OfferListView(views.OfferListView):
+class OfferListView(views.OfferListView):  # type:ignore[no-redef]
     form_class = OfferSearchForm
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[ConditionalOffer]:
         qs = super().get_queryset()
         if self.form.is_valid():
             offer_group_slug = self.form.cleaned_data["offer_group"]
@@ -170,14 +193,16 @@ class OfferListView(views.OfferListView):
         return qs
 
 
-class OfferRestrictionsView(OfferWizardStepView):
+class OfferRestrictionsView(OfferWizardStepView):  # type:ignore[no-redef]
     step_name = "restrictions"
     form_class = RestrictionsForm
     template_name = "oscar/dashboard/offers/restrictions_form.html"
     previous_view = OfferConditionView
     url_name = "dashboard:offer-restrictions"
 
-    def save_offer(self, offer, form):
+    def save_offer(
+        self, offer: ConditionalOffer, form: RestrictionsForm
+    ) -> HttpResponse:
         # Save the offer
         super().save_offer(offer, form)
 
@@ -186,11 +211,11 @@ class OfferRestrictionsView(OfferWizardStepView):
             reverse("dashboard:offer-detail", kwargs={"pk": offer.pk})
         )
 
-    def form_valid(self, form):
+    def form_valid(self, form: RestrictionsForm) -> HttpResponse:
         offer = form.save(commit=False)
         return self.save_offer(offer, form)
 
-    def get_title(self):
+    def get_title(self) -> StrOrPromise:
         return _("Restrictions")
 
 
@@ -203,32 +228,34 @@ class OfferImageUpdateView(UpdateView):
     context_object_name = "offer"
     template_name = "oscar/dashboard/offers/image_form.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["title"] = _("Update Offer Images")
         return ctx
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         return reverse("dashboard:offer-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
-class OfferDetailView(views.OfferDetailView):
+class OfferDetailView(views.OfferDetailView):  # type:ignore[no-redef]
     form_class = OrderDiscountSearchForm
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[OrderDiscount]:
         qs = super().get_queryset().order_by("-order__date_placed")
         self.form = self.form_class(self.request.GET)
         qs, is_filtered = self.form.filter_queryset(qs)
         self.is_filtered = is_filtered
         return qs
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["form"] = self.form
         ctx["is_filtered"] = self.is_filtered
         return ctx
 
-    def render_to_response(self, context):
+    def render_to_response(
+        self, context: dict[str, Any], **response_kwargs: Any
+    ) -> HttpResponse:
         if self.request.GET.get("format") == "csv":
             OrderDiscountCSVFormatter = get_class(
                 "offers_dashboard.reports", "OrderDiscountCSVFormatter"
@@ -236,7 +263,7 @@ class OfferDetailView(views.OfferDetailView):
             formatter = OrderDiscountCSVFormatter()
             qs = self.get_queryset().order_by("order__date_placed")
             return formatter.generate_response(qs, offer=self.offer)
-        return super().render_to_response(context)
+        return super().render_to_response(context, **response_kwargs)
 
 
 class BenefitListView(ListView):
@@ -246,7 +273,7 @@ class BenefitListView(ListView):
     form_class = BenefitSearchForm
     paginate_by = 25
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Benefit]:
         qs = (
             self.model._default_manager.select_related("range")
             .prefetch_related("offers", "parent_benefits")
@@ -280,7 +307,7 @@ class BenefitListView(ListView):
 
         return qs
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["queryset_description"] = self.description
         ctx["form"] = self.form
@@ -312,19 +339,19 @@ class BenefitUpdateView(UpdateView):
     model = Benefit
     success_url = reverse_lazy("dashboard:benefit-list")
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset: Optional[QuerySet[Benefit]] = None) -> Benefit:
         obj = super().get_object(queryset)
         return obj.proxy()
 
-    def get_form_class(self):
+    def get_form_class(self) -> type[CompoundBenefitForm] | type[BenefitForm]:
         if hasattr(self.object, "subbenefits"):
             return CompoundBenefitForm
         return BenefitForm
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         if hasattr(self.object, "subbenefits"):
-            return "oscar/dashboard/offers/benefit_edit_compound.html"
-        return "oscar/dashboard/offers/benefit_edit.html"
+            return ["oscar/dashboard/offers/benefit_edit_compound.html"]
+        return ["oscar/dashboard/offers/benefit_edit.html"]
 
 
 class ConditionListView(ListView):
@@ -333,7 +360,7 @@ class ConditionListView(ListView):
     template_name = "oscar/dashboard/offers/condition_list.html"
     form_class = ConditionSearchForm
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Condition]:
         qs = (
             self.model._default_manager.select_related("range")
             .prefetch_related("offers", "parent_conditions")
@@ -356,7 +383,7 @@ class ConditionListView(ListView):
             self.is_filtered = True
         return qs
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["queryset_description"] = self.description
         ctx["form"] = self.form
@@ -388,19 +415,19 @@ class ConditionUpdateView(UpdateView):
     model = Condition
     success_url = reverse_lazy("dashboard:condition-list")
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset: Optional[QuerySet[Condition]] = None) -> Condition:
         obj = super().get_object(queryset)
         return obj.proxy()
 
-    def get_form_class(self):
+    def get_form_class(self) -> type[CompoundConditionForm] | type[ConditionForm]:
         if hasattr(self.object, "subconditions"):
             return CompoundConditionForm
         return ConditionForm
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         if hasattr(self.object, "subconditions"):
-            return "oscar/dashboard/offers/condition_edit_compound.html"
-        return "oscar/dashboard/offers/condition_edit.html"
+            return ["oscar/dashboard/offers/condition_edit_compound.html"]
+        return ["oscar/dashboard/offers/condition_edit.html"]
 
 
 class OfferGroupCreateView(CreateView):
@@ -420,17 +447,17 @@ class OfferGroupDeleteView(DeleteView):
     template_name = "oscar/dashboard/offers/offergroup_delete.html"
     success_url = reverse_lazy("dashboard:offergroup-list")
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if not self._is_validate_delete(request):
             return HttpResponseRedirect(self.success_url)
         return super().get(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if not self._is_validate_delete(request):
             return HttpResponseRedirect(self.success_url)
         return super().post(request, *args, **kwargs)
 
-    def _is_validate_delete(self, request):
+    def _is_validate_delete(self, request: HttpRequest) -> bool:
         group = self.get_object()
         if group.is_system_group:
             messages.error(request, _("System Offer Groups Can Not Be Deleted"))

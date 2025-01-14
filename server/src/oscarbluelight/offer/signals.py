@@ -1,6 +1,5 @@
 import django.dispatch
 
-
 """
 Signal dispatched before offers are applied to a basket.
 """

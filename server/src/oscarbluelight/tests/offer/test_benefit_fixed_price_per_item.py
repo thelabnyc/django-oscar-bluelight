@@ -1,20 +1,23 @@
 from decimal import Decimal as D
+from unittest import mock
+
 from django.test import TestCase
+from django_redis import get_redis_connection
 from oscar.test import factories
 from oscar.test.basket import add_product
-from django_redis import get_redis_connection
+
+from oscarbluelight.offer.constants import Conjunction
 from oscarbluelight.offer.models import (
+    Benefit,
+    BluelightCountCondition,
+    BluelightFixedPricePerItemBenefit,
+    CompoundCondition,
     Condition,
     ConditionalOffer,
     Range,
-    Benefit,
-    CompoundCondition,
-    BluelightCountCondition,
-    BluelightFixedPricePerItemBenefit,
 )
-from oscarbluelight.offer.constants import Conjunction
+
 from .base import BaseTest
-from unittest import mock
 
 
 class TestAFixedPricePerItemDiscountAppliedWithCountCondition(TestCase):

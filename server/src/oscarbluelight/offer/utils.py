@@ -1,14 +1,29 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Generator
+
 from django.utils.translation import gettext_lazy as _
-from .applicator import Applicator  # NOQA
+
 from .constants import Conjunction
 
+if TYPE_CHECKING:
+    from django_stubs_ext import StrOrPromise
 
-def human_readable_conjoin(conjunction, strings, empty=None):
+
+def get_conjoiner(conjunction: str) -> StrOrPromise:
     labels = {
         Conjunction.AND: _(" and "),
         Conjunction.OR: _(" or "),
     }
-    strings = list(strings)
+    return labels[conjunction]
+
+
+def human_readable_conjoin(
+    conjunction: str,
+    _strings: list[StrOrPromise] | Generator[StrOrPromise, None, None],
+    empty: StrOrPromise | None = None,
+) -> StrOrPromise:
+    strings = list(_strings)
     if len(strings) <= 0 and empty is not None:
         return empty
-    return labels[conjunction].join(strings)
+    return get_conjoiner(conjunction).join(str(s) for s in strings)

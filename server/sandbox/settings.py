@@ -1,15 +1,17 @@
-from django.utils.translation import gettext_lazy as _
-from oscar.defaults import *  # noqa
-from oscarbluelight.defaults import *  # NOQA
 from fnmatch import fnmatch
 import os
 import sys
 
+from django.utils.translation import gettext_lazy as _
+from oscar.defaults import *  # noqa
 
-class glob_list(list):
-    def __contains__(self, key):
+from oscarbluelight.defaults import *  # NOQA
+
+
+class glob_list(list[str]):
+    def __contains__(self, key: object) -> bool:
         for elt in self:
-            if fnmatch(key, elt):
+            if isinstance(key, str) and fnmatch(key, elt):
                 return True
         return False
 
@@ -160,17 +162,6 @@ HAYSTACK_CONNECTIONS = {
 }
 
 
-def get_redis_parser_class():
-    try:
-        from redis.connection import _HiredisParser  # noqa: F401
-
-        return "redis.connection._HiredisParser"
-    except ImportError:
-        return "redis.connection.HiredisParser"
-
-
-redis_parser_class = get_redis_parser_class()
-
 _redis_db = 0
 _redis_max_dbs = 16
 if IS_UNIT_TEST:
@@ -191,7 +182,6 @@ CACHES = {
                 "max_connections": 50,
                 "timeout": 20,
             },
-            "PARSER_CLASS": redis_parser_class,
         },
         "KEY_PREFIX": VIRTUAL_ENV,
     },

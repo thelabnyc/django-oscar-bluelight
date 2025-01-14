@@ -1,27 +1,43 @@
-from datetime import datetime
-from django.utils import timezone
-from django.dispatch import receiver
-from django.db import transaction
-from django.db.models.signals import post_migrate, m2m_changed, post_save
-from oscar.core.loading import get_model
-from .groups import ensure_all_system_groups_exist
-from .applicator import pricing_cache_ns
-from . import tasks
+from __future__ import annotations
 
-OfferGroup = get_model("offer", "OfferGroup")
-ConditionalOffer = get_model("offer", "ConditionalOffer")
-Benefit = get_model("offer", "Benefit")
-Condition = get_model("offer", "Condition")
-Range = get_model("offer", "Range")
-RangeProduct = get_model("offer", "RangeProduct")
-RangeProductSet = get_model("offer", "RangeProductSet")
-Category = get_model("catalogue", "Category")
-ProductCategory = get_model("catalogue", "ProductCategory")
-Product = get_model("catalogue", "Product")
-ProductClass = get_model("catalogue", "ProductClass")
-StockRecord = get_model("partner", "StockRecord")
-Order = get_model("order", "Order")
-OrderDiscount = get_model("order", "OrderDiscount")
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Union
+
+from django.db import transaction
+from django.db.models.signals import m2m_changed, post_migrate, post_save
+from django.dispatch import receiver
+from django.utils import timezone
+from oscar.core.loading import get_model
+
+from . import tasks
+from .applicator import pricing_cache_ns
+from .groups import ensure_all_system_groups_exist
+from .models import (
+    Benefit,
+    Condition,
+    ConditionalOffer,
+    OfferGroup,
+    Range,
+    RangeProduct,
+)
+
+if TYPE_CHECKING:
+    from oscar.apps.catalogue.models import (
+        Category,
+        Product,
+        ProductCategory,
+        ProductClass,
+    )
+    from oscar.apps.order.models import Order, OrderDiscount
+    from oscar.apps.partner.models import StockRecord
+else:
+    Category = get_model("catalogue", "Category")
+    ProductCategory = get_model("catalogue", "ProductCategory")
+    Product = get_model("catalogue", "Product")
+    ProductClass = get_model("catalogue", "ProductClass")
+    StockRecord = get_model("partner", "StockRecord")
+    Order = get_model("order", "Order")
+    OrderDiscount = get_model("order", "OrderDiscount")
 
 
 # Invalidate cosmetic price cache whenever any Offer or StockRecord data changes
@@ -30,7 +46,23 @@ OrderDiscount = get_model("order", "OrderDiscount")
 @receiver(post_save, sender=Benefit)
 @receiver(post_save, sender=Condition)
 @receiver(post_save, sender=StockRecord)
-def invalidate_pricing_cache_ns(sender, instance, **kwargs):
+def invalidate_pricing_cache_ns(
+    sender: Union[
+        type[OfferGroup],
+        type[ConditionalOffer],
+        type[Benefit],
+        type[Condition],
+        type[StockRecord],
+    ],
+    instance: Union[
+        OfferGroup,
+        ConditionalOffer,
+        Benefit,
+        Condition,
+        StockRecord,
+    ],
+    **kwargs: Any,
+) -> None:
     transaction.on_commit(lambda: pricing_cache_ns.invalidate())
 
 
@@ -48,8 +80,8 @@ def invalidate_pricing_cache_ns(sender, instance, **kwargs):
 @receiver(m2m_changed, sender=Range.classes.through)
 @receiver(m2m_changed, sender=Range.included_categories.through)
 @receiver(m2m_changed, sender=Range.excluded_categories.through)
-def queue_rps_view_refresh(*args, **kwargs):
-    def _queue():
+def queue_rps_view_refresh(*args: Any, **kwargs: Any) -> None:
+    def _queue() -> None:
         now = datetime.timestamp(timezone.now())
         tasks.refresh_rps_view.delay(now)
 
@@ -58,7 +90,10 @@ def queue_rps_view_refresh(*args, **kwargs):
 
 # Create system groups post-migration
 @receiver(post_migrate)
-def post_migrate_ensure_all_system_groups_exist(sender, **kwargs):
+def post_migrate_ensure_all_system_groups_exist(
+    sender: Any,
+    **kwargs: Any,
+) -> None:
     ensure_all_system_groups_exist()
 
 
@@ -68,7 +103,10 @@ def post_migrate_ensure_all_system_groups_exist(sender, **kwargs):
 # fine if the stats/usage data is a few seconds behind.
 @receiver(post_save, sender=Order)
 @receiver(post_save, sender=OrderDiscount)
-def queue_recalculate_offer_application_totals(sender, **kwargs):
+def queue_recalculate_offer_application_totals(
+    sender: Union[type[Order], type[OrderDiscount]],
+    **kwargs: Any,
+) -> None:
     transaction.on_commit(
         lambda: tasks.recalculate_offer_application_totals.apply_async()
     )

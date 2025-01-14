@@ -1,16 +1,34 @@
+from __future__ import annotations
+
+from decimal import Decimal
+from typing import TYPE_CHECKING, Optional, TypedDict
+
 from oscar.apps.offer import results
-from collections import OrderedDict
+
+if TYPE_CHECKING:
+    from ..voucher.models import Voucher
+    from .models import ConditionalOffer
 
 BaseOfferApplications = results.OfferApplications
 
 
-class OfferApplications(BaseOfferApplications):
-    def __init__(self):
-        # Make applications an OrderedDict so we remember the order in which discount
-        # applications occurred.
-        self.applications = OrderedDict()
+class OfferApplication(TypedDict):
+    offer: "ConditionalOffer"
+    result: BasketDiscount
+    name: str
+    description: str
+    voucher: Optional[Voucher]
+    freq: int
+    discount: Decimal
+    is_hidden: bool
+    index: int
 
-    def add(self, offer, result):
+
+class OfferApplications(BaseOfferApplications):
+    def __init__(self) -> None:
+        self.applications: dict[int, OfferApplication] = {}
+
+    def add(self, offer: ConditionalOffer, result: BasketDiscount) -> None:
         super().add(offer, result)
         self.applications[offer.id]["is_hidden"] = getattr(result, "is_hidden", False)
         # Add the discount index (application order) as a key. Useful for merging the
@@ -21,7 +39,7 @@ class OfferApplications(BaseOfferApplications):
         )
 
     @property
-    def offer_post_order_actions(self):
+    def offer_post_order_actions(self) -> list[results.PostOrderAction]:
         """
         Return successful offer applications which didn't lead to a discount
         """
@@ -32,7 +50,7 @@ class OfferApplications(BaseOfferApplications):
         ]
 
     @property
-    def voucher_post_order_actions(self):
+    def voucher_post_order_actions(self) -> list[results.PostOrderAction]:
         """
         Return successful voucher applications which didn't lead to a discount
         """
@@ -64,4 +82,10 @@ class HiddenPostOrderAction(results.PostOrderAction):
 
 
 # Have to monkey patch this in since Oscar, for some reason, doesn't use get_class for this class
-results.OfferApplications = OfferApplications
+results.OfferApplications = OfferApplications  # type:ignore[misc]
+
+
+# Helper global as returning zero discount is quite common
+ZERO_DISCOUNT = BasketDiscount(Decimal("0.00"))
+
+SHIPPING_DISCOUNT = ShippingDiscount()

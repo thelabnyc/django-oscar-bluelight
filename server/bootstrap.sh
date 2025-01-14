@@ -1,8 +1,6 @@
 #!/bin/sh
 set -e
 
-cd sandbox
-
 # Wipe database
 python manage.py flush
 

@@ -1,27 +1,28 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, annotations
+
 from datetime import datetime
-from django.db import connection, transaction
-from celery import shared_task
-from oscar.core.loading import get_model
-from .applicator import pricing_cache_ns
-from .signals import range_product_set_view_updated
 import logging
 
-RangeProductSet = get_model("offer", "RangeProductSet")
-RangeProductSetRefreshLog = get_model("offer", "RangeProductSetRefreshLog")
+from celery import shared_task
+from django.db import connection, transaction
+
+from .applicator import pricing_cache_ns
+from .models import RangeProductSet, RangeProductSetRefreshLog
+from .signals import range_product_set_view_updated
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task(ignore_result=True)
-def recalculate_offer_application_totals():
-    ConditionalOffer = get_model("offer", "ConditionalOffer")
+def recalculate_offer_application_totals() -> None:
+    from .models import ConditionalOffer
+
     ConditionalOffer.recalculate_offer_application_totals()
 
 
 @shared_task(ignore_result=True)
 @transaction.atomic
-def refresh_rps_view(requested_on_timestamp):
+def refresh_rps_view(requested_on_timestamp: float) -> None:
     # Set a short lock timeout to prevent multiple of these tasks from running (and blocking) simultaneously
     with connection.cursor() as cursor:
         cursor.execute("SET LOCAL lock_timeout = '1s'")
@@ -37,7 +38,7 @@ def refresh_rps_view(requested_on_timestamp):
     RangeProductSetRefreshLog.log_view_refresh()
 
     # Invalidate the pricing cache (since range membership may affect pricing)
-    def _on_commit():
+    def _on_commit() -> None:
         pricing_cache_ns.invalidate()
         range_product_set_view_updated.send(sender=RangeProductSet)
 

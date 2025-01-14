@@ -1,52 +1,63 @@
+from __future__ import annotations
+
+from typing import Any, Callable, Optional
+
+from django.core.cache.backends.base import BaseCache
 from django.utils.translation import gettext_lazy as _
 
 
-class ConcreteFluentCache(object):
-    def __init__(self, cache, key, timeout=None, version=None):
+class ConcreteFluentCache:
+    def __init__(
+        self,
+        cache: BaseCache,
+        key: str,
+        timeout: Optional[int] = None,
+        version: Optional[int] = None,
+    ):
         self.cache = cache
         self.key = key
         self.timeout = timeout
         self.version = version
 
-    def get(self, default=None):
+    def get(self, default: Any = None) -> Any:
         return self.cache.get(self.key, default=default, version=self.version)
 
-    def set(self, value):
+    def set(self, value: Any) -> None:
         return self.cache.set(
             self.key, value, timeout=self.timeout, version=self.version
         )
 
-    def add(self, value):
+    def add(self, value: Any) -> bool:
         return self.cache.add(
             self.key, value, timeout=self.timeout, version=self.version
         )
 
-    def get_or_set(self, default):
+    def get_or_set(self, default: Callable[[], Any]) -> Any:
         return self.cache.get_or_set(
             self.key, default, timeout=self.timeout, version=self.version
         )
 
-    def delete(self):
+    def delete(self) -> bool:
         return self.cache.delete(self.key, version=self.version)
 
-    def touch(self):
+    def touch(self) -> bool:
         return self.cache.touch(self.key, timeout=self.timeout, version=self.version)
 
 
-class CacheNamespace(object):
-    def __init__(self, cache, name):
+class CacheNamespace:
+    def __init__(self, cache: BaseCache, name: str):
         self.cache = cache
         self.name = name
 
     @property
-    def key(self):
+    def key(self) -> str:
         return "oscarbluelight.cache-ns:{}".format(self.name)
 
     @property
-    def value(self):
+    def value(self) -> Any:
         return self.cache.get_or_set(self.key, 1, timeout=None)
 
-    def invalidate(self):
+    def invalidate(self) -> None:
         key = self.key
         try:
             self.cache.incr(key, delta=1)
@@ -54,34 +65,43 @@ class CacheNamespace(object):
             self.cache.set(key, 1, timeout=None)
 
 
-class FluentCache(object):
-    def __init__(self, cache, key_base, timeout=None, version=None):
+class FluentCache:
+    def __init__(
+        self,
+        cache: BaseCache,
+        key_base: str,
+        timeout: Optional[int] = None,
+        version: Optional[int] = None,
+    ):
         self.cache = cache
         self._key_base = key_base
         self._timeout = timeout
         self._version = version
-        self._namespaces = []
-        self._key_parts = []
+        self._namespaces: list[CacheNamespace] = []
+        self._key_parts: list[str] = []
 
-    def timeout(self, ttl):
+    def timeout(self, ttl: int) -> "FluentCache":
         self._timeout = ttl
         return self
 
-    def namespaces(self, *args):
-        self._namespaces = args
+    def namespaces(self, *args: CacheNamespace) -> "FluentCache":
+        self._namespaces = list(args)
         return self
 
-    def key_parts(self, *args):
-        self._key_parts = args
+    def key_parts(self, *args: str) -> "FluentCache":
+        self._key_parts = list(args)
         return self
 
-    def concrete(self, **kwargs):
+    def concrete(self, **kwargs: int | str) -> "ConcreteFluentCache":
         key = self.build_key(**kwargs)
         return ConcreteFluentCache(
-            self.cache, key, timeout=self._timeout, version=self._version
+            self.cache,
+            key,
+            timeout=self._timeout,
+            version=self._version,
         )
 
-    def build_key(self, **kwargs):
+    def build_key(self, **kwargs: int | str) -> str:
         key_fragments = [self._key_base]
         # Add in serialized namespaces
         for namespace in self._namespaces:

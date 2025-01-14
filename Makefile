@@ -6,10 +6,10 @@ statics:
 	@$(DOCKERCOMPOSE) run --rm -e NODE_ENV=production node webpack
 
 screenshots:
-	@$(DOCKERCOMPOSE) run --rm test python sandbox/manage.py test oscarbluelight
+	@$(DOCKERCOMPOSE) run --rm test python manage.py test oscarbluelight
 
 migrations:
-	@$(DOCKERCOMPOSE) run --rm test python sandbox/manage.py makemigrations
+	@$(DOCKERCOMPOSE) run --rm test python manage.py makemigrations
 
 # Create the .po and .mo files used for i18n
 translations:

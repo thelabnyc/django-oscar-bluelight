@@ -1,19 +1,21 @@
 from decimal import Decimal as D
+from unittest import mock
+
 from django.core import exceptions
 from django.test import TestCase, TransactionTestCase
-from oscar.apps.offer.utils import Applicator
-from oscar.test.basket import add_product, add_products
-from oscar.test import factories
 from django_redis import get_redis_connection
+from oscar.apps.offer.utils import Applicator
+from oscar.test import factories
+from oscar.test.basket import add_product, add_products
+
 from oscarbluelight.offer.models import (
+    Benefit,
+    BluelightAbsoluteDiscountBenefit,
+    BluelightCountCondition,
+    BluelightValueCondition,
     ConditionalOffer,
     Range,
-    Benefit,
-    BluelightCountCondition,
-    BluelightAbsoluteDiscountBenefit,
-    BluelightValueCondition,
 )
-from unittest import mock
 
 
 class TestAnAbsoluteDiscountAppliedWithCountConditionOnDifferentRange(

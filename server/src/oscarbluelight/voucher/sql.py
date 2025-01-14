@@ -1,4 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from django.core.exceptions import ImproperlyConfigured
+
+if TYPE_CHECKING:
+    from psycopg2.sql import Composed
+
+    from .models import Voucher
 
 try:
     try:
@@ -9,7 +18,7 @@ except ImportError:
     raise ImproperlyConfigured("Error loading psycopg2 or psycopg module")
 
 
-def get_update_children_meta_sql(Voucher):
+def get_update_children_meta_sql(Voucher: type[Voucher]) -> Composed:
     query = sql.SQL(
         """
         UPDATE {voucher_table} AS cv
@@ -38,7 +47,9 @@ def get_update_children_meta_sql(Voucher):
     return query
 
 
-def _get_insupd_m2m_sql(Voucher, m2m_table_name, rel_column_name):
+def _get_insupd_m2m_sql(
+    Voucher: type[Voucher], m2m_table_name: str, rel_column_name: str
+) -> Composed:
     query = sql.SQL(
         """
         INSERT INTO {m2m_table_name} (voucher_id, {rel_column_name})
@@ -66,7 +77,9 @@ def _get_insupd_m2m_sql(Voucher, m2m_table_name, rel_column_name):
     return query
 
 
-def _get_prune_m2m_sql(Voucher, m2m_table_name, rel_column_name):
+def _get_prune_m2m_sql(
+    Voucher: type[Voucher], m2m_table_name: str, rel_column_name: str
+) -> Composed:
     query = sql.SQL(
         """
         DELETE FROM {m2m_table_name}
@@ -90,7 +103,7 @@ def _get_prune_m2m_sql(Voucher, m2m_table_name, rel_column_name):
     return query
 
 
-def get_insupd_children_offers_sql(Voucher):
+def get_insupd_children_offers_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_insupd_m2m_sql(
         Voucher,
         "%s_offers" % Voucher._meta.db_table,
@@ -99,7 +112,7 @@ def get_insupd_children_offers_sql(Voucher):
     return query
 
 
-def get_prune_children_offers_sql(Voucher):
+def get_prune_children_offers_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_prune_m2m_sql(
         Voucher,
         "%s_offers" % Voucher._meta.db_table,
@@ -108,7 +121,7 @@ def get_prune_children_offers_sql(Voucher):
     return query
 
 
-def get_insupd_children_groups_sql(Voucher):
+def get_insupd_children_groups_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_insupd_m2m_sql(
         Voucher,
         "%s_groups" % Voucher._meta.db_table,
@@ -117,7 +130,7 @@ def get_insupd_children_groups_sql(Voucher):
     return query
 
 
-def get_prune_children_groups_sql(Voucher):
+def get_prune_children_groups_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_prune_m2m_sql(
         Voucher,
         "%s_groups" % Voucher._meta.db_table,

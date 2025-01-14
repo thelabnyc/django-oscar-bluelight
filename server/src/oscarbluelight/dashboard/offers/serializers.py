@@ -1,8 +1,14 @@
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import Any
+
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.utils.serializer_helpers import ReturnList
-from oscarbluelight.offer.models import OfferGroup, ConditionalOffer
+
+from oscarbluelight.offer.models import ConditionalOffer, OfferGroup
 from oscarbluelight.voucher.models import Voucher
 
 
@@ -25,13 +31,13 @@ class VoucherSerializer(serializers.ModelSerializer):
             "mobile_image",
         )
 
-    def get_desktop_image(self, obj):
+    def get_desktop_image(self, obj: Voucher) -> str:
         offer = obj.offers.first()
         if offer:
             return offer.desktop_image.url if offer.desktop_image else ""
         return ""
 
-    def get_mobile_image(self, obj):
+    def get_mobile_image(self, obj: Voucher) -> str:
         offer = obj.offers.first()
         if offer:
             return offer.mobile_image.url if offer.mobile_image else ""
@@ -60,15 +66,16 @@ class OfferSerializer(serializers.ModelSerializer):
             "mobile_image",
         )
 
-    def get_vouchers(self, obj):
-        return VoucherSerializer(many=True, context=self.context).to_representation(
+    def get_vouchers(self, obj: ConditionalOffer) -> list[dict[str, Any]]:
+        ser = VoucherSerializer(many=True, context=self.context)
+        return ser.to_representation(  # type:ignore[return-value]
             obj.vouchers.exclude_children().all()
         )
 
-    def get_desktop_image(self, obj):
+    def get_desktop_image(self, obj: ConditionalOffer) -> str:
         return obj.desktop_image.url if obj.desktop_image else ""
 
-    def get_mobile_image(self, obj):
+    def get_mobile_image(self, obj: ConditionalOffer) -> str:
         return obj.mobile_image.url if obj.mobile_image else ""
 
 
@@ -103,14 +110,18 @@ class OfferGroupSerializer(serializers.ModelSerializer):
             "delete_link",
         )
 
-    def get_offers(self, obj: OfferGroup) -> ReturnList:
+    def get_offers(self, obj: OfferGroup) -> ReturnList[Any]:
         offers = obj.offers.all()
         paginator = OffersInGroupPagination()
+        request = self.context.get("request")
+        page: Iterable[ConditionalOffer] | None
         try:
-            page = paginator.paginate_queryset(offers, self.context.get("request"))
+            page = paginator.paginate_queryset(offers, request)  # type:ignore[arg-type]
         except NotFound:
             page = obj.offers.none()
-        return OfferSerializer(page, many=True, context=self.context).data
+        return OfferSerializer(  # type:ignore[return-value]
+            page, many=True, context=self.context
+        ).data
 
     def get_total_offers_count(self, obj: OfferGroup) -> int:
         return obj.offers.count()

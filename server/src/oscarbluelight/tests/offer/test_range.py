@@ -1,11 +1,13 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.test import RequestFactory, TestCase, TransactionTestCase
-from oscarbluelight.offer import models
 from oscar.apps.catalogue import models as catalogue_models
 from oscar.core.loading import get_class
 from oscar.test.factories import create_product, create_stockrecord
-from unittest.mock import patch
+
+from oscarbluelight.offer import models
 
 RangeProductSearchForm = get_class("ranges_dashboard.forms", "RangeProductSearchForm")
 RangeProductListView = get_class("ranges_dashboard.views", "RangeProductListView")

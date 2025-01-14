@@ -1,16 +1,18 @@
 from decimal import Decimal as D
+from unittest import mock
+
 from django.test import TransactionTestCase
+from django_redis import get_redis_connection
 from oscar.test import factories
+
 from oscarbluelight.offer.constants import Conjunction
 from oscarbluelight.offer.models import (
-    Range,
-    BluelightCountCondition,
     BluelightAbsoluteDiscountBenefit,
+    BluelightCountCondition,
     BluelightPercentageDiscountBenefit,
     CompoundBenefit,
+    Range,
 )
-from django_redis import get_redis_connection
-from unittest import mock
 
 
 class TestCompoundAbsoluteBenefitDiscount(TransactionTestCase):

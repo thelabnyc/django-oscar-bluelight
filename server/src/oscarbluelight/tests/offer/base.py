@@ -1,8 +1,10 @@
 from decimal import Decimal as D
+
 from django.test import TransactionTestCase
-from oscarbluelight.offer.models import Condition, ConditionalOffer, Range, Benefit
-from oscar.test.factories import create_basket, create_product, create_stockrecord
 from django_redis import get_redis_connection
+from oscar.test.factories import create_basket, create_product, create_stockrecord
+
+from oscarbluelight.offer.models import Benefit, Condition, ConditionalOffer, Range
 
 
 class BaseTest(TransactionTestCase):

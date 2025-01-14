@@ -1,15 +1,16 @@
+from __future__ import annotations
+
+from typing import Any
+
 from django import forms
 from django.contrib.auth.models import Group
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from oscar.core.loading import get_model
+from django.utils.translation import gettext_lazy as _
+from oscar.apps.dashboard.vouchers.forms import VoucherForm as BaseVoucherForm
 from oscar.forms.widgets import DateTimePickerInput
-from oscar.apps.dashboard.vouchers.forms import (
-    VoucherForm as BaseVoucherForm,
-)
 
-ConditionalOffer = get_model("offer", "ConditionalOffer")
-Voucher = get_model("voucher", "Voucher")
+from oscarbluelight.offer.models import ConditionalOffer
+from oscarbluelight.voucher.models import Voucher
 
 MAX_CHILDREN_CREATE = 100_000
 
@@ -82,21 +83,23 @@ class VoucherForm(BaseVoucherForm):
             "groups",
         ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["offers"].queryset = self.instance.offers.all()
+            self.fields["offers"].queryset = (  # type:ignore[attr-defined]
+                self.instance.offers.all()
+            )
 
-    def clean_custom_child_codes(self):
+    def clean_custom_child_codes(self) -> list[str]:
         code_txt = self.cleaned_data["custom_child_codes"]
         codes = [code.strip() for code in code_txt.splitlines()]
         return codes
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         # To ensure the selected value is considered valid/invalid correctly during the form's validation process,
         # update the `offers` field queryset to include all possible voucher-type offer choices.
-        self.fields["offers"].queryset = ConditionalOffer.objects.filter(
-            offer_type=ConditionalOffer.VOUCHER
+        self.fields["offers"].queryset = (  # type:ignore[attr-defined]
+            ConditionalOffer.objects.filter(offer_type=ConditionalOffer.VOUCHER)
         )
         res = super().is_valid()
         return res
@@ -135,7 +138,7 @@ class AddChildCodesForm(forms.Form):
         ),
     )
 
-    def clean_custom_child_codes(self):
+    def clean_custom_child_codes(self) -> list[str]:
         code_txt = self.cleaned_data["custom_child_codes"]
         codes = [code.strip() for code in code_txt.splitlines()]
         return codes

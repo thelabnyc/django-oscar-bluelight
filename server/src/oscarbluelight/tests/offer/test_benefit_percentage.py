@@ -1,17 +1,19 @@
 from decimal import Decimal as D
+from unittest import mock
+
 from django.core import exceptions
 from django.test import TransactionTestCase
+from django_redis import get_redis_connection
 from oscar.test import factories
 from oscar.test.basket import add_product, add_products
-from django_redis import get_redis_connection
+
 from oscarbluelight.offer.models import (
-    Range,
     Benefit,
     BluelightCountCondition,
-    BluelightValueCondition,
     BluelightPercentageDiscountBenefit,
+    BluelightValueCondition,
+    Range,
 )
-from unittest import mock
 
 
 class TestAPercentageDiscountAppliedWithCountCondition(TransactionTestCase):

@@ -1,10 +1,12 @@
 from datetime import datetime
 from decimal import Decimal as D
+
+from django.contrib.auth.models import AnonymousUser, Group, User
 from django.test import TestCase, override_settings
 from django.utils import timezone
-from oscarbluelight.voucher.models import Voucher
-from django.contrib.auth.models import AnonymousUser, User, Group
 from oscar.test.factories import create_order
+
+from oscarbluelight.voucher.models import Voucher
 
 
 class UserGroupWhitelistTest(TestCase):

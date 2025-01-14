@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from django.urls import path
+from django.urls.resolvers import URLPattern
 from oscar.apps.dashboard.vouchers import apps
 from oscar.core.loading import get_class
 
@@ -6,7 +9,7 @@ from oscar.core.loading import get_class
 class VouchersDashboardConfig(apps.VouchersDashboardConfig):
     name = "oscarbluelight.dashboard.vouchers"
 
-    def ready(self):
+    def ready(self) -> None:
         super().ready()
         self.list_view = get_class("vouchers_dashboard.views", "VoucherListView")
         self.create_view = get_class("vouchers_dashboard.views", "VoucherCreateView")
@@ -30,13 +33,13 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
             "vouchers_dashboard.views", "VoucherSuspensionView"
         )
 
-    def get_urls(self):
+    def get_urls(self) -> list[URLPattern]:
         from .views import (
             AddChildCodesView,
+            ChildCodesListView,
             ExportChildCodesFormView,
             ExportChildCodesView,
             VoucherStatsView,
-            ChildCodesListView,
             VoucherSuspensionView,
         )
 
