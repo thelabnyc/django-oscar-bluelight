@@ -12,8 +12,8 @@
     "dependencies": {
         "classnames": "^2.5.1",
         "core-js": "^3.40.0",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
         "regenerator-runtime": "^0.14.1",
         "superagent": "^10.1.1",
         "tslib": "^2.8.1"
@@ -24,8 +24,8 @@
         "@babel/preset-react": "^7.26.3",
         "@thelabnyc/standards": "^0.4.1",
         "@types/eslint-config-prettier": "^6.11.3",
-        "@types/react": "^18.3.18",
-        "@types/react-dom": "^18.3.5",
+        "@types/react": "^19.0.6",
+        "@types/react-dom": "^19.0.3",
         "@types/superagent": "^8.1.9",
         "autoprefixer": "^10.4.20",
         "babel-loader": "^9.2.1",
