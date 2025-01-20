@@ -754,7 +754,7 @@ version = "5.1.2"
 description = "Monkey-patching and extensions for django-stubs"
 optional = false
 python-versions = ">=3.8"
-groups = ["dev"]
+groups = ["main", "dev"]
 files = [
     {file = "django_stubs_ext-5.1.2-py3-none-any.whl", hash = "sha256:6c559214538d6a26f631ca638ddc3251a0a891d607de8ce01d23d3201ad8ad6c"},
     {file = "django_stubs_ext-5.1.2.tar.gz", hash = "sha256:421c0c3025a68e3ab8e16f065fad9ba93335ecefe2dd92a0cff97a665680266c"},
@@ -1757,19 +1757,20 @@ doc = ["sphinx"]
 
 [[package]]
 name = "thelabdb"
-version = "0.1.2"
+version = "0.2.0"
 description = "Django DB Utilities"
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "thelabdb-0.1.2-py3-none-any.whl", hash = "sha256:024f76345e98050a3387aff007d756ba2e49d0ad1b55f0b8c499e446991d0649"},
-    {file = "thelabdb-0.1.2.tar.gz", hash = "sha256:7f68bc6efce4d89063df26ed0c29e1a0ea1aaa5d3ddd1b865d93ba84b93bd1a8"},
+    {file = "thelabdb-0.2.0-py3-none-any.whl", hash = "sha256:79017db9526f75babeaf6f98364854dd5829d0e8b9462543c60924dec3696d81"},
+    {file = "thelabdb-0.2.0.tar.gz", hash = "sha256:c9770c74b2cba9f18e31d4ac5aac0738f6ea120b18d26b4ae988e76933d3f404"},
 ]
 
 [package.dependencies]
-cryptography = ">=43.0.0"
+cryptography = ">=44.0.0"
 Django = ">=4.2.0"
+django-stubs-ext = ">=5.1.2,<6.0.0"
 
 [[package]]
 name = "tox"
@@ -1942,4 +1943,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "51b05c8f82600e027d201856d6c91c86124f5719f8b576d8be2efaa043239823"
+content-hash = "e94ec6304377f51e58dca70c19fb833e13e793d2568ad14ec0829622c6692fa3"
