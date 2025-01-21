@@ -19,16 +19,16 @@ cache:
     - $HOME/.cache/pip
 
 include:
-  - component: gitlab.com/thelabnyc/thelab-ci-components/precommit@0.3.0
-  - component: gitlab.com/thelabnyc/thelab-ci-components/publish-gitlab-release@0.3.0
-  - component: gitlab.com/thelabnyc/thelab-ci-components/publish-to-pypi@0.3.0
+  - component: gitlab.com/thelabnyc/thelab-ci-components/precommit@0.3.1
+  - component: gitlab.com/thelabnyc/thelab-ci-components/publish-gitlab-release@0.3.1
+  - component: gitlab.com/thelabnyc/thelab-ci-components/publish-to-pypi@0.3.1
     inputs:
       pkg_dir: server/
 
 
 lint_typescript:
   stage: test
-  image: node:20
+  image: node:22
   script:
     - cd client/
     - NODE_ENV=dev npm i
@@ -45,7 +45,7 @@ test:
   coverage: '/^TOTAL.+?(\d+\%)$/'
   parallel:
     matrix:
-      - IMAGE: py311
-        TOX_SKIP_ENV: "^(?!py311-)"
       - IMAGE: py312
         TOX_SKIP_ENV: "^(?!py312-)"
+      - IMAGE: py313
+        TOX_SKIP_ENV: "^(?!py313-)"
