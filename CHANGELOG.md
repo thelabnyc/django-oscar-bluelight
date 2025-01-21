@@ -1,5 +1,14 @@
 # Changes
 
+## v5.7.1 (2025-01-21)
+
+### Fix
+
+- drop Python 3.11
+- **deps**: update dependency thelabdb to ^0.2.0
+- **deps**: update dependency django to ^4.2.18
+- **deps**: update react monorepo to v19
+
 ## v5.7.0 (2025-01-14)
 
 ### Feat
