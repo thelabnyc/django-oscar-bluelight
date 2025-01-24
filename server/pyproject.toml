@@ -33,7 +33,7 @@ hiredis = "^3.1.0"
 psycopg2-binary = "^2.9.10"
 redis = "^5.2.1"
 sorl-thumbnail = "^12.11.0"
-tox = "^4.23.2"
+tox = "^4.24.1"
 unittest-xml-reporting = "^3.2.0"
 # Fix currently unpublished Python 3.12 compat
 django-haystack = { git = "https://github.com/django-haystack/django-haystack.git", branch = "master" }
