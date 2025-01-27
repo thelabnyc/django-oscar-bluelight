@@ -24,7 +24,7 @@
         "@babel/preset-react": "^7.26.3",
         "@thelabnyc/standards": "^0.4.1",
         "@types/eslint-config-prettier": "^6.11.3",
-        "@types/react": "^19.0.7",
+        "@types/react": "^19.0.8",
         "@types/react-dom": "^19.0.3",
         "@types/superagent": "^8.1.9",
         "autoprefixer": "^10.4.20",
