@@ -1,5 +1,15 @@
 # Changes
 
+## v5.8.0 (2025-02-13)
+
+### Feat
+
+- add pagination to items listed under each condition in Conditions dashboard view
+
+### Fix
+
+- **deps**: update dependency django to ^4.2.19
+
 ## v5.7.1 (2025-01-21)
 
 ### Fix
