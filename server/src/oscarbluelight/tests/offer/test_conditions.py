@@ -1,10 +1,16 @@
+from datetime import timedelta
 from decimal import Decimal as D
+from unittest.mock import patch
+from urllib.parse import urlencode
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.http import HttpResponse
+from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
+from django.utils import timezone
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 
+from oscarbluelight.dashboard.offers.views import ConditionListView
 from oscarbluelight.offer.applicator import Applicator
 from oscarbluelight.offer.constants import Conjunction
 from oscarbluelight.offer.models import (
@@ -14,6 +20,7 @@ from oscarbluelight.offer.models import (
     ConditionalOffer,
     Range,
 )
+from oscarbluelight.voucher.models import Voucher
 
 from .base import BaseTest
 
@@ -896,3 +903,231 @@ class ConditionURL(TestCase):
         self.client.login(username="john", password="johnpassword")
         response = self.client.get(reverse("dashboard:condition-list"))
         self.assertEqual(response.status_code, 200)
+
+
+class ConditionListViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            "john", "john@example.com", "password", is_staff=True, is_superuser=True
+        )
+        self.client = Client()
+        self.client.login(username="john", password="password")
+        self.base_url = reverse("dashboard:condition-list")
+        self.view = ConditionListView()
+
+        all_products = Range()
+        all_products.name = "site"
+        all_products.includes_all_products = True
+        all_products.save()
+
+        self.cond = Condition()
+        self.cond.proxy_class = (
+            "oscarbluelight.offer.conditions.BluelightValueCondition"
+        )
+        self.cond.value = 10
+        self.cond.range = all_products
+        self.cond.save()
+
+        benefit = Benefit()
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit"
+        )
+        benefit.value = 0
+        benefit.save()
+
+        start_dt = timezone.now() - timedelta(days=1)
+        end_dt = timezone.now() + timedelta(days=1)
+
+        for i in range(1, 4):
+            ConditionalOffer.objects.create(
+                pk=i,
+                name=f"Non-Voucher Offer {i}",
+                condition=self.cond,
+                benefit=benefit,
+                offer_type=ConditionalOffer.SITE,
+                start_datetime=start_dt,
+                end_datetime=end_dt,
+            )
+
+        for i in range(4, 9):
+            offer = ConditionalOffer.objects.create(
+                pk=i,
+                name=f"Voucher Offer {i}",
+                condition=self.cond,
+                benefit=benefit,
+                offer_type=ConditionalOffer.VOUCHER,
+                start_datetime=start_dt,
+                end_datetime=end_dt,
+            )
+            voucher = Voucher.objects.create(
+                pk=i,
+                name=f"Voucher {i}",
+                code=f"voucher-{i}",
+                usage=Voucher.MULTI_USE,
+                start_datetime=start_dt,
+                end_datetime=end_dt,
+            )
+            voucher.offers.add(offer)
+
+    def test__get_items_for_condition(self):
+        result = self.view._get_items_for_condition(self.cond.pk, "non_voucher_offers")
+        self.assertDictEqual(
+            result,
+            {
+                "items": [
+                    {"pk": 1, "name": "Non-Voucher Offer 1"},
+                    {"pk": 2, "name": "Non-Voucher Offer 2"},
+                    {"pk": 3, "name": "Non-Voucher Offer 3"},
+                ],
+                "has_next": False,
+            },
+        )
+        result = self.view._get_items_for_condition(self.cond.pk, "vouchers")
+        self.assertDictEqual(
+            result,
+            {
+                "items": [
+                    {"pk": 4, "name": "Voucher 4"},
+                    {"pk": 5, "name": "Voucher 5"},
+                    {"pk": 6, "name": "Voucher 6"},
+                    {"pk": 7, "name": "Voucher 7"},
+                    {"pk": 8, "name": "Voucher 8"},
+                ],
+                "has_next": False,
+            },
+        )
+        self.view.items_per_object = 2
+        result = self.view._get_items_for_condition(
+            self.cond.pk, "non_voucher_offers", 1
+        )
+        self.assertDictEqual(
+            result,
+            {
+                "items": [
+                    {"pk": 1, "name": "Non-Voucher Offer 1"},
+                    {"pk": 2, "name": "Non-Voucher Offer 2"},
+                ],
+                "has_next": True,
+            },
+        )
+        result = self.view._get_items_for_condition(self.cond.pk, "vouchers", 2)
+        self.assertDictEqual(
+            result,
+            {
+                "items": [
+                    {"pk": 6, "name": "Voucher 6"},
+                    {"pk": 7, "name": "Voucher 7"},
+                ],
+                "has_next": True,
+            },
+        )
+
+    def test_get_missing_parameters_with_ajax_request(self):
+        resp = self.client.get(
+            f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk})}",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"error": "Missing required parameters: condition_pk, type"}
+        )
+        resp = self.client.get(
+            f"{self.base_url}?{urlencode({'type': 'vouchers'})}",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"error": "Missing required parameters: condition_pk, type"}
+        )
+
+    def test_get_invalid_item_type_with_ajax_request(self):
+        resp = self.client.get(
+            f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'invalid_type'})}",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"error": "Invalid item type for Condition: invalid_type"}
+        )
+
+    def test_get_valid_request_with_ajax_request(self):
+        resp = self.client.get(
+            f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers'})}",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertDictEqual(
+            data,
+            {
+                "items": [
+                    {"pk": 1, "name": "Non-Voucher Offer 1"},
+                    {"pk": 2, "name": "Non-Voucher Offer 2"},
+                    {"pk": 3, "name": "Non-Voucher Offer 3"},
+                ],
+                "has_next": False,
+            },
+        )
+        ConditionListView.items_per_object = 1
+        resp = self.client.get(
+            f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers', 'page': 3})}",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertDictEqual(
+            data,
+            {
+                "items": [{"pk": 3, "name": "Non-Voucher Offer 3"}],
+                "has_next": False,
+            },
+        )
+
+    def test_get_context_data(self):
+        self.view.items_per_object = 3
+        request = RequestFactory().get(
+            f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers'})}",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        request.user = self.user
+        self.view.request = request
+        self.view.object_list = self.view.get_queryset()
+        context = self.view.get_context_data()
+        self.assertIn("queryset_description", context)
+        self.assertIn("form", context)
+        self.assertIn("is_filtered", context)
+        self.assertEqual(len(context["conditions"]), 1)
+        self.assertDictEqual(
+            context["conditions"][0].initial_offers,
+            {
+                "items": [
+                    {"pk": 1, "name": "Non-Voucher Offer 1"},
+                    {"pk": 2, "name": "Non-Voucher Offer 2"},
+                    {"pk": 3, "name": "Non-Voucher Offer 3"},
+                ],
+                "has_next": False,
+            },
+        )
+        self.assertDictEqual(
+            context["conditions"][0].initial_vouchers,
+            {
+                "items": [
+                    {"pk": 4, "name": "Voucher 4"},
+                    {"pk": 5, "name": "Voucher 5"},
+                    {"pk": 6, "name": "Voucher 6"},
+                ],
+                "has_next": True,
+            },
+        )
+
+    def test_get_with_non_ajax_request(self):
+        with patch("django.views.generic.ListView.get") as mock_super_class_get:
+            mock_super_class_get.return_value = HttpResponse("<h1>Test</h1>")
+            self.client.get(self.base_url)
+            mock_super_class_get.assert_called_once()
+            mock_super_class_get.reset_mock()
+            self.client.get(
+                f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers'})}",
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            )
+            mock_super_class_get.assert_not_called()

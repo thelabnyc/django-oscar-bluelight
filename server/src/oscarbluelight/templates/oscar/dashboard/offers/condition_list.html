@@ -69,18 +69,36 @@
                         <td>{{ condition.type_name|default:"-" }}</td>
                         <td>{{ condition.value|default:"-" }}</td>
                         <td>
-                            <ul>
-                                {% for offer in condition.non_voucher_offers %}
-                                    <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</li>
-                                {% endfor %}
-                            </ul>
+                            <div class="offers-container" data-condition-pk="{{ condition.pk }}">
+                                <ul class="non_voucher_offers-list">
+                                    {% for offer in condition.initial_offers.items %}
+                                        <li><a href="{% url 'dashboard:offer-detail' pk=offer.pk %}">{{ offer.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                                {% if condition.initial_offers.has_next %}
+                                    <button class="btn btn-primary btn-sm load-more-btn ml-4"
+                                            data-type="non_voucher_offers"
+                                            data-page="2">
+                                        {% trans "Load More" %}
+                                    </button>
+                                {% endif %}
+                            </div>
                         </td>
                         <td>
-                            <ul>
-                                {% for voucher in condition.vouchers %}
-                                    <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</li>
-                                {% endfor %}
-                            </ul>
+                            <div class="vouchers-container" data-condition-pk="{{ condition.pk }}">
+                                <ul class="vouchers-list">
+                                    {% for voucher in condition.initial_vouchers.items %}
+                                        <li><a href="{% url 'dashboard:voucher-stats' pk=voucher.pk %}">{{ voucher.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                                {% if condition.initial_vouchers.has_next %}
+                                    <button class="btn btn-primary btn-sm load-more-btn ml-4"
+                                            data-type="vouchers"
+                                            data-page="2">
+                                        {% trans "Load More" %}
+                                    </button>
+                                {% endif %}
+                            </div>
                         </td>
                         <td>
                             <ul>
@@ -112,3 +130,66 @@
         {% include "oscar/dashboard/partials/pagination.html" %}
     </form>
 {% endblock dashboard_content %}
+
+{% block extrascripts %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            const setLoadingState = (button, isLoading) => {
+                button.disabled = isLoading;
+                button.innerHTML = isLoading ?
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {% trans "Loading..." %}' :
+                    `{% trans "Load More" %}`;
+            }
+            // Handle click events for all load more buttons
+            document.querySelectorAll(".load-more-btn").forEach(button => {
+                button.addEventListener("click", async function () {
+                    const container = this.closest("div");
+                    const conditionPk = container.dataset.conditionPk;
+                    const type = this.dataset.type;
+                    const page = this.dataset.page;
+                    const list = container.querySelector(`.${type}-list`);
+                    try {
+                        setLoadingState(this, true);
+                        const response = await fetch(
+                            `?condition_pk=${conditionPk}&type=${type}&page=${page}`,
+                            {
+                                headers: {
+                                    "X-Requested-With": "XMLHttpRequest"
+                                }
+                            }
+                        );
+                        if (!response.ok) {
+                            throw new Error(`Failed to load more offers: ${response.status} ${response.statusText}`);
+                        }
+                        const data = await response.json();
+                        // Add new items to the list
+                        data.items.forEach(item => {
+                            const li = document.createElement("li");
+                            const a = document.createElement("a");
+                            // Django requires a valid integer for the URL resolver inside templates,
+                            // so we provide a placeholder PK to replace it dynamically with item.pk
+                            a.href = type === "vouchers"
+                                ? `{% url "dashboard:voucher-stats" pk=999999 %}`.replace("999999", item.pk)
+                                : `{% url "dashboard:offer-detail" pk=999999 %}`.replace("999999", item.pk)
+                            a.textContent = item.name;
+                            li.appendChild(a);
+                            list.appendChild(li);
+                        });
+                        // Update the page number or remove button if no more pages
+                        if (data.has_next) {
+                            this.dataset.page = (parseInt(page) + 1).toString();
+                            setLoadingState(this, false);
+                        } else {
+                            this.remove();
+                        }
+                    } catch (err) {
+                        console.error("Error while loading more items:", err);
+                        setLoadingState(this, false);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

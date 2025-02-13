@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from oscar.apps.order.models import OrderDiscount as _OrderDiscount
 
     from ..mixins import BluelightBasketMixin as Basket
-    from ..voucher.models import Voucher
+    from ..voucher.models import Voucher as _Voucher
     from .upsells import OfferUpsell
 else:
     ExpandDownwardsCategoryQueryset = get_class(
@@ -256,7 +256,7 @@ class Benefit(AbstractBenefit):
         return self.offers.exclude(offer_type=ConditionalOffer.VOUCHER).all()
 
     @property
-    def vouchers(self) -> list[Voucher]:
+    def vouchers(self) -> list[_Voucher]:
         vouchers = []
         for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
             for voucher in offer.vouchers.filter(parent=None).all():
@@ -342,12 +342,19 @@ class Condition(AbstractCondition):
         return self.offers.exclude(offer_type=ConditionalOffer.VOUCHER).all()
 
     @property
-    def vouchers(self) -> list[Voucher]:
-        vouchers = []
-        for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
-            for voucher in offer.vouchers.filter(parent=None).all():
-                vouchers.append(voucher)
-        return vouchers
+    def vouchers(self) -> QuerySet[_Voucher]:
+        from ..voucher.models import Voucher
+
+        return (
+            Voucher.objects.filter(
+                offers__in=self.offers.filter(
+                    offer_type=ConditionalOffer.VOUCHER
+                ).all(),
+                parent=None,
+            )
+            .distinct()
+            .select_related()
+        )
 
     def get_upsell_details(
         self, offer: ConditionalOffer, basket: Basket

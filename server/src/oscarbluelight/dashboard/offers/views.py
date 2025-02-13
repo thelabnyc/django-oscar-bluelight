@@ -1,12 +1,25 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    Literal,
+    NewType,
+    Optional,
+    TypedDict,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+)
 import json
 
 from django.contrib import messages
 from django.core import serializers
+from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
@@ -51,6 +64,14 @@ T = TypeVar(
     ConditionSelectionForm,
     RestrictionsForm,
 )
+ConditionItemType = Literal["non_voucher_offers", "vouchers"]
+ConditionItemPk = NewType("ConditionItemPk", int)
+ConditionItemName = NewType("ConditionItemName", str)
+
+
+class ConditionItem(TypedDict):
+    pk: ConditionItemPk
+    name: ConditionItemName
 
 
 class OfferWizardStepView(  # type:ignore[no-redef]
@@ -359,6 +380,46 @@ class ConditionListView(ListView):
     context_object_name = "conditions"
     template_name = "oscar/dashboard/offers/condition_list.html"
     form_class = ConditionSearchForm
+    items_per_object = 500
+
+    def _get_items_for_condition(
+        self, condition_pk: ConditionItemPk, item_type: ConditionItemType, page: int = 1
+    ) -> dict[str, Union[bool, list[ConditionItem]]]:
+        condition = self.model._default_manager.get(pk=condition_pk)
+        items = getattr(condition, item_type)
+        paginator = Paginator(items, self.items_per_object)
+        current_page = paginator.get_page(page)
+        return {
+            "items": [
+                ConditionItem(pk=item.pk, name=item.name) for item in current_page
+            ],
+            "has_next": current_page.has_next(),
+        }
+
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> HttpResponse | JsonResponse:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            condition_pk = request.GET.get("condition_pk")
+            page = int(request.GET.get("page", 1))
+            item_type = request.GET.get("type")
+            if not condition_pk or not item_type:
+                return JsonResponse(
+                    {"error": "Missing required parameters: condition_pk, type"},
+                    status=400,
+                )
+            if item_type not in get_args(ConditionItemType):
+                return JsonResponse(
+                    {"error": f"Invalid item type for Condition: {item_type}"},
+                    status=400,
+                )
+            data = self._get_items_for_condition(
+                ConditionItemPk(int(condition_pk)),
+                cast(ConditionItemType, item_type),
+                page,
+            )
+            return JsonResponse(data)
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[Condition]:
         qs = (
@@ -388,6 +449,14 @@ class ConditionListView(ListView):
         ctx["queryset_description"] = self.description
         ctx["form"] = self.form
         ctx["is_filtered"] = self.is_filtered
+        # Add initial pages of offers and vouchers for each condition
+        for condition in ctx["conditions"]:
+            condition.initial_offers = self._get_items_for_condition(
+                condition.id, "non_voucher_offers"
+            )
+            condition.initial_vouchers = self._get_items_for_condition(
+                condition.id, "vouchers"
+            )
         return ctx
 
 
