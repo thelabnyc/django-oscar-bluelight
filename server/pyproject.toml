@@ -17,11 +17,11 @@ include = "oscarbluelight"
 from = "src"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 celery = "^5.4.0"
 Django = "^4.2.20"
 django-oscar = "3.2.5"
-thelabdb = "^0.2.0"
+thelabdb = "^0.3.0"
 djangorestframework = "^3.15.2"
 
 [tool.poetry.group.dev.dependencies]
@@ -44,7 +44,7 @@ djangorestframework-stubs = "^3.15.3"
 celery-types = "^0.23.0"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 
 # Strict mode, see mypy --help
