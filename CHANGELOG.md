@@ -1,5 +1,14 @@
 # Changes
 
+## v5.8.1 (2025-03-17)
+
+### Fix
+
+- **deps**: update dependency thelabdb to ^0.3.0
+- **deps**: update dependency superagent to ^10.2.0
+- **deps**: update dependency django to ^4.2.20
+- **deps**: update dependency core-js to ^3.41.0
+
 ## v5.8.0 (2025-02-13)
 
 ### Feat
