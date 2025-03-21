@@ -101,7 +101,7 @@ class Voucher(AbstractVoucher):
             parent_name = cache.get_or_set(
                 instance._get_parent_name_cache_key(), _get_parent_name, 60
             )
-            instance.name = parent_name
+            instance.name = parent_name or ""
         return instance
 
     def _get_parent_name_cache_key(self, parent_id: Optional[int] = None) -> str:
@@ -246,7 +246,7 @@ class Voucher(AbstractVoucher):
         # Child codes use the parent's name and always store Null for their own name
         _orig_name = self.name
         if self.parent:
-            self.name = None
+            self.name = ""
             cache.delete(self._get_parent_name_cache_key(self.parent_id))
         else:
             cache.delete(self._get_parent_name_cache_key(self.pk))
