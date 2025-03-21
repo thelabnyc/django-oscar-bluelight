@@ -4,8 +4,11 @@ import sys
 
 from django.utils.translation import gettext_lazy as _
 from oscar.defaults import *  # noqa
+import django_stubs_ext
 
 from oscarbluelight.defaults import *  # NOQA
+
+django_stubs_ext.monkeypatch()
 
 
 class glob_list(list[str]):
