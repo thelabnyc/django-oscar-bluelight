@@ -14,7 +14,7 @@ from django.db.models.base import ModelBase
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from oscar.apps.voucher.abstract_models import AbstractVoucher
-from oscar.models.fields import NullCharField
+from thelabdb.fields import NullCharField
 from typing_extensions import Self
 
 from ..offer.models import Benefit, Condition, OfferGroup
