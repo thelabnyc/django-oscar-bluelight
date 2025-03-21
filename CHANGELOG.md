@@ -1,5 +1,13 @@
 # Changes
 
+## v5.8.2 (2025-03-21)
+
+### Fix
+
+- voucher name types
+- TypeError: type 'Field' is not subscriptable
+- use NullCharField from thelabdb
+
 ## v5.8.1 (2025-03-17)
 
 ### Fix
