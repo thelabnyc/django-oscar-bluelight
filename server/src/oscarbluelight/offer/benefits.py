@@ -118,15 +118,12 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        discount_percent: Optional[Decimal] = None,
         max_total_discount: Optional[Decimal] = None,
         consume_items: Optional[ConsumeItems] = None,
     ) -> BasketDiscount:
         self._clean()
 
-        if discount_percent is None:
-            discount_percent = self.value
-
+        discount_percent = self.value
         discount_amount_available = self._get_max_discount_amount(max_total_discount)
 
         line_tuples = self.get_applicable_lines(offer, basket)
@@ -246,14 +243,12 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        discount_amount: Optional[Decimal] = None,
         max_total_discount: Optional[Decimal] = None,
         consume_items: Optional[ConsumeItems] = None,
     ) -> BasketDiscount:
         self._clean()
 
-        if discount_amount is None:
-            discount_amount = self.value
+        discount_amount = self.value
 
         # Fetch basket lines that are in the range and available to be used in
         # an offer.
@@ -564,7 +559,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
             )
         if self.max_affected_items:
             raise exceptions.ValidationError(
-                _("Multibuy benefits don't require a 'max affected items' " "attribute")
+                _("Multibuy benefits don't require a 'max affected items' attribute")
             )
 
     def apply(  # type:ignore[override]
@@ -670,6 +665,7 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
+        max_total_discount: Optional[Decimal] = None,
         consume_items: Optional[ConsumeItems] = None,
     ) -> ShippingDiscount:
         self._clean()
@@ -711,6 +707,7 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
+        max_total_discount: Optional[Decimal] = None,
         consume_items: Optional[ConsumeItems] = None,
     ) -> ShippingDiscount:
         self._clean()
@@ -756,6 +753,7 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
+        max_total_discount: Optional[Decimal] = None,
         consume_items: Optional[ConsumeItems] = None,
     ) -> ShippingDiscount:
         self._clean()
