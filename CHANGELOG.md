@@ -1,5 +1,11 @@
 # Changes
 
+## v5.8.3 (2025-03-21)
+
+### Fix
+
+- missing kwarg in shipping benefits
+
 ## v5.8.2 (2025-03-21)
 
 ### Fix
