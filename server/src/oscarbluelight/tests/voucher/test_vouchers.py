@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal as D
 
 from django.contrib.auth.models import AnonymousUser, Group, User
@@ -16,8 +15,8 @@ class UserGroupWhitelistTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -43,8 +42,8 @@ class UserGroupWhitelistTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -84,8 +83,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         Voucher.objects.create(
@@ -93,8 +92,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         Voucher.objects.create(
@@ -102,8 +101,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-2",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         self.assertEqual(Voucher.objects.all().count(), 3)
@@ -123,8 +122,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -135,8 +134,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -148,8 +147,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         self.assertEqual(p.children.all().count(), 0)
@@ -170,8 +169,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         self.assertEqual(p.children.all().count(), 0)
@@ -206,8 +205,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         p.groups.set([customer])
@@ -247,8 +246,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         Voucher.objects.create(
@@ -256,8 +255,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c2 = Voucher.objects.create(
@@ -265,8 +264,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-2",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -286,8 +285,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c1 = Voucher.objects.create(
@@ -295,8 +294,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c2 = Voucher.objects.create(
@@ -304,8 +303,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-2",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -337,8 +336,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c1 = Voucher.objects.create(
@@ -346,8 +345,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-x",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -358,8 +357,8 @@ class ParentChildVoucherTest(TestCase):
                 name="Test Voucher",
                 code=f"test-voucher-{i}",
                 usage=Voucher.MULTI_USE,
-                start_datetime=datetime.now(),
-                end_datetime=datetime.now(),
+                start_datetime=timezone.now(),
+                end_datetime=timezone.now(),
                 limit_usage_by_group=False,
             )
 
@@ -371,8 +370,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c1 = Voucher.objects.create(
@@ -380,8 +379,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c2 = Voucher.objects.create(
@@ -389,8 +388,8 @@ class ParentChildVoucherTest(TestCase):
             name="Test Voucher",
             code="test-voucher-2",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -424,8 +423,8 @@ class VoucherNotUsedForIgnoredStatus(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c1 = Voucher.objects.create(
@@ -433,8 +432,8 @@ class VoucherNotUsedForIgnoredStatus(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c1.record_usage(ignore_order, user)

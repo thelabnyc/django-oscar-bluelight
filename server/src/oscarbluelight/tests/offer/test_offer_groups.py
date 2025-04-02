@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal as D
 from unittest import mock
 from urllib.parse import urlencode, urljoin
@@ -6,6 +6,7 @@ from urllib.parse import urlencode, urljoin
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 from django_redis import get_redis_connection
 from oscar.test.factories import create_basket, create_product, create_stockrecord
 
@@ -290,8 +291,8 @@ class ConsumeOfferGroupOfferTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now() + timedelta(seconds=120),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now() + timedelta(seconds=120),
             limit_usage_by_group=False,
         )
         self.voucher.offers.add(self.offer_stones)
@@ -1288,8 +1289,8 @@ class OfferGroupViewTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now() + timedelta(seconds=120),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now() + timedelta(seconds=120),
             limit_usage_by_group=False,
         )
         voucher.offers.add(self.offer)
@@ -1322,8 +1323,8 @@ class OfferGroupViewTest(TestCase):
         data["code"] = "test"
         data["benefit"] = self.offer.benefit
         data["offer_group"] = self.offer_group
-        data["start_datetime"] = (datetime.now(),)
-        data["end_datetime"] = (datetime.now() + timedelta(seconds=120),)
+        data["start_datetime"] = (timezone.now(),)
+        data["end_datetime"] = (timezone.now() + timedelta(seconds=120),)
         response = self.client.post(reverse("dashboard:voucher-create"), data)
         self.assertEqual(response.status_code, 200)
 
@@ -1332,8 +1333,8 @@ class OfferGroupViewTest(TestCase):
             name="Test Voucher",
             code="TEST",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now() + timedelta(seconds=120),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now() + timedelta(seconds=120),
             limit_usage_by_group=False,
         )
         voucher.offers.add(self.offer)
