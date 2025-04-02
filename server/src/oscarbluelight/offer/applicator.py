@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import contextmanager
 from decimal import Decimal
 from itertools import chain, groupby
-from typing import TYPE_CHECKING, Generator, Optional
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -81,7 +82,7 @@ class Applicator(BaseApplicator):
     def get_basket_offers(
         self,
         basket: BluelightBasketMixin,
-        user: Optional[User],
+        user: User | None,
     ) -> list[ConditionalOffer]:
         offers: list[ConditionalOffer] = []
         if not basket.pk or not user:
@@ -102,7 +103,7 @@ class Applicator(BaseApplicator):
                 offers = list(chain(offers, basket_offers))
         return offers
 
-    def get_user_offers(self, user: Optional[User]) -> QuerySet[ConditionalOffer]:
+    def get_user_offers(self, user: User | None) -> QuerySet[ConditionalOffer]:
         """
         Return user offers that are available to current user
         """
@@ -127,7 +128,7 @@ class Applicator(BaseApplicator):
 
     def get_session_offers(
         self,
-        request: Optional[list[ConditionalOffer]],
+        request: list[ConditionalOffer] | None,
     ) -> list[ConditionalOffer]:
         return []
 
@@ -215,7 +216,7 @@ class Applicator(BaseApplicator):
         post_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
 
     @contextmanager
-    def _cosmetic_pricing(self) -> Generator[None, None, None]:
+    def _cosmetic_pricing(self) -> Generator[None]:
         self._is_applying_cosmetic_prices = True
         try:
             yield
@@ -236,8 +237,8 @@ class Applicator(BaseApplicator):
             Basket: type[BluelightBasketMixin] = get_model("basket", "Basket")
             # Calculate the price by simulating adding the product to the basket and comparing
             # the basket's total price before and after the new line item
-            total_excl_tax_before: Optional[Decimal] = None
-            total_excl_tax_after: Optional[Decimal] = None
+            total_excl_tax_before: Decimal | None = None
+            total_excl_tax_after: Decimal | None = None
             try:
                 with transaction.atomic():
                     with self._cosmetic_pricing():

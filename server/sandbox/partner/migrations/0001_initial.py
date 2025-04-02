@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.conf import settings
 from django.db import migrations, models
 import oscar.models.fields
@@ -321,7 +318,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name="stockrecord",
-            unique_together=set([("partner", "partner_sku")]),
+            unique_together={("partner", "partner_sku")},
         ),
         migrations.AddField(
             model_name="stockalert",

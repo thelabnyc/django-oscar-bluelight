@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.contrib.auth.models import User
 from django.http import HttpRequest
@@ -29,8 +29,8 @@ class US(BaseUS):
 class Selector:
     def strategy(
         self,
-        request: Optional[HttpRequest] = None,
-        user: Optional[User] = None,
+        request: HttpRequest | None = None,
+        user: User | None = None,
         **kwargs: Any,
     ) -> US:
         return US(request)

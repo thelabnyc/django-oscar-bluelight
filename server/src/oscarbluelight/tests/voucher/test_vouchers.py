@@ -356,7 +356,7 @@ class ParentChildVoucherTest(TestCase):
             Voucher.objects.create(
                 parent=p,
                 name="Test Voucher",
-                code="test-voucher-{}".format(i),
+                code=f"test-voucher-{i}",
                 usage=Voucher.MULTI_USE,
                 start_datetime=datetime.now(),
                 end_datetime=datetime.now(),

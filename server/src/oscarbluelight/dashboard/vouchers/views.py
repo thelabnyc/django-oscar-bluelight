@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 import csv
 import json
 import re
@@ -242,7 +242,7 @@ class AddChildCodesView(generic.FormView):
 
 class ExportChildCodesView(generic.DetailView):
     model = Voucher
-    _filters: Optional[dict[str, str | tuple[str, str]]]
+    _filters: dict[str, str | tuple[str, str]] | None
 
     def get(
         self, request: HttpRequest, file_format: str, *args: Any, **kwargs: Any
@@ -341,7 +341,7 @@ class ExportChildCodesFormView(generic.FormView):
         ctx["created_on_counts"] = self.get_created_on_counts()[:100]
         return ctx
 
-    def get_success_url(self, query_kwargs: Optional[dict[str, str]] = None) -> str:
+    def get_success_url(self, query_kwargs: dict[str, str] | None = None) -> str:
         url = reverse(
             "dashboard:voucher-export-children-file",
             kwargs={

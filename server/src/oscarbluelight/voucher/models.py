@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Self
 import time
 
 from django.conf import settings
@@ -15,7 +15,6 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from oscar.apps.voucher.abstract_models import AbstractVoucher
 from thelabdb.fields import NullCharField
-from typing_extensions import Self
 
 from ..offer.models import Benefit, Condition, OfferGroup
 from . import sql, tasks
@@ -87,10 +86,10 @@ class Voucher(AbstractVoucher):
     @classmethod
     def from_db(
         cls,
-        db: Optional[str],
+        db: str | None,
         field_names: Collection[str],
         values: Collection[Any],
-    ) -> "Voucher":
+    ) -> Voucher:
         instance = super().from_db(db, field_names, values)
 
         # Child codes always get the parent's name
@@ -104,7 +103,7 @@ class Voucher(AbstractVoucher):
             instance.name = parent_name or ""
         return instance
 
-    def _get_parent_name_cache_key(self, parent_id: Optional[int] = None) -> str:
+    def _get_parent_name_cache_key(self, parent_id: int | None = None) -> str:
         if parent_id is None:
             parent_id = self.parent_id
         return f"oscarbluelight.Voucher.parent_name.{parent_id}"
@@ -157,7 +156,7 @@ class Voucher(AbstractVoucher):
 
     def is_available_to_user(
         self,
-        user: Optional[Union[User, AnonymousUser]] = None,
+        user: User | AnonymousUser | None = None,
     ) -> tuple[bool, str]:
         is_available, message = True, ""
         rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_AVAILABILITY_RULES", [])
@@ -374,7 +373,7 @@ class Voucher(AbstractVoucher):
         code_index: int,
         max_index: int,
         max_tries: int = 50,
-        check_code_is_unique: Optional[Callable] = None,
+        check_code_is_unique: Callable | None = None,
     ) -> str:
         if check_code_is_unique is None:
 
@@ -388,7 +387,7 @@ class Voucher(AbstractVoucher):
         try_count = 0
         while try_count < max_tries:
             try_count += 1
-            code = "%s-%s" % (
+            code = "{}-{}".format(
                 self.code,
                 self._get_code_uniquifier(code_index, max_index),
             )
@@ -405,7 +404,7 @@ class Voucher(AbstractVoucher):
         index = str(code_index).zfill(len(str(max_index)))
         # Append some digits to the end to make the codes non-sequential
         suffix = str(time.time()).replace(".", "")[-extra_length:]
-        return "%s%s" % (index, suffix)
+        return f"{index}{suffix}"
 
 
 from oscar.apps.voucher.models import *  # type:ignore[assignment]  # NOQA

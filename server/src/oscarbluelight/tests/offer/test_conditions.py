@@ -1025,7 +1025,7 @@ class ConditionListViewTest(TestCase):
     def test_get_missing_parameters_with_ajax_request(self):
         resp = self.client.get(
             f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk})}",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"},
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
@@ -1033,7 +1033,7 @@ class ConditionListViewTest(TestCase):
         )
         resp = self.client.get(
             f"{self.base_url}?{urlencode({'type': 'vouchers'})}",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"},
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
@@ -1043,7 +1043,7 @@ class ConditionListViewTest(TestCase):
     def test_get_invalid_item_type_with_ajax_request(self):
         resp = self.client.get(
             f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'invalid_type'})}",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"},
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
@@ -1053,7 +1053,7 @@ class ConditionListViewTest(TestCase):
     def test_get_valid_request_with_ajax_request(self):
         resp = self.client.get(
             f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers'})}",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"},
         )
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
@@ -1071,7 +1071,7 @@ class ConditionListViewTest(TestCase):
         ConditionListView.items_per_object = 1
         resp = self.client.get(
             f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers', 'page': 3})}",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"},
         )
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
@@ -1128,6 +1128,6 @@ class ConditionListViewTest(TestCase):
             mock_super_class_get.reset_mock()
             self.client.get(
                 f"{self.base_url}?{urlencode({'condition_pk': self.cond.pk, 'type': 'non_voucher_offers'})}",
-                HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+                headers={"x-requested-with": "XMLHttpRequest"},
             )
             mock_super_class_get.assert_not_called()

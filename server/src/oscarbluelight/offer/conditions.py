@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from decimal import ROUND_UP, Decimal
-from typing import TYPE_CHECKING, Any, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal
 
 from django.core import exceptions
 from django.db import models
@@ -78,7 +78,7 @@ class BluelightCountCondition(CountCondition):
         self,
         offer: ConditionalOffer,
         basket: Basket,
-    ) -> Optional[upsells.QuantityUpsell]:
+    ) -> upsells.QuantityUpsell | None:
         num_matches = self._get_num_matches(basket, offer)
         delta = self.value - num_matches
         if delta > 0:
@@ -103,7 +103,7 @@ class BluelightCountCondition(CountCondition):
         applicable_lines = self.get_applicable_lines(
             offer, basket, most_expensive_first=True
         )
-        applicable_line_ids = set(line.pk for __, line in applicable_lines)
+        applicable_line_ids = {line.pk for __, line in applicable_lines}
 
         num_consumed = 0
         affected_lines = list(affected_lines)
@@ -162,7 +162,7 @@ class BluelightCoverageCondition(CoverageCondition):
 
     def get_upsell_details(
         self, offer: ConditionalOffer, basket: Basket
-    ) -> Optional[upsells.CoverageUpsell]:
+    ) -> upsells.CoverageUpsell | None:
         num_matches = self._get_num_covered_products(basket, offer)
         delta = self.value - num_matches
         if delta > 0:
@@ -190,7 +190,7 @@ class BluelightCoverageCondition(CoverageCondition):
         applicable_lines = self.get_applicable_lines(
             offer, basket, most_expensive_first=True
         )
-        applicable_line_ids = set(line.pk for __, line in applicable_lines)
+        applicable_line_ids = {line.pk for __, line in applicable_lines}
 
         consumed_products = []
         affected_lines = list(affected_lines)
@@ -269,7 +269,7 @@ class BluelightValueCondition(ValueCondition):
         self,
         offer: ConditionalOffer,
         basket: Basket,
-    ) -> Optional[upsells.AmountUpsell]:
+    ) -> upsells.AmountUpsell | None:
         value_of_matches = self._get_value_of_matches(offer, basket)
         delta = self.value - value_of_matches
         if delta > 0:
@@ -312,7 +312,7 @@ class BluelightValueCondition(ValueCondition):
         applicable_lines = self.get_applicable_lines(
             offer, basket, most_expensive_first=True
         )
-        applicable_line_ids = set(line.pk for __, line in applicable_lines)
+        applicable_line_ids = {line.pk for __, line in applicable_lines}
 
         value_consumed = Decimal("0.00")
         affected_lines = list(affected_lines)
@@ -378,7 +378,7 @@ class CompoundCondition(Condition):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.proxy_class = "%s.%s" % (
+        self.proxy_class = "{}.{}".format(
             CompoundCondition.__module__,
             CompoundCondition.__name__,
         )
@@ -422,7 +422,7 @@ class CompoundCondition(Condition):
         self,
         offer: ConditionalOffer,
         basket: Basket,
-    ) -> Optional[upsells.CompoundUpsell]:
+    ) -> upsells.CompoundUpsell | None:
         subupsells: list[upsells.OfferUpsell] = []
         for c in self.children:
             condition = c.proxy()

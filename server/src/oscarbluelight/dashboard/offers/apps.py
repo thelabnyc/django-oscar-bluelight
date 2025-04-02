@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from typing import Union
-
-from django.conf.urls import include
-from django.urls import path
+from django.urls import include, path
 from django.urls.resolvers import URLPattern, URLResolver
 from django.views.i18n import JavaScriptCatalog
 from oscar.apps.dashboard.offers import apps
@@ -30,7 +27,7 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
         self.delete_view = get_class("offers_dashboard.views", "OfferDeleteView")
         self.detail_view = get_class("offers_dashboard.views", "OfferDetailView")
 
-    def get_urls(self) -> list[Union[URLPattern, URLResolver]]:
+    def get_urls(self) -> list[URLPattern | URLResolver]:
         from .api_views import OfferAPIView, OfferGroupViewSet
         from .views import (
             BenefitCreateView,

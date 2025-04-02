@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Collection, Iterable
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Optional, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar
 import copy
 import logging
 import math
@@ -99,7 +99,7 @@ class OfferGroup(models.Model):
         ordering = ("-priority",)
 
     def __str__(self) -> str:
-        return "{} (priority {})".format(self.name, self.priority)
+        return f"{self.name} (priority {self.priority})"
 
 
 class ConditionalOffer(AbstractConditionalOffer):
@@ -165,8 +165,8 @@ class ConditionalOffer(AbstractConditionalOffer):
 
     @classmethod
     def recalculate_offer_application_totals(cls) -> None:
-        Order: type["_Order"] = get_model("order", "Order")
-        OrderDiscount: type["_OrderDiscount"] = get_model("order", "OrderDiscount")
+        Order: type[_Order] = get_model("order", "Order")
+        OrderDiscount: type[_OrderDiscount] = get_model("order", "OrderDiscount")
         start_ns = time.perf_counter_ns()
         update_sql = get_recalculate_offer_application_totals_sql(
             Order=Order,
@@ -199,7 +199,7 @@ class ConditionalOffer(AbstractConditionalOffer):
             )
         return restrictions
 
-    def get_upsell_details(self, basket: Basket) -> Optional[OfferUpsell]:
+    def get_upsell_details(self, basket: Basket) -> OfferUpsell | None:
         return self.condition.proxy().get_upsell_details(self, basket)
 
     def apply_benefit(self, basket: Basket) -> ApplicationResult:
@@ -301,7 +301,7 @@ class Benefit(AbstractBenefit):
         return ret
 
     def _get_max_discount_amount(
-        self, max_total_discount: Optional[Decimal] = None
+        self, max_total_discount: Decimal | None = None
     ) -> Decimal:
         if max_total_discount is not None:
             return max_total_discount
@@ -358,7 +358,7 @@ class Condition(AbstractCondition):
 
     def get_upsell_details(
         self, offer: ConditionalOffer, basket: Basket
-    ) -> Optional[OfferUpsell]:
+    ) -> OfferUpsell | None:
         return None
 
     def clean(self) -> None:
@@ -546,7 +546,7 @@ class RangeProductSetRefreshLog(models.Model):
         return requested_on_dt >= last_refresh_dt
 
     @classmethod
-    def get_last_refresh_dt(cls) -> Optional[datetime]:
+    def get_last_refresh_dt(cls) -> datetime | None:
         entry = cls.objects.first()
         if not entry:
             return None
