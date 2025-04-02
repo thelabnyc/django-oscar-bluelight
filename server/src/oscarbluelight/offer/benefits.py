@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any
 import copy
 
 from django.core import exceptions
@@ -118,8 +119,8 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
 
@@ -131,7 +132,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         discount = Decimal("0.00")
         affected_items = 0
         max_affected_items = self._effective_max_affected_items()
-        affected_lines: "AffectedLines" = []
+        affected_lines: AffectedLines = []
         for price, line in line_tuples:
             if affected_items >= max_affected_items:
                 break
@@ -243,8 +244,8 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
 
@@ -280,7 +281,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
             return ZERO_DISCOUNT
 
         # Apply discount equally amongst them
-        affected_lines: "AffectedLines" = []
+        affected_lines: AffectedLines = []
         applied_discount = Decimal("0.00")
         for i, (line, price, qty) in enumerate(lines_to_discount):
             if i == len(lines_to_discount) - 1:
@@ -361,8 +362,8 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
 
@@ -468,8 +469,8 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
 
@@ -567,8 +568,8 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
 
@@ -613,7 +614,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         if discount > 0:
             line.discount(discount, 1, incl_tax=False, offer=offer)
 
-            affected_lines: "AffectedLines" = [(line, discount, 1)]
+            affected_lines: AffectedLines = [(line, discount, 1)]
             if consume_items:
                 consume_items(offer, basket, affected_lines)
             else:
@@ -665,8 +666,8 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> ShippingDiscount:
         self._clean()
         return super().apply(basket, condition, offer)
@@ -707,8 +708,8 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> ShippingDiscount:
         self._clean()
         return super().apply(basket, condition, offer)
@@ -753,8 +754,8 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> ShippingDiscount:
         self._clean()
         return super().apply(basket, condition, offer)
@@ -787,7 +788,7 @@ class CompoundBenefit(Benefit):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.proxy_class = "%s.%s" % (
+        self.proxy_class = "{}.{}".format(
             CompoundBenefit.__module__,
             CompoundBenefit.__name__,
         )
@@ -820,10 +821,10 @@ class CompoundBenefit(Benefit):
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
-        max_total_discount: Optional[Decimal] = None,
-        consume_items: Optional[ConsumeItems] = None,
+        max_total_discount: Decimal | None = None,
+        consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
-        combined_result: Optional[BasketDiscount] = None
+        combined_result: BasketDiscount | None = None
         affected_lines: AffectedLines = []
 
         def _consume_items(
@@ -873,7 +874,7 @@ class CompoundBenefit(Benefit):
         basket: Basket,
         order: Order,
         application: Any,
-    ) -> Optional[PostOrderAction]:
+    ) -> PostOrderAction | None:
         results = []
         for child in self.children:
             result = child.apply_deferred(basket, order, application)
@@ -900,7 +901,7 @@ class CompoundBenefit(Benefit):
             raise exceptions.ValidationError(errors)
 
     def shipping_discount(
-        self, charge: Decimal, currency: Optional[str] = None
+        self, charge: Decimal, currency: str | None = None
     ) -> Decimal:
         discount = Decimal("0.00")
         for child in self.children:

@@ -6,10 +6,8 @@ from typing import (
     Generic,
     Literal,
     NewType,
-    Optional,
     TypedDict,
     TypeVar,
-    Union,
     cast,
     get_args,
 )
@@ -360,7 +358,7 @@ class BenefitUpdateView(UpdateView):
     model = Benefit
     success_url = reverse_lazy("dashboard:benefit-list")
 
-    def get_object(self, queryset: Optional[QuerySet[Benefit]] = None) -> Benefit:
+    def get_object(self, queryset: QuerySet[Benefit] | None = None) -> Benefit:
         obj = super().get_object(queryset)
         return obj.proxy()
 
@@ -384,7 +382,7 @@ class ConditionListView(ListView):
 
     def _get_items_for_condition(
         self, condition_pk: ConditionItemPk, item_type: ConditionItemType, page: int = 1
-    ) -> dict[str, Union[bool, list[ConditionItem]]]:
+    ) -> dict[str, bool | list[ConditionItem]]:
         condition = self.model._default_manager.get(pk=condition_pk)
         items = getattr(condition, item_type)
         paginator = Paginator(items, self.items_per_object)
@@ -484,7 +482,7 @@ class ConditionUpdateView(UpdateView):
     model = Condition
     success_url = reverse_lazy("dashboard:condition-list")
 
-    def get_object(self, queryset: Optional[QuerySet[Condition]] = None) -> Condition:
+    def get_object(self, queryset: QuerySet[Condition] | None = None) -> Condition:
         obj = super().get_object(queryset)
         return obj.proxy()
 

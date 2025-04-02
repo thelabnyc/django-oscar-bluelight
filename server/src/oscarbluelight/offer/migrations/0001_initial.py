@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from decimal import Decimal
 
 from django.conf import settings
@@ -549,7 +546,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name="rangeproduct",
-            unique_together=set([("range", "product")]),
+            unique_together={("range", "product")},
         ),
         migrations.AddField(
             model_name="range",

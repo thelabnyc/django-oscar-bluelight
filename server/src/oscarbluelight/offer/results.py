@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional, TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
 from oscar.apps.offer import results
 
@@ -13,11 +13,11 @@ BaseOfferApplications = results.OfferApplications
 
 
 class OfferApplication(TypedDict):
-    offer: "ConditionalOffer"
+    offer: ConditionalOffer
     result: BasketDiscount
     name: str
     description: str
-    voucher: Optional[Voucher]
+    voucher: Voucher | None
     freq: int
     discount: Decimal
     is_hidden: bool

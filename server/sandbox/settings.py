@@ -177,7 +177,7 @@ CACHES = {
     },
     "redis": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/{}".format(_redis_db),
+        "LOCATION": f"redis://redis:6379/{_redis_db}",
         "OPTIONS": {
             "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
             "CONNECTION_POOL_CLASS": "redis.BlockingConnectionPool",

@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from decimal import Decimal
-from typing import Callable, Optional
 
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
@@ -20,9 +20,9 @@ class FixedPrice(BaseFixedPrice):
         self,
         currency: str,
         excl_tax: Decimal,
-        tax: Optional[Decimal] = None,
-        tax_code: Optional[str] = None,
-        get_cosmetic_excl_tax: Optional[Callable[[], Decimal]] = None,
+        tax: Decimal | None = None,
+        tax_code: str | None = None,
+        get_cosmetic_excl_tax: Callable[[], Decimal] | None = None,
     ):
         super().__init__(
             currency=currency,

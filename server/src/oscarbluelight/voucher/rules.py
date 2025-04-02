@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
@@ -19,7 +19,7 @@ class VoucherRule:
     def __init__(
         self,
         voucher: Voucher,
-        user: Optional[Union[AnonymousUser, User]] = None,
+        user: AnonymousUser | User | None = None,
     ):
         self.voucher = voucher
         self.user = user
@@ -88,8 +88,8 @@ class VoucherLimitUsageByGroupRule(VoucherRule):
         if self.voucher.limit_usage_by_group:
             if not self.user:
                 return False
-            group_ids = set(g.id for g in self.voucher.groups.all())
-            member_ids = set(g.id for g in self.user.groups.all())
+            group_ids = {g.id for g in self.voucher.groups.all()}
+            member_ids = {g.id for g in self.user.groups.all()}
             is_member = len(group_ids & member_ids) > 0
             if not is_member:
                 return False
@@ -122,7 +122,7 @@ class VoucherSingleUsePerCustomerRule(VoucherRule):
     def is_obeyed_by_user(self) -> bool:
         ret = super().is_obeyed_by_user()
         if self.voucher.usage == Voucher.ONCE_PER_CUSTOMER:
-            authd_user: Optional[User] = (
+            authd_user: User | None = (
                 self.user if self.user and self.user.is_authenticated else None
             )
             if authd_user:

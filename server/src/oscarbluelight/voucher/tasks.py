@@ -1,4 +1,4 @@
-from __future__ import absolute_import, annotations
+from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING

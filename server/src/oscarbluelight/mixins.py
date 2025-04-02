@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional
+from typing import TYPE_CHECKING, Any, NamedTuple
 import itertools
 
 from django.utils.translation import gettext_lazy as _
@@ -32,8 +32,8 @@ class LineDiscountDescription(NamedTuple):
     amount: Decimal
     offer_name: str
     offer_description: str
-    voucher_name: Optional[str]
-    voucher_code: Optional[str]
+    voucher_name: str | None
+    voucher_code: str | None
 
 
 class LinePriceBreakdownItem(NamedTuple):
@@ -44,14 +44,14 @@ class LinePriceBreakdownItem(NamedTuple):
 
 class BluelightBasketMixin(AbstractBasket):
     @property
-    def offer_post_order_actions(self) -> list["results.PostOrderAction"]:
+    def offer_post_order_actions(self) -> list[results.PostOrderAction]:
         """
         Return post order actions from offers
         """
         return self.offer_applications.offer_post_order_actions
 
     @property
-    def voucher_post_order_actions(self) -> list["results.PostOrderAction"]:
+    def voucher_post_order_actions(self) -> list[results.PostOrderAction]:
         """
         Return post order actions from offers
         """
@@ -67,7 +67,7 @@ class BluelightBasketMixin(AbstractBasket):
                 line.add_offer_upsell(offer_upsell)
 
     def get_offer_upsells(self) -> list[OfferUpsell]:
-        offer_upsells = set([])
+        offer_upsells = set()
         for line in self.all_lines():
             for upsell in line.get_offer_upsells():
                 offer_upsells.add(upsell)
@@ -162,7 +162,7 @@ class BluelightBasketLineMixin(AbstractLine):
         return unit_price_discounted
 
     @property
-    def line_price_incl_tax_incl_discounts(self) -> Optional[Decimal]:
+    def line_price_incl_tax_incl_discounts(self) -> Decimal | None:
         if self.line_price_incl_tax is not None:
             return Decimal(
                 max(0, round_half_up(self.line_price_incl_tax - self.discount_value))
@@ -183,7 +183,7 @@ class BluelightBasketLineMixin(AbstractLine):
         discount_value: Decimal,
         affected_quantity: int,
         incl_tax: bool = True,
-        offer: Optional[ConditionalOffer] = None,
+        offer: ConditionalOffer | None = None,
     ) -> None:
         """
         Apply a discount to this line.

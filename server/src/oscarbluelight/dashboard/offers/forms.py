@@ -38,7 +38,7 @@ def get_offer_group_choices() -> list[tuple[str, str]]:
 
 
 class BenefitSearchForm(forms.Form):
-    compound_benefit_cpath = "%s.%s" % (
+    compound_benefit_cpath = "{}.{}".format(
         CompoundBenefit.__module__,
         CompoundBenefit.__name__,
     )
@@ -123,11 +123,9 @@ class OrderDiscountSearchForm(forms.Form):
             is_filtered = True
         if data.get("product"):
             qs = qs.filter(
-                (
-                    Q(order__lines__title__icontains=data["product"])
-                    | Q(order__lines__upc__icontains=data["product"])  # NOQA
-                    | Q(order__lines__partner_sku__icontains=data["product"])  # NOQA
-                )
+                Q(order__lines__title__icontains=data["product"])
+                | Q(order__lines__upc__icontains=data["product"])  # NOQA
+                | Q(order__lines__partner_sku__icontains=data["product"])  # NOQA
             )
             is_filtered = True
         if data.get("payment_method"):
@@ -169,7 +167,7 @@ class ConditionForm(forms.ModelForm):
 
 
 class CompoundBenefitForm(forms.ModelForm):
-    CPATH = "%s.%s" % (CompoundBenefit.__module__, CompoundBenefit.__name__)
+    CPATH = f"{CompoundBenefit.__module__}.{CompoundBenefit.__name__}"
     proxy_class = forms.ChoiceField(
         choices=((CPATH, _("Compound Benefit")),),
         initial=CPATH,
@@ -184,7 +182,7 @@ class CompoundBenefitForm(forms.ModelForm):
 
 
 class CompoundConditionForm(forms.ModelForm):
-    CPATH = "%s.%s" % (CompoundCondition.__module__, CompoundCondition.__name__)
+    CPATH = f"{CompoundCondition.__module__}.{CompoundCondition.__name__}"
     proxy_class = forms.ChoiceField(
         choices=((CPATH, _("Compound Condition")),),
         initial=CPATH,
@@ -307,7 +305,7 @@ class OfferGroupForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.initial["offers"] = self.instance.offers.all()  # type:ignore[index]
 
-    def save(self, *args: Any, **kwargs: Any) -> "OfferGroup":
+    def save(self, *args: Any, **kwargs: Any) -> OfferGroup:
         offer_group = super().save(*args, **kwargs)
         offer_group.offers.set(self.cleaned_data["offers"])
         return offer_group

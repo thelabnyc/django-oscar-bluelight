@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Hashable
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypedDict, TypeVar, Unpack
+from collections.abc import Callable, Hashable
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, Unpack
 import collections
 import logging
 
@@ -31,7 +31,7 @@ class ConnectKwargs(TypedDict, total=False):
 @transaction.atomic
 def insupd_system_offer_group(
     slug: str,
-    default_name: Optional[str] = None,
+    default_name: str | None = None,
 ) -> OfferGroup:
     """
     Get or create a system offer group with the given ``slug``. If creating, assign the name from ``default_name``.
@@ -61,7 +61,7 @@ def insupd_system_offer_group(
 
 def register_system_offer_group(
     slug: str,
-    default_name: Optional[str] = None,
+    default_name: str | None = None,
 ) -> SimpleLazyObject:
     """
     Register a system offer group (an offer group that referenced by code). Returns the OfferGroup instance.

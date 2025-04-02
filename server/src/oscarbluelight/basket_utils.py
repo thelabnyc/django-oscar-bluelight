@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterator
 from decimal import Decimal
-from typing import TYPE_CHECKING, Iterator, Optional
+from typing import TYPE_CHECKING
 
 from oscar.apps.basket.utils import DiscountApplication
 from oscar.core.decorators import deprecated
@@ -46,7 +47,7 @@ class BluelightLineOfferConsumer:
     def consume(
         self,
         quantity: int,
-        offer: Optional[ConditionalOffer] = None,
+        offer: ConditionalOffer | None = None,
     ) -> None:
         """
         Mark a basket line as consumed by an offer in the current offer group.
@@ -61,10 +62,10 @@ class BluelightLineOfferConsumer:
             self._consumptions[offer.pk] += min(available, quantity)
 
     @deprecated
-    def consumed(self, offer: Optional[ConditionalOffer] = None) -> int:
+    def consumed(self, offer: ConditionalOffer | None = None) -> int:
         return self.num_consumed(offer)
 
-    def num_consumed(self, offer: Optional[ConditionalOffer] = None) -> int:
+    def num_consumed(self, offer: ConditionalOffer | None = None) -> int:
         """
         Check how many items on this line have been consumed by an offer in the current offer group.
 
@@ -78,7 +79,7 @@ class BluelightLineOfferConsumer:
     def consumers(self) -> list[ConditionalOffer]:
         return [x for x in self._offers.values() if self.num_consumed(x)]
 
-    def available(self, offer: Optional[ConditionalOffer] = None) -> int:
+    def available(self, offer: ConditionalOffer | None = None) -> int:
         """
         Check how many items are available for offers
         """
@@ -99,7 +100,7 @@ class BluelightLineOfferConsumer:
         amount: Decimal,
         quantity: int,
         incl_tax: bool = True,
-        offer: Optional[ConditionalOffer] = None,
+        offer: ConditionalOffer | None = None,
     ) -> None:
         """
         Update the discounted quantity.
@@ -142,15 +143,15 @@ class BluelightLineDiscountRegistry(BluelightLineOfferConsumer):
     def __init__(self, line: Line):
         super().__init__(line)
         self._discounts: list[DiscountApplication] = []
-        self._discount_excl_tax: Optional[Decimal] = None
-        self._discount_incl_tax: Optional[Decimal] = None
+        self._discount_excl_tax: Decimal | None = None
+        self._discount_incl_tax: Decimal | None = None
 
     def discount(
         self,
         amount: Decimal,
         quantity: int,
         incl_tax: bool = True,
-        offer: Optional[ConditionalOffer] = None,
+        offer: ConditionalOffer | None = None,
     ) -> None:
         super().discount(amount, quantity, incl_tax=incl_tax, offer=offer)
         self._discounts.append(DiscountApplication(amount, quantity, incl_tax, offer))

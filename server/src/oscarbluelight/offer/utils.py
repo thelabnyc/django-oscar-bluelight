@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator
+from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 from django.utils.translation import gettext_lazy as _
 
@@ -20,7 +21,7 @@ def get_conjoiner(conjunction: str) -> StrOrPromise:
 
 def human_readable_conjoin(
     conjunction: str,
-    _strings: list[StrOrPromise] | Generator[StrOrPromise, None, None],
+    _strings: list[StrOrPromise] | Generator[StrOrPromise],
     empty: StrOrPromise | None = None,
 ) -> StrOrPromise:
     strings = list(_strings)

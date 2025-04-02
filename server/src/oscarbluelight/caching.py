@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from django.core.cache.backends.base import BaseCache
 from django.utils.translation import gettext_lazy as _
@@ -11,8 +12,8 @@ class ConcreteFluentCache:
         self,
         cache: BaseCache,
         key: str,
-        timeout: Optional[int] = None,
-        version: Optional[int] = None,
+        timeout: int | None = None,
+        version: int | None = None,
     ):
         self.cache = cache
         self.key = key
@@ -51,7 +52,7 @@ class CacheNamespace:
 
     @property
     def key(self) -> str:
-        return "oscarbluelight.cache-ns:{}".format(self.name)
+        return f"oscarbluelight.cache-ns:{self.name}"
 
     @property
     def value(self) -> Any:
@@ -70,8 +71,8 @@ class FluentCache:
         self,
         cache: BaseCache,
         key_base: str,
-        timeout: Optional[int] = None,
-        version: Optional[int] = None,
+        timeout: int | None = None,
+        version: int | None = None,
     ):
         self.cache = cache
         self._key_base = key_base
@@ -80,19 +81,19 @@ class FluentCache:
         self._namespaces: list[CacheNamespace] = []
         self._key_parts: list[str] = []
 
-    def timeout(self, ttl: int) -> "FluentCache":
+    def timeout(self, ttl: int) -> FluentCache:
         self._timeout = ttl
         return self
 
-    def namespaces(self, *args: CacheNamespace) -> "FluentCache":
+    def namespaces(self, *args: CacheNamespace) -> FluentCache:
         self._namespaces = list(args)
         return self
 
-    def key_parts(self, *args: str) -> "FluentCache":
+    def key_parts(self, *args: str) -> FluentCache:
         self._key_parts = list(args)
         return self
 
-    def concrete(self, **kwargs: int | str) -> "ConcreteFluentCache":
+    def concrete(self, **kwargs: int | str) -> ConcreteFluentCache:
         key = self.build_key(**kwargs)
         return ConcreteFluentCache(
             self.cache,
@@ -105,7 +106,7 @@ class FluentCache:
         key_fragments = [self._key_base]
         # Add in serialized namespaces
         for namespace in self._namespaces:
-            fragment = "ns:{}:{}".format(namespace.name, namespace.value)
+            fragment = f"ns:{namespace.name}:{namespace.value}"
             key_fragments.append(fragment)
         # Add in key parts
         for key_part in self._key_parts:
@@ -114,6 +115,6 @@ class FluentCache:
                     _("Cache key is missing value for key part: %s") % key_part
                 )
             val = kwargs[key_part]
-            fragment = "p:{}:{}".format(key_part, val)
+            fragment = f"p:{key_part}:{val}"
             key_fragments.append(fragment)
         return ".".join(key_fragments)
