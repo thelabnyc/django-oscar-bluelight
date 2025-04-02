@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from oscarbluelight.offer.models import (
     BluelightCountCondition,
@@ -22,8 +23,8 @@ class OfferAPIViewTest(TestCase):
         client.login(username="john", password="password")
         base_url = reverse("dashboard:offer-api-list")
 
-        start_dt = datetime.now() - timedelta(days=1)
-        end_dt = datetime.now() + timedelta(days=1)
+        start_dt = timezone.now() - timedelta(days=1)
+        end_dt = timezone.now() + timedelta(days=1)
 
         rng = Range.objects.create(name="Product", includes_all_products=True)
         condition = BluelightCountCondition.objects.create(

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.auth.models import AnonymousUser, Group, User
 from django.test import TestCase
 from django.utils import timezone
@@ -21,8 +19,8 @@ class VoucherHasChildrenRuleTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         c = Voucher.objects.create(
@@ -30,8 +28,8 @@ class VoucherHasChildrenRuleTest(TestCase):
             name="Test Voucher",
             code="test-voucher-1",
             usage=Voucher.SINGLE_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
         user = User.objects.create_user(
@@ -82,8 +80,8 @@ class VoucherLimitUsageByGroupRuleTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
@@ -112,8 +110,8 @@ class VoucherLimitUsageByGroupRuleTest(TestCase):
             name="Test Voucher",
             code="test-voucher",
             usage=Voucher.MULTI_USE,
-            start_datetime=datetime.now(),
-            end_datetime=datetime.now(),
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
 
