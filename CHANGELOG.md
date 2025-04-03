@@ -1,5 +1,20 @@
 # Changes
 
+## v5.9.0 (2025-04-03)
+
+### Feat
+
+- add support for Django 5.0
+
+### Fix
+
+- **deps**: update react monorepo to ^19.1.0
+- **deps**: update dependency djangorestframework to ^3.16.0
+
+### Refactor
+
+- add pyupgrade / django-upgrade precommit hooks
+
 ## v5.8.3 (2025-03-21)
 
 ### Fix
