@@ -8,8 +8,8 @@ version = "5.9.0"
 description = "Bluelight Specials - Enhancements to the offer and vouchers features for Django Oscar."
 authors = ["thelab <thelabdev@thelab.co>"]
 readme = "README.md"
-homepage = "https://gitlab.com/thelabnyc/django-oscar-bluelight"
-repository = "https://gitlab.com/thelabnyc/django-oscar-bluelight"
+homepage = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
+repository = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
 license = "ISC"
 
 [[tool.poetry.packages]]
