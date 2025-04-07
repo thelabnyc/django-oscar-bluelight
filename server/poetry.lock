@@ -1909,22 +1909,22 @@ drf = ["django-stubs-ext (>=5.1.3)", "djangorestframework (>=3.15)"]
 
 [[package]]
 name = "thelabdb"
-version = "0.4.0"
+version = "0.5.0"
 description = "Django DB Utilities"
 optional = false
 python-versions = "<4.0,>=3.13"
 groups = ["main"]
 files = [
-    {file = "thelabdb-0.4.0-py3-none-any.whl", hash = "sha256:8ca05ca38106b6104220261afdb18b251ee5ec6821811140b169c4bb2b1ea00f"},
-    {file = "thelabdb-0.4.0.tar.gz", hash = "sha256:a174bb16ae3418f5f24688c5a8a45975ec8a129c27f1ce0636cc0da5ffdc23a5"},
+    {file = "thelabdb-0.5.0-py3-none-any.whl", hash = "sha256:203337db02fdd5e7fc45e413fa6a4052e9af71e234f3ecc42cb9fb84fe9a5e68"},
+    {file = "thelabdb-0.5.0.tar.gz", hash = "sha256:ab569aac525f11e99fe31cc3178e9de5fbc1205a737e4a0effa49f6e76ee3936"},
 ]
 
 [package.dependencies]
 cryptography = ">=44.0.2"
 Django = ">=4.2.0"
 django-stubs-ext = ">=5.1.3,<6.0.0"
-pydantic = ">=2.10.6,<3.0.0"
-thelab-typing = ">=0.1.0-beta.1,<0.2.0"
+pydantic = ">=2.11.1,<3.0.0"
+thelab-typing = ">=0.1.0-beta.5,<0.2.0"
 
 [[package]]
 name = "tox"
@@ -2112,4 +2112,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "1a1f395681919c5753635b984c04406b64889bd02097855a675e4cf0a1076ec4"
+content-hash = "1d44cca4f3334a3fb571be6cf4b7e2d2ea6844a0c108be3d5a2d369b1fb4a104"
