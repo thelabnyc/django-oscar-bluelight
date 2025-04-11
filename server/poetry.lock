@@ -83,14 +83,14 @@ files = [
 
 [[package]]
 name = "celery"
-version = "5.5.0"
+version = "5.5.1"
 description = "Distributed Task Queue."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "celery-5.5.0-py3-none-any.whl", hash = "sha256:f4170c6e5952281318448a899d9e9a15b9cbd007e002091766900dc8f71b9394"},
-    {file = "celery-5.5.0.tar.gz", hash = "sha256:10d49f9926d16237310109b0e6e1e2f7a2133b84e684bb36534d7663e66919bb"},
+    {file = "celery-5.5.1-py3-none-any.whl", hash = "sha256:9f4f9e57e36000c097c1b6f7a8ab29814b82771e5439836f83915823809729c8"},
+    {file = "celery-5.5.1.tar.gz", hash = "sha256:2af9109a10fe28155044f4c387ce0e5e7f1fc89f9584cfb4b0df94f99a5fedc7"},
 ]
 
 [package.dependencies]
@@ -2112,4 +2112,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "1d44cca4f3334a3fb571be6cf4b7e2d2ea6844a0c108be3d5a2d369b1fb4a104"
+content-hash = "67bf426c029316a062ac2372ba31a3f6c4987440ae543f3240b64cad80e2af65"
