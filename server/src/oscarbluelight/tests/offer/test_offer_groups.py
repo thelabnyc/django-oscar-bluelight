@@ -1215,7 +1215,11 @@ class OfferGroupViewTest(TestCase):
         self.offer_group.offers.add(self.offer)
 
         User.objects.create_user(
-            "john", "lennon@thebeatles.com", "johnpassword", is_staff=True
+            "john",
+            "lennon@thebeatles.com",
+            "johnpassword",
+            is_staff=True,
+            is_superuser=True,
         )
 
     def test_get_list(self):
