@@ -9,8 +9,8 @@ stages:
   - release
 
 services:
-  - postgres:latest
-  - redis:latest
+  - postgres:latest@sha256:fe3f571d128e8efadcd8b2fde0e2b73ebab6dbec33f6bfe69d98c682c7d8f7bd
+  - redis:latest@sha256:8bc666424ef252009ed34b0432564cabbd4094cd2ce7829306cb1f5ee69170be
 
 cache:
   key: '$CI_PROJECT_NAME'
@@ -28,7 +28,7 @@ include:
 
 lint_typescript:
   stage: test
-  image: node:22
+  image: node:22@sha256:473b4362b26d05e157f8470a1f0686cab6a62d1bd2e59774079ddf6fecd8e37e
   script:
     - cd client/
     - NODE_ENV=dev npm i
