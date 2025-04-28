@@ -234,7 +234,7 @@ class Voucher(AbstractVoucher):
             for query in queries:
                 cursor.execute(query, params)
 
-    def save(  # type:ignore[override]
+    def save(
         self,
         update_children: bool = True,
         force_insert: bool | tuple[ModelBase, ...] = False,
