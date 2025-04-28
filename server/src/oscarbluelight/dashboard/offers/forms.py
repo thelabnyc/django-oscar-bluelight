@@ -303,7 +303,7 @@ class OfferGroupForm(forms.ModelForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
-            self.initial["offers"] = self.instance.offers.all()  # type:ignore[index]
+            self.initial["offers"] = self.instance.offers.all()
 
     def save(self, *args: Any, **kwargs: Any) -> OfferGroup:
         offer_group = super().save(*args, **kwargs)
