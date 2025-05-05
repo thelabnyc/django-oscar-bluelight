@@ -5,7 +5,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: 'trust'
 
   redis:
-    image: redis:latest@sha256:7df1eeff67eb0ba84f6b9d2940765a6bb1158081426745c185a03b1507de6a09
+    image: redis:latest@sha256:0c274e6fb826886788d0e26e34fd6908b261d26de85e99005065623fd6ec1136
 
   node:
     build:
