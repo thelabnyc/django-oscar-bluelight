@@ -30,7 +30,7 @@
         "autoprefixer": "10.4.21",
         "babel-loader": "10.0.0",
         "css-loader": "7.1.2",
-        "cssnano": "7.0.6",
+        "cssnano": "7.0.7",
         "mini-css-extract-plugin": "2.9.2",
         "postcss": "8.5.3",
         "postcss-loader": "8.1.1",
