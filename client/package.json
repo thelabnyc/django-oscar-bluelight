@@ -22,7 +22,7 @@
         "@babel/core": "7.27.1",
         "@babel/preset-env": "7.27.2",
         "@babel/preset-react": "7.27.1",
-        "@thelabnyc/standards": "0.4.4",
+        "@thelabnyc/standards": "0.4.5",
         "@types/eslint-config-prettier": "^6.11.3",
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
