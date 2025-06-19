@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 import logging
 
-from celery import shared_task
 from django.db import connection, transaction
 
+from ..tasks import task
 from .applicator import pricing_cache_ns
 from .models import RangeProductSet, RangeProductSetRefreshLog
 from .signals import range_product_set_view_updated
@@ -13,14 +13,14 @@ from .signals import range_product_set_view_updated
 logger = logging.getLogger(__name__)
 
 
-@shared_task(ignore_result=True)
+@task
 def recalculate_offer_application_totals() -> None:
     from .models import ConditionalOffer
 
     ConditionalOffer.recalculate_offer_application_totals()
 
 
-@shared_task(ignore_result=True)
+@task
 @transaction.atomic
 def refresh_rps_view(requested_on_timestamp: float) -> None:
     # Set a short lock timeout to prevent multiple of these tasks from running (and blocking) simultaneously

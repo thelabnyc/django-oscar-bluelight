@@ -1,5 +1,5 @@
 [build-system]
-requires = [ "poetry-core>=2.1.2",]
+requires = ["poetry-core>=2.1.2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -18,11 +18,16 @@ from = "src"
 
 [tool.poetry.dependencies]
 python = "^3.13"
-celery = "^5.5.1"
 Django = ">=4.2"
 django-oscar = ">=4.0,<4.1"
 thelabdb = ">=0.5.0"
 djangorestframework = "^3.16.0"
+celery = { version = ">=5.5.1", optional = true }
+django-tasks = { version = ">=0.7.0", optional = true }
+
+[tool.poetry.extras]
+celery = ["celery"]
+django-tasks = ["django-tasks"]
 
 [tool.poetry.group.dev.dependencies]
 coverage = "7.9.1"

@@ -77,7 +77,7 @@ def invalidate_pricing_cache_ns(
 def queue_rps_view_refresh(*args: Any, **kwargs: Any) -> None:
     def _queue() -> None:
         now = datetime.timestamp(timezone.now())
-        tasks.refresh_rps_view.delay(now)
+        tasks.refresh_rps_view.enqueue(now)
 
     transaction.on_commit(_queue)
 
@@ -101,6 +101,4 @@ def queue_recalculate_offer_application_totals(
     sender: type[Order] | type[OrderDiscount],
     **kwargs: Any,
 ) -> None:
-    transaction.on_commit(
-        lambda: tasks.recalculate_offer_application_totals.apply_async()
-    )
+    tasks.recalculate_offer_application_totals.enqueue()
