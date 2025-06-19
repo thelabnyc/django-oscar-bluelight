@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 import logging
 
-from celery import shared_task
+from ..tasks import task
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@shared_task(ignore_result=True)
+@task
 def update_child_vouchers(voucher_id: int) -> None:
     from .models import Voucher
 
@@ -20,7 +20,7 @@ def update_child_vouchers(voucher_id: int) -> None:
     parent.update_children()
 
 
-@shared_task(ignore_result=True)
+@task
 def add_child_codes(
     voucher_id: int,
     auto_generate_count: int = 0,

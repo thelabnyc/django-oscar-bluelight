@@ -88,13 +88,10 @@ def _create_child_codes(
     # Only start a bg task if a lot of codes were requested.
     total_requested_codes = auto_generate_count + len(custom_child_codes)
     if total_requested_codes >= CHILD_CODE_BG_TASK_THRESHOLD:
-        tasks.add_child_codes.apply_async(
-            args=(voucher.pk,),
-            kwargs={
-                "auto_generate_count": auto_generate_count,
-                "custom_codes": custom_child_codes,
-            },
-            countdown=1,
+        tasks.add_child_codes.enqueue(
+            voucher.pk,
+            auto_generate_count=auto_generate_count,
+            custom_codes=custom_child_codes,
         )
     else:
         errors, success_count = tasks.add_child_codes(

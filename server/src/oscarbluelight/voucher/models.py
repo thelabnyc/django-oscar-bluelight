@@ -258,7 +258,7 @@ class Voucher(AbstractVoucher):
         )
         # Update children?
         if update_children:
-            tasks.update_child_vouchers.apply_async(args=(self.id,), countdown=10)
+            tasks.update_child_vouchers.enqueue(self.id)
         # Restore the original name
         if self.parent:
             self.name = _orig_name

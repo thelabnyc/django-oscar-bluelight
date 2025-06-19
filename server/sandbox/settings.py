@@ -203,3 +203,10 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 # Celery Config
 CELERY_TASK_ALWAYS_EAGER = True
+
+# Django Tasks Config
+TASKS = {
+    "default": {
+        "BACKEND": "django_tasks.backends.immediate.ImmediateBackend",
+    },
+}
