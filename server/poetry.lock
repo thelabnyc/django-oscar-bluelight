@@ -803,15 +803,15 @@ tablib = ["tablib"]
 
 [[package]]
 name = "django-tasks"
-version = "0.7.0"
+version = "0.8.0"
 description = "An implementation and backport of background workers and tasks in Django"
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"django-tasks\""
 files = [
-    {file = "django_tasks-0.7.0-py3-none-any.whl", hash = "sha256:8a8d64f2dc6e29ac2f45092d90e2dd82dc1dca100dfe3a4f2ce1209db99f3527"},
-    {file = "django_tasks-0.7.0.tar.gz", hash = "sha256:499f80d1a051566443cfa88a300d8b03435af7fc5708cad4d8da6d285614f739"},
+    {file = "django_tasks-0.8.0-py3-none-any.whl", hash = "sha256:d83c69b0e8c59f56bd451eafbfd58e34221c0627fa3eb8082fb34a0ece3ac6bf"},
+    {file = "django_tasks-0.8.0.tar.gz", hash = "sha256:7dcb9445ea70b8c9a5a7f4a467c5e704512ad86e29823744b1d088cc2c0003c5"},
 ]
 
 [package.dependencies]
@@ -2072,14 +2072,14 @@ lxml = "*"
 
 [[package]]
 name = "urllib3"
-version = "2.4.0"
+version = "2.5.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "urllib3-2.4.0-py3-none-any.whl", hash = "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813"},
-    {file = "urllib3-2.4.0.tar.gz", hash = "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466"},
+    {file = "urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc"},
+    {file = "urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"},
 ]
 
 [package.extras]
