@@ -29,7 +29,7 @@ repos:
         args: [--target-version, "4.2"]
 
   - repo: https://github.com/pycontribs/mirrors-prettier
-    rev: "v3.6.0"
+    rev: "v3.6.1"
     hooks:
       - id: prettier
         exclude: "^.git/"
