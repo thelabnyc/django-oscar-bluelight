@@ -40,8 +40,8 @@ test:
   image: "registry.gitlab.com/thelabnyc/python:${IMAGE}"
   script:
     - cd server/
-    - pip install tox
-    - tox
+    - uv sync --all-extras
+    - uv run tox
   coverage: '/^TOTAL.+?(\d+\%)$/'
   parallel:
     matrix:
