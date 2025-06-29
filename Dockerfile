@@ -44,7 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY server/ /oscarbluelight/server/
-RUN poetry install
+RUN uv sync
 
 RUN mkdir /oscarbluelight/tox
 ENV TOX_WORK_DIR='/oscarbluelight/tox'

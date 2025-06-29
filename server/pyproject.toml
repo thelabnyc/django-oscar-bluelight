@@ -1,52 +1,59 @@
 [build-system]
-requires = ["poetry-core>=2.1.2"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "django-oscar-bluelight"
 version = "5.10.0"
 description = "Bluelight Specials - Enhancements to the offer and vouchers features for Django Oscar."
-authors = ["thelab <thelabdev@thelab.co>"]
 readme = "README.md"
-homepage = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
-repository = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
-license = "ISC"
+license = { text = "ISC" }
+dependencies = [
+    "Django (>=4.2)",
+    "django-oscar (>=4.0,<4.1)",
+    "thelabdb (>=0.5.0)",
+    "djangorestframework (>=3.16.0,<4)",
+]
+requires-python = ">=3.13"
 
-[[tool.poetry.packages]]
-include = "oscarbluelight"
-from = "src"
+[[project.authors]]
+name = "thelab"
+email = "thelabdev@thelab.co"
 
-[tool.poetry.dependencies]
-python = "^3.13"
-Django = ">=4.2"
-django-oscar = ">=4.0,<4.1"
-thelabdb = ">=0.5.0"
-djangorestframework = "^3.16.0"
-celery = { version = ">=5.5.1", optional = true }
-django-tasks = { version = ">=0.7.0", optional = true }
+[project.urls]
+Homepage = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
+Repository = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
 
-[tool.poetry.extras]
-celery = ["celery"]
-django-tasks = ["django-tasks"]
+[project.optional-dependencies]
+celery = ["celery (>=5.5.1)"]
+django-tasks = ["django-tasks (>=0.7.0)"]
 
-[tool.poetry.group.dev.dependencies]
-coverage = "7.9.1"
-django-debug-toolbar = "5.2.0"
-django-redis = "5.4.0"
-flake8 = "7.3.0"
-hiredis = "3.2.1"
-psycopg2-binary = "2.9.10"
-redis = "6.2.0"
-sorl-thumbnail = "12.11.0"
-tox = "4.27.0"
-unittest-xml-reporting = "3.2.0"
-# Fix currently unpublished Python 3.12 compat
-django-haystack = { git = "https://github.com/django-haystack/django-haystack.git", branch = "master" }
-django-stubs = "5.2.1"
-mypy = "1.15.0"
-types-psycopg2 = "^2.9.21.20241019"
-djangorestframework-stubs = "3.16.0"
-celery-types = "0.23.0"
+[dependency-groups]
+dev = [
+    "coverage (==7.9.1)",
+    "django-debug-toolbar (==5.2.0)",
+    "django-redis (==5.4.0)",
+    "flake8 (==7.3.0)",
+    "hiredis (==3.2.1)",
+    "psycopg2-binary (==2.9.10)",
+    "redis (==6.2.0)",
+    "sorl-thumbnail (==12.11.0)",
+    "tox (==4.27.0)",
+    "unittest-xml-reporting (==3.2.0)",
+    "django-haystack @ git+https://github.com/django-haystack/django-haystack.git@master",
+    "django-stubs (==5.2.1)",
+    "mypy (==1.15.0)",
+    "types-psycopg2 (>=2.9.21.20241019,<3)",
+    "djangorestframework-stubs (==3.16.0)",
+    "celery-types (==0.23.0)",
+    "tox-uv>=1.26.1",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["oscarbluelight"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -89,6 +96,7 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = "*.tests.*"
 ignore_errors = true
+
 
 [tool.django-stubs]
 django_settings_module = "sandbox.settings"
