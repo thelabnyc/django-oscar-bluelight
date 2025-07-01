@@ -9,7 +9,7 @@ stages:
   - release
 
 services:
-  - postgres:latest@sha256:fc50da4d6d6bb989a167cf8c48317a2a9e9387bd8b9067a2750daa9eca73a4f6
+  - postgres:latest@sha256:3962158596daaef3682838cc8eb0e719ad1ce520f88e34596ce8d5de1b6330a1
   - redis:latest@sha256:1b835e5a8d5db58e8b718850bf43a68ef5a576fc68301fd08a789b20b4eecb61
 
 cache:
