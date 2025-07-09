@@ -17,9 +17,7 @@ def insert_nav_item(after_name: str, label: "StrOrPromise", url_name: str) -> No
             section.get("children", [])  # type:ignore[arg-type]
         ):
             if entry.get("url_name") == after_name:
-                OSCAR_DASHBOARD_NAVIGATION[i][
-                    "children"
-                ].insert(  # type:ignore[attr-defined]
+                OSCAR_DASHBOARD_NAVIGATION[i]["children"].insert(  # type:ignore[attr-defined]
                     j + 1,
                     new_entry,
                 )

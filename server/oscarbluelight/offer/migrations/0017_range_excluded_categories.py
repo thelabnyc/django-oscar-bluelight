@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("catalogue", "0027_attributeoption_code_attributeoptiongroup_code_and_more"),
         ("offer", "0016_fixedunitdiscountbenefit_alter_benefit_type"),
