@@ -44,7 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY server/ /oscarbluelight/server/
-RUN uv sync
+RUN uv sync --all-extras
 
 RUN mkdir /oscarbluelight/tox
 ENV TOX_WORK_DIR='/oscarbluelight/tox'

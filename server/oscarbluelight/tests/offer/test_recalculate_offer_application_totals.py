@@ -3,7 +3,6 @@ from decimal import Decimal as D
 from django.test import TestCase, override_settings
 from oscar.core.loading import get_model
 from oscar.test import factories
-
 from oscarbluelight.offer.models import (
     BluelightAbsoluteDiscountBenefit,
     BluelightCountCondition,

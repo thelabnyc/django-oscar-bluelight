@@ -511,29 +511,37 @@ class RangeProductSet(pg.MaterializedView):
         managed = False
 
 
-class RangeProductSetRefreshLog(models.Model):
+class ViewRefreshLog(models.Model):
+    class ViewType(models.IntegerChoices):
+        RANGE_PRODUCT_SET = 1, _("Range Product Set")
+        OFFER_APPLICATION_TOTALS = 2, _("Offer Application Totals")
+
+    view_type = models.PositiveSmallIntegerField(choices=ViewType)
     refreshed_on = models.DateTimeField()
 
     class Meta:
-        ordering = ("-refreshed_on",)
+        ordering = ("-refreshed_on", "view_type")
         indexes = [
-            models.Index(fields=["refreshed_on"]),
+            models.Index(fields=["view_type", "refreshed_on"]),
         ]
 
     @classmethod
-    def log_view_refresh(cls) -> None:
+    def log_view_refresh(cls, view_type: ViewType) -> None:
         now = timezone.now()
         # Truncate old log entries
         threshold = now - timedelta(hours=1)
-        cls.objects.filter(refreshed_on__lte=threshold).all().delete()
+        cls.objects.filter(
+            view_type=view_type,
+            refreshed_on__lte=threshold,
+        ).all().delete()
         # Log the refresh
-        cls.objects.create(refreshed_on=now)
+        cls.objects.create(view_type=view_type, refreshed_on=now)
 
     @classmethod
-    def is_refresh_needed(cls, requested_on_dt: datetime) -> bool:
+    def is_refresh_needed(cls, view_type: ViewType, requested_on_dt: datetime) -> bool:
         if timezone.is_naive(requested_on_dt):
             requested_on_dt = timezone.make_aware(requested_on_dt)
-        last_refresh_dt = cls.get_last_refresh_dt()
+        last_refresh_dt = cls.get_last_refresh_dt(view_type)
         if last_refresh_dt is None:
             return True
         if timezone.is_naive(last_refresh_dt):
@@ -546,8 +554,8 @@ class RangeProductSetRefreshLog(models.Model):
         return requested_on_dt >= last_refresh_dt
 
     @classmethod
-    def get_last_refresh_dt(cls) -> datetime | None:
-        entry = cls.objects.first()
+    def get_last_refresh_dt(cls, view_type: ViewType) -> datetime | None:
+        entry = cls.objects.filter(view_type=view_type).first()
         if not entry:
             return None
         return entry.refreshed_on
