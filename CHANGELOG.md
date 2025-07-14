@@ -1,5 +1,17 @@
 # Changes
 
+## v5.10.1 (2025-07-14)
+
+### Fix
+
+- isort
+- prevent duplicated calls to recalculate_offer_application_totals (#30381)
+
+### Refactor
+
+- migrate black/flake8 -> ruff
+- migrate from poetry -> uv
+
 ## v5.10.0 (2025-06-20)
 
 ### Feat
