@@ -15,6 +15,6 @@ migrations:
 translations:
 	cd client/src && \
 	django-admin makemessages --locale=es --extension=ts,tsx --domain djangojs && \
-	cd ../../server/src/oscarbluelight && \
+	cd ../../server/oscarbluelight && \
 	django-admin makemessages --locale=es && \
 	django-admin compilemessages

@@ -101,4 +101,5 @@ def queue_recalculate_offer_application_totals(
     sender: type[Order] | type[OrderDiscount],
     **kwargs: Any,
 ) -> None:
-    tasks.recalculate_offer_application_totals.enqueue()
+    now = datetime.timestamp(timezone.now())
+    tasks.recalculate_offer_application_totals.enqueue(now)
