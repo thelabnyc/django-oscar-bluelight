@@ -39,13 +39,15 @@ repos:
     rev: "6.0.1"
     hooks:
       - id: isort
+        args: [--settings-path, server/pyproject.toml]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.3
     hooks:
       - id: ruff
-        args: [--fix]
+        args: [--fix, --config, server/pyproject.toml]
       - id: ruff-format
+        args: [--config, server/pyproject.toml]
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.8.3

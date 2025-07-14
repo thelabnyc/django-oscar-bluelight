@@ -6,7 +6,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const BUILD_DIR = path.resolve(
     __dirname,
-    "../server/src/oscarbluelight/static/oscarbluelight/",
+    "../server/oscarbluelight/static/oscarbluelight/",
 );
 const APP_DIR = path.resolve(__dirname, "./src/");
 const IS_PROD = process.env.NODE_ENV === "production";

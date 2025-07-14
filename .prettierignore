@@ -1,2 +1,2 @@
 *.snap
-server/src/oscarbluelight/static/*
+server/oscarbluelight/static/*
