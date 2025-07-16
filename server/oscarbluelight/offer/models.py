@@ -516,7 +516,7 @@ class ViewRefreshLog(models.Model):
         RANGE_PRODUCT_SET = 1, _("Range Product Set")
         OFFER_APPLICATION_TOTALS = 2, _("Offer Application Totals")
 
-    view_type = models.PositiveSmallIntegerField(choices=ViewType)
+    view_type = models.PositiveSmallIntegerField(choices=ViewType.choices)
     refreshed_on = models.DateTimeField()
 
     class Meta:
