@@ -1,5 +1,11 @@
 # Changes
 
+## v5.10.2 (2025-07-16)
+
+### Fix
+
+- fix E005 django check error
+
 ## v5.10.1 (2025-07-14)
 
 ### Fix
