@@ -39,7 +39,7 @@
         "sass-loader": "16.0.5",
         "source-map-loader": "5.0.0",
         "ts-loader": "9.5.2",
-        "typescript": "5.8.3",
+        "typescript": "5.9.2",
         "webpack": "5.101.0",
         "webpack-bundle-size-analyzer": "3.1.0",
         "webpack-bundle-tracker": "3.2.1",
