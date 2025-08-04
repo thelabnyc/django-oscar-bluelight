@@ -850,7 +850,7 @@ class CompoundBenefit(Benefit):
             elif combined_result is None:
                 combined_result = copy.deepcopy(result)
                 discount_amount_available -= result.discount
-            elif combined_result.affects == result.affects:  # type:ignore[has-type]
+            elif combined_result.affects == result.affects:
                 combined_result.discount += result.discount
                 discount_amount_available -= result.discount
             else:
