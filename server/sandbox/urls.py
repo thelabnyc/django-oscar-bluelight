@@ -14,9 +14,13 @@ urlpatterns = [
         serve,
         {"document_root": settings.MEDIA_ROOT, "show_indexes": True},
     ),
-    path("__debug__/", include(debug_toolbar.urls)),
     path(
         "",
         include(apps.get_app_config("oscar").urls[0]),  # type:ignore[attr-defined]
     ),
 ]
+
+if not settings.IS_UNIT_TEST:
+    urlpatterns = [
+        path("__debug__/", include(debug_toolbar.urls)),
+    ] + urlpatterns
