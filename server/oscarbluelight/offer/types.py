@@ -8,3 +8,6 @@ if TYPE_CHECKING:
 
     AffectedLine = tuple[Line, Decimal, int]
     AffectedLines = list[AffectedLine]
+
+    # Type for (price, line) tuples returned by get_applicable_lines
+    LinesTuple = tuple[Decimal, Line]

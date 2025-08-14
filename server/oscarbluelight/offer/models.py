@@ -42,6 +42,7 @@ from .results import (
     ShippingDiscount,
 )
 from .sql import SQL_RANGE_PRODUCTS, get_recalculate_offer_application_totals_sql
+from .utils import get_line_filter_strategy
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
@@ -52,6 +53,7 @@ if TYPE_CHECKING:
 
     from ..mixins import BluelightBasketMixin as Basket
     from ..voucher.models import Voucher as _Voucher
+    from .types import LinesTuple
     from .upsells import OfferUpsell
 else:
     ExpandDownwardsCategoryQueryset = get_class(
@@ -315,6 +317,25 @@ class Benefit(AbstractBenefit):
                 "max_discount": currency(self.max_discount),
             }
         return text
+
+    def get_applicable_lines(
+        self,
+        offer: ConditionalOffer,
+        basket: Basket,
+        range: AbstractRange | None = None,
+    ) -> list[LinesTuple]:
+        """
+        Return the basket lines that are available to be discounted, with line filter strategy applied.
+
+        This method first calls the parent implementation to get the base applicable lines,
+        then applies the configured line filter strategy to potentially filter the results
+        based on custom logic.
+        """
+        # Get the base applicable lines from parent implementation
+        line_tuples = super().get_applicable_lines(offer, basket, range)
+        # Apply line filter strategy
+        strategy = get_line_filter_strategy()
+        return strategy.filter_lines(offer, basket, line_tuples)
 
 
 class Condition(AbstractCondition):
