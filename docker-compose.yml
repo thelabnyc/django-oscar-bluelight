@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:latest@sha256:29e0bb09c8e7e7fc265ea9f4367de9622e55bae6b0b97e7cce740c2d63c2ebc0
     environment:
-      POSTGRES_HOST_AUTH_METHOD: 'trust'
+      POSTGRES_HOST_AUTH_METHOD: "trust"
 
   redis:
     image: redis:latest@sha256:e7d6b261beaa22b1dc001f438b677f1c691ac7805607d8979bae65fe0615c2e6
@@ -14,10 +14,18 @@ services:
       target: client
     command: webpack --watch
     environment:
-      NODE_ENV: 'production'
+      NODE_ENV: "production"
     volumes:
       - ./client/:/oscarbluelight/client/
-      - ./server/:/oscarbluelight/server/
+      - ./server/bootstrap.sh:/oscarbluelight/server/bootstrap.sh
+      - ./server/manage.py:/oscarbluelight/server/manage.py
+      - ./server/pyproject.toml:/oscarbluelight/server/pyproject.toml
+      - ./server/server.sh:/oscarbluelight/server/server.sh
+      - ./server/tox.ini:/oscarbluelight/server/tox.ini
+      - ./server/uv.lock:/oscarbluelight/server/uv.lock
+      - ./server/oscarbluelight:/oscarbluelight/server/oscarbluelight
+      - ./server/sandbox:/oscarbluelight/server/sandbox
+      - ./server/tmp:/oscarbluelight/server/tmp
 
   test:
     build:
@@ -26,10 +34,18 @@ services:
       target: server
     command: python manage.py runserver 0.0.0.0:8000
     ports:
-      - '8000:8000'
+      - "8000:8000"
     depends_on:
       - postgres
       - redis
     volumes:
       - ./client/:/oscarbluelight/client/
-      - ./server/:/oscarbluelight/server/
+      - ./server/bootstrap.sh:/oscarbluelight/server/bootstrap.sh
+      - ./server/manage.py:/oscarbluelight/server/manage.py
+      - ./server/pyproject.toml:/oscarbluelight/server/pyproject.toml
+      - ./server/server.sh:/oscarbluelight/server/server.sh
+      - ./server/tox.ini:/oscarbluelight/server/tox.ini
+      - ./server/uv.lock:/oscarbluelight/server/uv.lock
+      - ./server/oscarbluelight:/oscarbluelight/server/oscarbluelight
+      - ./server/sandbox:/oscarbluelight/server/sandbox
+      - ./server/tmp:/oscarbluelight/server/tmp
