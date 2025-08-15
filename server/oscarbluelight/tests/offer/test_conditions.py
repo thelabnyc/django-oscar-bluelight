@@ -27,37 +27,44 @@ from .base import BaseTest
 
 class CountConditionTest(BaseTest):
     def test_consume_items(self):
-        basket = self._build_basket()
         offer = self._build_offer(
             "oscarbluelight.offer.conditions.BluelightCountCondition", 2
         )
 
-        line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+        for item_price in [D("10.00"), D("0.00")]:
+            with self.subTest(item_price=item_price):
+                basket = self._build_basket(item_price=item_price)
 
-        affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
-        self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
-        line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 3)
+                line = basket.all_lines()[0]
+                self.assertEqual(line.quantity_with_discount, 0)
+                self.assertEqual(line.quantity_without_discount, 5)
 
-        affected_lines = offer.condition.proxy().consume_items(
-            offer, basket, affected_lines
-        )
-        self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
-        self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
-        line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 3)
+                affected_lines = offer.condition.proxy().consume_items(
+                    offer, basket, []
+                )
+                self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
+                self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
+                line = basket.all_lines()[0]
+                self.assertEqual(line.quantity_with_discount, 2)
+                self.assertEqual(line.quantity_without_discount, 3)
 
-        affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
-        self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
-        line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 4)
-        self.assertEqual(line.quantity_without_discount, 1)
+                affected_lines = offer.condition.proxy().consume_items(
+                    offer, basket, affected_lines
+                )
+                self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
+                self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
+                line = basket.all_lines()[0]
+                self.assertEqual(line.quantity_with_discount, 2)
+                self.assertEqual(line.quantity_without_discount, 3)
+
+                affected_lines = offer.condition.proxy().consume_items(
+                    offer, basket, []
+                )
+                self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
+                self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
+                line = basket.all_lines()[0]
+                self.assertEqual(line.quantity_with_discount, 4)
+                self.assertEqual(line.quantity_without_discount, 1)
 
     def test_consume_items_when_benefit_consumes_other_items(self):
         # Create two products, each in a different product class
@@ -208,6 +215,23 @@ class ValueConditionTest(BaseTest):
         self.assertEqual(line.quantity_with_discount, 4)
         self.assertEqual(line.quantity_without_discount, 1)
 
+    def test_consume_items_when_price_is_zero(self):
+        basket = self._build_basket(item_price=D("0.00"))
+        offer = self._build_offer(
+            "oscarbluelight.offer.conditions.BluelightValueCondition", D("15.00")
+        )
+
+        line = basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 0)
+        self.assertEqual(line.quantity_without_discount, 5)
+
+        affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
+        self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
+        self.assertEqual(affected_lines[0][2], 5, "Consumed quantity of 5")
+        line = basket.all_lines()[0]
+        self.assertEqual(line.quantity_with_discount, 5)
+        self.assertEqual(line.quantity_without_discount, 0)
+
     def test_consume_items_when_benefit_consumes_other_items(self):
         # Create two products, each in a different product class
         product_main = create_product(product_class="Expensive Stuff")
@@ -321,50 +345,56 @@ class ValueConditionTest(BaseTest):
 
 class CoverageConditionTest(BaseTest):
     def test_consume_items(self):
-        basket = create_basket(empty=True)
-        for i in range(5):
-            product = create_product()
-            create_stockrecord(product, D("10.00"), num_in_stock=10)
-            basket.add_product(product, quantity=5)
-
         offer = self._build_offer(
             "oscarbluelight.offer.conditions.BluelightCoverageCondition", 2
         )
 
-        affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
-        self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
-        self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
-        self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
-        self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
-        self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
-        self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
-        self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
-        self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+        for item_price in [D("10.00"), D("0.00")]:
+            with self.subTest(item_price=item_price):
+                basket = create_basket(empty=True)
+                for i in range(5):
+                    product = create_product()
+                    create_stockrecord(product, item_price, num_in_stock=10)
+                    basket.add_product(product, quantity=5)
 
-        affected_lines = offer.condition.proxy().consume_items(
-            offer, basket, affected_lines
-        )
-        self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
-        self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
-        self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
-        self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
-        self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
-        self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
-        self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
-        self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
-        self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+                affected_lines = offer.condition.proxy().consume_items(
+                    offer, basket, []
+                )
+                self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
+                self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
+                self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
+                self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
+                self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
+                self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
+                self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
+                self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
+                self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
 
-        affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
-        self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
-        self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
-        self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
-        self.assertEqual(basket.all_lines()[0].quantity_with_discount, 2)
-        self.assertEqual(basket.all_lines()[0].quantity_without_discount, 3)
-        self.assertEqual(basket.all_lines()[1].quantity_with_discount, 2)
-        self.assertEqual(basket.all_lines()[1].quantity_without_discount, 3)
-        self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
-        self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+                affected_lines = offer.condition.proxy().consume_items(
+                    offer, basket, affected_lines
+                )
+                self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
+                self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
+                self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
+                self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
+                self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
+                self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
+                self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
+                self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
+                self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+
+                affected_lines = offer.condition.proxy().consume_items(
+                    offer, basket, []
+                )
+                self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
+                self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
+                self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
+                self.assertEqual(basket.all_lines()[0].quantity_with_discount, 2)
+                self.assertEqual(basket.all_lines()[0].quantity_without_discount, 3)
+                self.assertEqual(basket.all_lines()[1].quantity_with_discount, 2)
+                self.assertEqual(basket.all_lines()[1].quantity_without_discount, 3)
+                self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
+                self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
 
     def test_consume_items_when_benefit_consumes_other_items(self):
         # Create two products, each in a different product class

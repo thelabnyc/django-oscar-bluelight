@@ -368,7 +368,11 @@ class BluelightValueCondition(ValueCondition):
             return affected_lines
 
         for price, line in applicable_lines:
-            quantity_to_consume = (to_consume / price).quantize(Decimal(1), ROUND_UP)
+            quantity_to_consume = (
+                (to_consume / price).quantize(Decimal(1), ROUND_UP)
+                if price > 0
+                else line.quantity_without_discount
+            )
             quantity_to_consume = min(
                 line.quantity_without_discount, quantity_to_consume
             )

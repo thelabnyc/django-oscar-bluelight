@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, TypedDict, TypeVar
 import copy
 import logging
 import math
+import operator
 import time
 
 from django.conf import settings
@@ -27,7 +28,7 @@ from oscar.apps.offer.abstract_models import (
     AbstractRangeProductFileUpload,
 )
 from oscar.apps.offer.results import ApplicationResult
-from oscar.apps.offer.utils import load_proxy
+from oscar.apps.offer.utils import load_proxy, unit_price
 from oscar.core.loading import get_class, get_model
 from oscar.models.fields import AutoSlugField  # type:ignore[attr-defined]
 from oscar.templatetags.currency_filters import currency
@@ -381,9 +382,33 @@ class Condition(AbstractCondition):
         )
 
     def get_upsell_details(
-        self, offer: ConditionalOffer, basket: Basket
+        self,
+        offer: ConditionalOffer,
+        basket: Basket,
     ) -> OfferUpsell | None:
         return None
+
+    def get_applicable_lines(
+        self,
+        offer: ConditionalOffer,
+        basket: Basket,
+        most_expensive_first: bool = True,
+    ) -> list[LinesTuple]:
+        """
+        Return line data for the lines that can be consumed by this condition
+        """
+        line_tuples = []
+        for line in basket.all_lines():
+            if not self.can_apply_condition(line):
+                continue
+            price = unit_price(offer, line)
+            if price is None:
+                continue
+            line_tuples.append((price, line))
+        key = operator.itemgetter(0)
+        if most_expensive_first:
+            return sorted(line_tuples, reverse=True, key=key)
+        return sorted(line_tuples, key=key)
 
     def get_satisfying_lines(self) -> list[BasketLine]:
         """Return list of basket lines that satisfied this condition."""
