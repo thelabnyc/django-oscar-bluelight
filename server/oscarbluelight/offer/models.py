@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from oscar.apps.order.models import Order as _Order
     from oscar.apps.order.models import OrderDiscount as _OrderDiscount
 
+    from ..mixins import BluelightBasketLineMixin as BasketLine
     from ..mixins import BluelightBasketMixin as Basket
     from ..voucher.models import Voucher as _Voucher
     from .types import LinesTuple
@@ -339,6 +340,8 @@ class Benefit(AbstractBenefit):
 
 
 class Condition(AbstractCondition):
+    _satisfying_lines: list[BasketLine] = []
+
     def proxy(self) -> Condition:
         if self.proxy_class:
             Klass = load_proxy(self.proxy_class)
@@ -381,6 +384,15 @@ class Condition(AbstractCondition):
         self, offer: ConditionalOffer, basket: Basket
     ) -> OfferUpsell | None:
         return None
+
+    def get_satisfying_lines(self) -> list[BasketLine]:
+        """Return list of basket lines that satisfied this condition."""
+        return getattr(self, "_satisfying_lines", [])
+
+    def get_satisfying_products(self) -> list[Product]:
+        """Return list of products that satisfied this condition."""
+        lines = self.get_satisfying_lines()
+        return [line.product for line in lines]
 
     def clean(self) -> None:
         if self.type:
