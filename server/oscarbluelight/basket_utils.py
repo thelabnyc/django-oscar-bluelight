@@ -38,28 +38,34 @@ class BluelightLineOfferConsumer:
     def _cache(self, offer: ConditionalOffer) -> None:
         self._offers[offer.pk] = offer
 
-    def _update_affected_quantity(self, quantity: int) -> None:
+    def _update_affected_quantity(self, quantity: int) -> int:
         available_in_group = int(self._line.quantity - self._affected_quantity)
         available_global = int(self._line.quantity - self._global_affected_quantity)
-        self._affected_quantity += min(available_in_group, quantity)
+        num_consumed = min(available_in_group, quantity)
+        self._affected_quantity += num_consumed
         self._global_affected_quantity += min(available_global, quantity)
+        return num_consumed
 
     def consume(
         self,
         quantity: int,
         offer: ConditionalOffer | None = None,
-    ) -> None:
+    ) -> int:
         """
         Mark a basket line as consumed by an offer in the current offer group.
 
         If offer is None, the specified quantity of items on this basket line is consumed for *any*
         offer, else only for the specified offer.
         """
-        self._update_affected_quantity(quantity)
+        available = 0
         if offer:
             self._cache(offer)
             available = self.available(offer)
-            self._consumptions[offer.pk] += min(available, quantity)
+        num_consumed = self._update_affected_quantity(quantity)
+        if offer:
+            num_consumed = min(available, quantity)
+            self._consumptions[offer.pk] += num_consumed
+        return num_consumed
 
     @deprecated
     def consumed(self, offer: ConditionalOffer | None = None) -> int:

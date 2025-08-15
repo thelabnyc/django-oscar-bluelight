@@ -36,8 +36,12 @@ class CountConditionTest(BaseTest):
                 basket = self._build_basket(item_price=item_price)
 
                 line = basket.all_lines()[0]
-                self.assertEqual(line.quantity_with_discount, 0)
-                self.assertEqual(line.quantity_without_discount, 5)
+                self.assertLineConsumption(
+                    line=line,
+                    offer=offer,
+                    qty_with_discount=0,
+                    qty_without_discount=5,
+                )
 
                 affected_lines = offer.condition.proxy().consume_items(
                     offer, basket, []
@@ -45,8 +49,12 @@ class CountConditionTest(BaseTest):
                 self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
                 self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
                 line = basket.all_lines()[0]
-                self.assertEqual(line.quantity_with_discount, 2)
-                self.assertEqual(line.quantity_without_discount, 3)
+                self.assertLineConsumption(
+                    line=line,
+                    offer=offer,
+                    qty_with_discount=2,
+                    qty_without_discount=3,
+                )
 
                 affected_lines = offer.condition.proxy().consume_items(
                     offer, basket, affected_lines
@@ -54,8 +62,12 @@ class CountConditionTest(BaseTest):
                 self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
                 self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
                 line = basket.all_lines()[0]
-                self.assertEqual(line.quantity_with_discount, 2)
-                self.assertEqual(line.quantity_without_discount, 3)
+                self.assertLineConsumption(
+                    line=line,
+                    offer=offer,
+                    qty_with_discount=2,
+                    qty_without_discount=3,
+                )
 
                 affected_lines = offer.condition.proxy().consume_items(
                     offer, basket, []
@@ -63,8 +75,12 @@ class CountConditionTest(BaseTest):
                 self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
                 self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
                 line = basket.all_lines()[0]
-                self.assertEqual(line.quantity_with_discount, 4)
-                self.assertEqual(line.quantity_without_discount, 1)
+                self.assertLineConsumption(
+                    line=line,
+                    offer=offer,
+                    qty_with_discount=4,
+                    qty_without_discount=1,
+                )
 
     def test_consume_items_when_benefit_consumes_other_items(self):
         # Create two products, each in a different product class
@@ -112,6 +128,13 @@ class CountConditionTest(BaseTest):
         self.assertEqual(basket.total_excl_tax, D("5100.00"))
         self.assertEqual(basket.num_items_without_discount, 2)
         self.assertEqual(basket.num_items_with_discount, 0)
+        for line in basket.all_lines():
+            self.assertLineConsumption(
+                line=line,
+                offer=offer,
+                qty_with_discount=0,
+                qty_without_discount=1,
+            )
 
         Applicator().apply_offers(basket, [offer])
 
@@ -119,6 +142,13 @@ class CountConditionTest(BaseTest):
         self.assertEqual(basket.total_excl_tax, D("5095.00"))
         self.assertEqual(basket.num_items_without_discount, 0)
         self.assertEqual(basket.num_items_with_discount, 2)
+        for line in basket.all_lines():
+            self.assertLineConsumption(
+                line=line,
+                offer=offer,
+                qty_with_discount=1,
+                qty_without_discount=0,
+            )
 
     def test_is_partially_satisfied(self):
         # Create three products for two different ranges
@@ -189,15 +219,23 @@ class ValueConditionTest(BaseTest):
         )
 
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=0,
+            qty_without_discount=5,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
         self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
         self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 3)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=2,
+            qty_without_discount=3,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(
             offer, basket, affected_lines
@@ -205,15 +243,23 @@ class ValueConditionTest(BaseTest):
         self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
         self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 3)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=2,
+            qty_without_discount=3,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
         self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
         self.assertEqual(affected_lines[0][2], 2, "Consumed quantity of 2")
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 4)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=4,
+            qty_without_discount=1,
+        )
 
     def test_consume_items_when_price_is_zero(self):
         basket = self._build_basket(item_price=D("0.00"))
@@ -222,15 +268,23 @@ class ValueConditionTest(BaseTest):
         )
 
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=0,
+            qty_without_discount=5,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
         self.assertEqual(len(affected_lines), 1, "Consumed 1 line")
         self.assertEqual(affected_lines[0][2], 5, "Consumed quantity of 5")
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 5)
-        self.assertEqual(line.quantity_without_discount, 0)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=5,
+            qty_without_discount=0,
+        )
 
     def test_consume_items_when_benefit_consumes_other_items(self):
         # Create two products, each in a different product class
@@ -363,12 +417,24 @@ class CoverageConditionTest(BaseTest):
                 self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
                 self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
                 self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
-                self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
-                self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
-                self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
-                self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
-                self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
-                self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+                self.assertLineConsumption(
+                    line=basket.all_lines()[0],
+                    offer=offer,
+                    qty_with_discount=1,
+                    qty_without_discount=4,
+                )
+                self.assertLineConsumption(
+                    line=basket.all_lines()[1],
+                    offer=offer,
+                    qty_with_discount=1,
+                    qty_without_discount=4,
+                )
+                self.assertLineConsumption(
+                    line=basket.all_lines()[2],
+                    offer=offer,
+                    qty_with_discount=0,
+                    qty_without_discount=5,
+                )
 
                 affected_lines = offer.condition.proxy().consume_items(
                     offer, basket, affected_lines
@@ -376,12 +442,24 @@ class CoverageConditionTest(BaseTest):
                 self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
                 self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
                 self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
-                self.assertEqual(basket.all_lines()[0].quantity_with_discount, 1)
-                self.assertEqual(basket.all_lines()[0].quantity_without_discount, 4)
-                self.assertEqual(basket.all_lines()[1].quantity_with_discount, 1)
-                self.assertEqual(basket.all_lines()[1].quantity_without_discount, 4)
-                self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
-                self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+                self.assertLineConsumption(
+                    line=basket.all_lines()[0],
+                    offer=offer,
+                    qty_with_discount=1,
+                    qty_without_discount=4,
+                )
+                self.assertLineConsumption(
+                    line=basket.all_lines()[1],
+                    offer=offer,
+                    qty_with_discount=1,
+                    qty_without_discount=4,
+                )
+                self.assertLineConsumption(
+                    line=basket.all_lines()[2],
+                    offer=offer,
+                    qty_with_discount=0,
+                    qty_without_discount=5,
+                )
 
                 affected_lines = offer.condition.proxy().consume_items(
                     offer, basket, []
@@ -389,12 +467,24 @@ class CoverageConditionTest(BaseTest):
                 self.assertEqual(len(affected_lines), 2, "Consumed 2 lines")
                 self.assertEqual(affected_lines[0][2], 1, "Consumed quantity of 1")
                 self.assertEqual(affected_lines[1][2], 1, "Consumed quantity of 1")
-                self.assertEqual(basket.all_lines()[0].quantity_with_discount, 2)
-                self.assertEqual(basket.all_lines()[0].quantity_without_discount, 3)
-                self.assertEqual(basket.all_lines()[1].quantity_with_discount, 2)
-                self.assertEqual(basket.all_lines()[1].quantity_without_discount, 3)
-                self.assertEqual(basket.all_lines()[2].quantity_with_discount, 0)
-                self.assertEqual(basket.all_lines()[2].quantity_without_discount, 5)
+                self.assertLineConsumption(
+                    line=basket.all_lines()[0],
+                    offer=offer,
+                    qty_with_discount=2,
+                    qty_without_discount=3,
+                )
+                self.assertLineConsumption(
+                    line=basket.all_lines()[1],
+                    offer=offer,
+                    qty_with_discount=2,
+                    qty_without_discount=3,
+                )
+                self.assertLineConsumption(
+                    line=basket.all_lines()[2],
+                    offer=offer,
+                    qty_with_discount=0,
+                    qty_without_discount=5,
+                )
 
     def test_consume_items_when_benefit_consumes_other_items(self):
         # Create two products, each in a different product class
@@ -699,16 +789,24 @@ class CompoundConditionTest(BaseTest):
         offer = self._build_offer(Conjunction.OR)
 
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 0)
-        self.assertEqual(line.quantity_without_discount, 5)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=0,
+            qty_without_discount=5,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
         self.assertEqual(len(affected_lines), 2)
         self.assertEqual(affected_lines[0][2], 1)
         self.assertEqual(affected_lines[1][2], 1)
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 3)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=2,
+            qty_without_discount=3,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(
             offer, basket, affected_lines
@@ -717,16 +815,24 @@ class CompoundConditionTest(BaseTest):
         self.assertEqual(affected_lines[0][2], 1)
         self.assertEqual(affected_lines[1][2], 1)
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 2)
-        self.assertEqual(line.quantity_without_discount, 3)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=2,
+            qty_without_discount=3,
+        )
 
         affected_lines = offer.condition.proxy().consume_items(offer, basket, [])
         self.assertEqual(len(affected_lines), 2)
         self.assertEqual(affected_lines[0][2], 1)
         self.assertEqual(affected_lines[1][2], 1)
         line = basket.all_lines()[0]
-        self.assertEqual(line.quantity_with_discount, 4)
-        self.assertEqual(line.quantity_without_discount, 1)
+        self.assertLineConsumption(
+            line=line,
+            offer=offer,
+            qty_with_discount=4,
+            qty_without_discount=1,
+        )
 
     def test_create_compound_from_vanilla_condition(self):
         a = Condition()
