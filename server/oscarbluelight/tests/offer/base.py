@@ -40,3 +40,21 @@ class BaseTest(TransactionTestCase):
         offer.benefit = benefit
         offer.save()
         return offer
+
+    def assertLineConsumption(
+        self,
+        line,
+        offer,
+        qty_with_discount,
+        qty_without_discount,
+    ):
+        self.assertEqual(line.discounts.num_consumed(), qty_with_discount)
+        self.assertEqual(line.discounts.num_consumed(offer), qty_with_discount)
+        self.assertEqual(line.discounts.available(), qty_without_discount)
+        self.assertEqual(line.discounts.available(offer), qty_without_discount)
+        self.assertEqual(line.quantity_with_discount, qty_with_discount)
+        self.assertEqual(line.quantity_without_discount, qty_without_discount)
+        self.assertEqual(line.quantity_with_offer_discount(offer), qty_with_discount)
+        self.assertEqual(
+            line.quantity_without_offer_discount(offer), qty_without_discount
+        )

@@ -23,7 +23,7 @@ from .utils import human_readable_conjoin
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
 
-    from ..mixins import BluelightBasketLineMixin as Line
+    from ..mixins import BluelightBasketLineMixin as BasketLine
     from ..mixins import BluelightBasketMixin as Basket
     from .models import ConditionalOffer
     from .types import AffectedLines
@@ -63,6 +63,23 @@ class BluelightCountCondition(CountCondition):
 
     def _clean(self) -> None:
         return _default_clean(self)
+
+    def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
+        """Override to track which lines satisfied the condition."""
+        satisfying_lines: list[BasketLine] = []
+
+        num_matches = 0
+        for line in basket.all_lines():
+            if self.can_apply_condition(line):
+                satisfying_lines.append(line)
+                num_matches += line.quantity_without_offer_discount(offer)
+                if num_matches >= self.value:
+                    self._satisfying_lines = satisfying_lines
+                    return True
+
+        # Condition not satisfied, don't store any lines
+        self._satisfying_lines = []
+        return False
 
     def _get_num_matches(self, basket: Basket, offer: ConditionalOffer) -> int:
         if hasattr(self, "_num_matches"):
@@ -177,6 +194,26 @@ class BluelightCoverageCondition(CoverageCondition):
     def _clean(self) -> None:
         return _default_clean(self)
 
+    def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
+        """
+        Determines whether a given basket meets this condition
+        """
+        satisfying_lines: list[BasketLine] = []
+        covered_ids = []
+        for line in basket.all_lines():
+            if not line.is_available_for_offer_discount(offer):
+                continue
+            product = line.product
+            if self.can_apply_condition(line) and product.id not in covered_ids:
+                covered_ids.append(product.id)
+                satisfying_lines.append(line)
+            if len(covered_ids) >= self.value:
+                self._satisfying_lines = satisfying_lines
+                return True
+        # Condition not satisfied, don't store any lines
+        self._satisfying_lines = []
+        return False
+
     def consume_items(
         self,
         offer: ConditionalOffer,
@@ -255,14 +292,19 @@ class BluelightValueCondition(ValueCondition):
         """
         Determine whether a given basket meets this condition
         """
+        satisfying_lines: list[BasketLine] = []
         value_of_matches = Decimal("0.00")
         for line in basket.all_lines():
             quantity_available = line.quantity_without_offer_discount(offer)
             if self.can_apply_condition(line) and quantity_available > 0:
+                satisfying_lines.append(line)
                 price = self._get_unit_price(offer, line)
                 value_of_matches += price * int(quantity_available)
-            if value_of_matches >= self.value:
-                return True
+                if value_of_matches >= self.value:
+                    self._satisfying_lines = satisfying_lines
+                    return True
+        # Condition not satisfied, don't store any lines
+        self._satisfying_lines = []
         return False
 
     def get_upsell_details(
@@ -293,7 +335,7 @@ class BluelightValueCondition(ValueCondition):
         self._value_of_matches = value_of_matches
         return value_of_matches
 
-    def _get_unit_price(self, offer: ConditionalOffer, line: Line) -> Decimal:
+    def _get_unit_price(self, offer: ConditionalOffer, line: BasketLine) -> Decimal:
         price = utils.unit_price(offer, line)
         if self._tax_inclusive and line.is_tax_known:
             price += line.unit_tax
@@ -326,7 +368,11 @@ class BluelightValueCondition(ValueCondition):
             return affected_lines
 
         for price, line in applicable_lines:
-            quantity_to_consume = (to_consume / price).quantize(Decimal(1), ROUND_UP)
+            quantity_to_consume = (
+                (to_consume / price).quantize(Decimal(1), ROUND_UP)
+                if price > 0
+                else line.quantity_without_discount
+            )
             quantity_to_consume = min(
                 line.quantity_without_discount, quantity_to_consume
             )
@@ -411,7 +457,23 @@ class CompoundCondition(Condition):
             )
 
     def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
-        return self._reduce_results(self.conjunction, "is_satisfied", offer, basket)
+        satisfying_lines: list[BasketLine] = []
+        result = self._get_conjunction_root_memo(self.conjunction)
+        for c in self.children:
+            condition = c.proxy()
+            subresult = condition.is_satisfied(offer, basket)
+            # Aggregate satisfying lines from each subcondition that was satisfied
+            # (even if the overall compound condition might fail due to AND logic)
+            if subresult and hasattr(condition, "get_satisfying_lines"):
+                # Avoid duplicates by checking if line already tracked
+                for line in condition.get_satisfying_lines():
+                    if line not in satisfying_lines:
+                        satisfying_lines.append(line)
+            result = self._apply_conjunction(self.conjunction, result, subresult)
+        # Always store lines from satisfied subconditions, regardless of overall result
+        # This allows tracking which subconditions were satisfied even if the compound failed
+        self._satisfying_lines = satisfying_lines
+        return result
 
     def is_partially_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         return self._reduce_results(

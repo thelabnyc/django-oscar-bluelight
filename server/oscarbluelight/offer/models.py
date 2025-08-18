@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, TypedDict, TypeVar
 import copy
 import logging
 import math
+import operator
 import time
 
 from django.conf import settings
@@ -27,7 +28,7 @@ from oscar.apps.offer.abstract_models import (
     AbstractRangeProductFileUpload,
 )
 from oscar.apps.offer.results import ApplicationResult
-from oscar.apps.offer.utils import load_proxy
+from oscar.apps.offer.utils import load_proxy, unit_price
 from oscar.core.loading import get_class, get_model
 from oscar.models.fields import AutoSlugField  # type:ignore[attr-defined]
 from oscar.templatetags.currency_filters import currency
@@ -42,6 +43,7 @@ from .results import (
     ShippingDiscount,
 )
 from .sql import SQL_RANGE_PRODUCTS, get_recalculate_offer_application_totals_sql
+from .utils import get_line_filter_strategy
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
@@ -50,8 +52,10 @@ if TYPE_CHECKING:
     from oscar.apps.order.models import Order as _Order
     from oscar.apps.order.models import OrderDiscount as _OrderDiscount
 
+    from ..mixins import BluelightBasketLineMixin as BasketLine
     from ..mixins import BluelightBasketMixin as Basket
     from ..voucher.models import Voucher as _Voucher
+    from .types import LinesTuple
     from .upsells import OfferUpsell
 else:
     ExpandDownwardsCategoryQueryset = get_class(
@@ -316,8 +320,29 @@ class Benefit(AbstractBenefit):
             }
         return text
 
+    def get_applicable_lines(
+        self,
+        offer: ConditionalOffer,
+        basket: Basket,
+        range: AbstractRange | None = None,
+    ) -> list[LinesTuple]:
+        """
+        Return the basket lines that are available to be discounted, with line filter strategy applied.
+
+        This method first calls the parent implementation to get the base applicable lines,
+        then applies the configured line filter strategy to potentially filter the results
+        based on custom logic.
+        """
+        # Get the base applicable lines from parent implementation
+        line_tuples = super().get_applicable_lines(offer, basket, range)
+        # Apply line filter strategy
+        strategy = get_line_filter_strategy()
+        return strategy.filter_lines(offer, basket, line_tuples)
+
 
 class Condition(AbstractCondition):
+    _satisfying_lines: list[BasketLine] = []
+
     def proxy(self) -> Condition:
         if self.proxy_class:
             Klass = load_proxy(self.proxy_class)
@@ -357,9 +382,42 @@ class Condition(AbstractCondition):
         )
 
     def get_upsell_details(
-        self, offer: ConditionalOffer, basket: Basket
+        self,
+        offer: ConditionalOffer,
+        basket: Basket,
     ) -> OfferUpsell | None:
         return None
+
+    def get_applicable_lines(
+        self,
+        offer: ConditionalOffer,
+        basket: Basket,
+        most_expensive_first: bool = True,
+    ) -> list[LinesTuple]:
+        """
+        Return line data for the lines that can be consumed by this condition
+        """
+        line_tuples = []
+        for line in basket.all_lines():
+            if not self.can_apply_condition(line):
+                continue
+            price = unit_price(offer, line)
+            if price is None:
+                continue
+            line_tuples.append((price, line))
+        key = operator.itemgetter(0)
+        if most_expensive_first:
+            return sorted(line_tuples, reverse=True, key=key)
+        return sorted(line_tuples, key=key)
+
+    def get_satisfying_lines(self) -> list[BasketLine]:
+        """Return list of basket lines that satisfied this condition."""
+        return getattr(self, "_satisfying_lines", [])
+
+    def get_satisfying_products(self) -> list[Product]:
+        """Return list of products that satisfied this condition."""
+        lines = self.get_satisfying_lines()
+        return [line.product for line in lines]
 
     def clean(self) -> None:
         if self.type:
