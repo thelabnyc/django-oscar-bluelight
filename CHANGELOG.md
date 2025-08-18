@@ -1,5 +1,18 @@
 # Changes
 
+## v5.11.0 (2025-08-18)
+
+### Feat
+
+- add system for tracking while lines caused a condition to be satisfied (#29620)
+- add pluggable line filter strategy system for offer benefits (#29620)
+
+### Fix
+
+- fix bug where consumption of individual offers was not being tracked correctly within BluelightLineOfferConsumer (#29620)
+- patch bug where zero cost basket lines were not consumed by conditions (#29620)
+- docker file fixups for local dev
+
 ## v5.10.2 (2025-07-16)
 
 ### Fix
