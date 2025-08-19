@@ -164,6 +164,8 @@ class ConditionalOffer(AbstractConditionalOffer):
         ),
     )
 
+    _condition_satisfying_lines: list[BasketLine] | None = None
+
     class Meta:
         ordering = ("-offer_group__priority", "-priority", "pk")
 
@@ -207,6 +209,7 @@ class ConditionalOffer(AbstractConditionalOffer):
         return self.condition.proxy().get_upsell_details(self, basket)
 
     def apply_benefit(self, basket: Basket) -> ApplicationResult:
+        self.reset_condition_satisfying_lines()
         try:
             return super().apply_benefit(basket)
         except Exception as e:
@@ -221,6 +224,21 @@ class ConditionalOffer(AbstractConditionalOffer):
         )
 
     record_usage.alters_data = True  # type:ignore[attr-defined]
+
+    def reset_condition_satisfying_lines(self) -> None:
+        self._condition_satisfying_lines = []
+
+    def add_condition_satisfying_lines(self, lines: list[BasketLine]) -> None:
+        """Set the list of basket lines that satisfied the offer's condition."""
+        if self._condition_satisfying_lines is None:
+            self._condition_satisfying_lines = []
+        self._condition_satisfying_lines += [
+            line for line in lines if line not in self._condition_satisfying_lines
+        ]
+
+    def get_condition_satisfying_lines(self) -> list[BasketLine]:
+        """Get the list of basket lines that satisfied the offer's condition."""
+        return self._condition_satisfying_lines or []
 
 
 class Benefit(AbstractBenefit):
@@ -409,15 +427,6 @@ class Condition(AbstractCondition):
         if most_expensive_first:
             return sorted(line_tuples, reverse=True, key=key)
         return sorted(line_tuples, key=key)
-
-    def get_satisfying_lines(self) -> list[BasketLine]:
-        """Return list of basket lines that satisfied this condition."""
-        return getattr(self, "_satisfying_lines", [])
-
-    def get_satisfying_products(self) -> list[Product]:
-        """Return list of products that satisfied this condition."""
-        lines = self.get_satisfying_lines()
-        return [line.product for line in lines]
 
     def clean(self) -> None:
         if self.type:

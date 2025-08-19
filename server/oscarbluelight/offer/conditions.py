@@ -74,11 +74,8 @@ class BluelightCountCondition(CountCondition):
                 satisfying_lines.append(line)
                 num_matches += line.quantity_without_offer_discount(offer)
                 if num_matches >= self.value:
-                    self._satisfying_lines = satisfying_lines
+                    offer.add_condition_satisfying_lines(satisfying_lines)
                     return True
-
-        # Condition not satisfied, don't store any lines
-        self._satisfying_lines = []
         return False
 
     def _get_num_matches(self, basket: Basket, offer: ConditionalOffer) -> int:
@@ -208,10 +205,8 @@ class BluelightCoverageCondition(CoverageCondition):
                 covered_ids.append(product.id)
                 satisfying_lines.append(line)
             if len(covered_ids) >= self.value:
-                self._satisfying_lines = satisfying_lines
+                offer.add_condition_satisfying_lines(satisfying_lines)
                 return True
-        # Condition not satisfied, don't store any lines
-        self._satisfying_lines = []
         return False
 
     def consume_items(
@@ -301,10 +296,8 @@ class BluelightValueCondition(ValueCondition):
                 price = self._get_unit_price(offer, line)
                 value_of_matches += price * int(quantity_available)
                 if value_of_matches >= self.value:
-                    self._satisfying_lines = satisfying_lines
+                    offer.add_condition_satisfying_lines(satisfying_lines)
                     return True
-        # Condition not satisfied, don't store any lines
-        self._satisfying_lines = []
         return False
 
     def get_upsell_details(
@@ -457,23 +450,7 @@ class CompoundCondition(Condition):
             )
 
     def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
-        satisfying_lines: list[BasketLine] = []
-        result = self._get_conjunction_root_memo(self.conjunction)
-        for c in self.children:
-            condition = c.proxy()
-            subresult = condition.is_satisfied(offer, basket)
-            # Aggregate satisfying lines from each subcondition that was satisfied
-            # (even if the overall compound condition might fail due to AND logic)
-            if subresult and hasattr(condition, "get_satisfying_lines"):
-                # Avoid duplicates by checking if line already tracked
-                for line in condition.get_satisfying_lines():
-                    if line not in satisfying_lines:
-                        satisfying_lines.append(line)
-            result = self._apply_conjunction(self.conjunction, result, subresult)
-        # Always store lines from satisfied subconditions, regardless of overall result
-        # This allows tracking which subconditions were satisfied even if the compound failed
-        self._satisfying_lines = satisfying_lines
-        return result
+        return self._reduce_results(self.conjunction, "is_satisfied", offer, basket)
 
     def is_partially_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         return self._reduce_results(
