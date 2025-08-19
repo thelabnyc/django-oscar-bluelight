@@ -1,5 +1,11 @@
 # Changes
 
+## v5.11.1 (2025-08-18)
+
+### Fix
+
+- satisfying_lines tracking code being reset due to how condition proxies work (#29620)
+
 ## v5.11.0 (2025-08-18)
 
 ### Feat
