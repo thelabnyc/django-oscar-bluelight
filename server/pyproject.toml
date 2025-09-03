@@ -46,7 +46,7 @@ dev = [
     "types-psycopg2 (>=2.9.21.20250809,<3)",
     "djangorestframework-stubs (==3.16.2)",
     "celery-types (==0.23.0)",
-    "tox-uv>=1.26.1",
+    "tox-uv>=1.28.0",
 ]
 
 [tool.hatch.metadata]
