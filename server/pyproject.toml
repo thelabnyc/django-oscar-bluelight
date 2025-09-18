@@ -43,7 +43,7 @@ dev = [
     "django-haystack @ git+https://github.com/django-haystack/django-haystack.git@master",
     "django-stubs (==5.2.5)",
     "mypy (==1.18.1)",
-    "types-psycopg2 (>=2.9.21.20250809,<3)",
+    "types-psycopg2 (>=2.9.21.20250915,<3)",
     "djangorestframework-stubs (==3.16.2)",
     "celery-types (==0.23.0)",
     "tox-uv>=1.28.0",
