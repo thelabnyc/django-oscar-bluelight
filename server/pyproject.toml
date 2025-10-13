@@ -35,7 +35,7 @@ dev = [
     "django-redis (==6.0.0)",
     "ruff (>=0.13.3)",
     "hiredis (==3.2.1)",
-    "psycopg2-binary (==2.9.10)",
+    "psycopg2-binary (==2.9.11)",
     "redis (==6.4.0)",
     "sorl-thumbnail (==12.11.0)",
     "tox (==4.30.3)",
