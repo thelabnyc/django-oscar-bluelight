@@ -10,7 +10,7 @@ stages:
 
 services:
   - postgres:latest@sha256:b5b154cfe5bfed10a2e68f9d064ab76cebf28b4c80bedf714e6b500f839fbe9d
-  - redis:latest@sha256:f0957bcaa75fd58a9a1847c1f07caf370579196259d69ac07f2e27b5b389b021
+  - redis:latest@sha256:4521b581dbddea6e7d81f8fe95ede93f5648aaa66a9dacd581611bf6fe7527bd
 
 cache:
   key: '$CI_PROJECT_NAME'
