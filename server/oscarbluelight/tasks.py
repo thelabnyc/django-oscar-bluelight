@@ -10,8 +10,13 @@ from django.conf import settings
 if TYPE_CHECKING:
     from celery.app.task import Task as _CeleryTask
     from celery.result import AsyncResult as _CeleryAsyncResult
-    from django_tasks.task import Task as _DjTask
-    from django_tasks.task import TaskResult as _DjTaskResult
+
+    try:
+        from django_tasks.base import Task as _DjTask
+        from django_tasks.base import TaskResult as _DjTaskResult
+    except ImportError:  # django-tasks prior to 0.9.0
+        from django_tasks.task import Task as _DjTask  # type:ignore
+        from django_tasks.task import TaskResult as _DjTaskResult  # type:ignore
 else:
     _CeleryTask = Callable
     _CeleryAsyncResult = Generic
