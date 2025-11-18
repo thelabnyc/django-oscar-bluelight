@@ -1,7 +1,7 @@
 # =============================================================================
 # NodeJS Static Assets
 # =============================================================================
-FROM node:24@sha256:c5453ea1ee7bffb453d5a0ce464249be8c5f67e24509a1769b70595c61ff7f2f AS client
+FROM node:24@sha256:aa648b387728c25f81ff811799bbf8de39df66d7e2d9b3ab55cc6300cb9175d9 AS client
 
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/client
