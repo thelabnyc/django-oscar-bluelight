@@ -453,7 +453,11 @@ class OfferGroupApplicatorTest(TestCase):
         self.all_products.includes_all_products = True
         self.all_products.save()
         self.user = User.objects.create_user(
-            "john", "lennon@thebeatles.com", "johnpassword"
+            "john",
+            "lennon@thebeatles.com",
+            "johnpassword",
+            is_staff=True,
+            is_superuser=True,
         )
 
     @mock.patch("oscarbluelight.offer.applicator.pre_offers_apply.send")
@@ -1392,7 +1396,11 @@ class OfferGroupViewSetTest(TestCase):
             self.offer_group.offers.add(offer)
 
         User.objects.create_user(
-            "john", "lennon@thebeatles.com", "johnpassword", is_staff=True
+            "john",
+            "lennon@thebeatles.com",
+            "johnpassword",
+            is_staff=True,
+            is_superuser=True,
         )
 
     def test_get_list(self):
