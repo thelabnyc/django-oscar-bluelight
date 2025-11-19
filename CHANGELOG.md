@@ -1,5 +1,18 @@
 # Changes
 
+## v5.11.2 (2025-11-19)
+
+### Fix
+
+- **deps**: update dependency django-oscar to >=4.1,<4.2
+- **deps**: update dependency django-tasks to >=0.9.0,<0.9.1
+- **deps**: update dependency django-tasks to >=0.9.0,<0.9.1
+- **deps**: update dependency thelabdb to >=0.5.1
+- **deps**: update dependency django-tasks to >=0.8.1
+- **deps**: update dependency djangorestframework to >=3.16.1,<4
+- **deps**: update dependency celery to >=5.5.3
+- prevent renovate from pointing all URLs at gitlab
+
 ## v5.11.1 (2025-08-18)
 
 ### Fix
