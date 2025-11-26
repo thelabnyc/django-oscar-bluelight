@@ -1016,6 +1016,94 @@ class CompoundConditionTest(BaseTest):
         self.assertEqual(basket.num_items_without_discount, 0)
         self.assertEqual(basket.num_items_with_discount, 3)
 
+    def test_get_applicable_lines(self):
+        """Test that CompoundCondition.get_applicable_lines() aggregates lines from subconditions."""
+        # Create three products with different prices
+        product_a = create_product(title="Product A")
+        create_stockrecord(product_a, D("100.00"), num_in_stock=100)
+
+        product_b = create_product(title="Product B")
+        create_stockrecord(product_b, D("50.00"), num_in_stock=100)
+
+        product_c = create_product(title="Product C")
+        create_stockrecord(product_c, D("75.00"), num_in_stock=100)
+
+        # Create two ranges
+        range_ab = Range.objects.create(name="Products A and B")
+        range_ab.add_product(product_a)
+        range_ab.add_product(product_b)
+
+        range_bc = Range.objects.create(name="Products B and C")
+        range_bc.add_product(product_b)
+        range_bc.add_product(product_c)
+
+        # Create two count conditions
+        cond_ab = Condition()
+        cond_ab.proxy_class = "oscarbluelight.offer.conditions.BluelightCountCondition"
+        cond_ab.value = 1
+        cond_ab.range = range_ab
+        cond_ab.save()
+
+        cond_bc = Condition()
+        cond_bc.proxy_class = "oscarbluelight.offer.conditions.BluelightCountCondition"
+        cond_bc.value = 1
+        cond_bc.range = range_bc
+        cond_bc.save()
+
+        # Create compound condition with AND
+        compound = CompoundCondition()
+        compound.proxy_class = "oscarbluelight.offer.conditions.CompoundCondition"
+        compound.conjunction = Conjunction.AND
+        compound.save()
+        compound.subconditions.set([cond_ab, cond_bc])
+
+        # Create a simple benefit and offer
+        benefit = Benefit()
+        benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightShippingFixedPriceBenefit"
+        )
+        benefit.value = 0
+        benefit.save()
+
+        offer = ConditionalOffer()
+        offer.condition = compound
+        offer.benefit = benefit
+        offer.save()
+
+        # Create basket with all three products
+        basket = create_basket(empty=True)
+        basket.add_product(product_a, quantity=1)
+        basket.add_product(product_b, quantity=1)
+        basket.add_product(product_c, quantity=1)
+
+        # Get applicable lines from compound condition
+        condition = compound.proxy()
+        applicable_lines = condition.get_applicable_lines(
+            offer, basket, most_expensive_first=True
+        )
+
+        # Should return all three products (union of both subconditions)
+        # Product A is in range_ab, Product C is in range_bc, Product B is in both (but only once)
+        self.assertEqual(len(applicable_lines), 3)
+
+        # Should be sorted by price, most expensive first
+        self.assertEqual(applicable_lines[0][1].product, product_a)  # $100
+        self.assertEqual(applicable_lines[1][1].product, product_c)  # $75
+        self.assertEqual(applicable_lines[2][1].product, product_b)  # $50
+
+        # Verify prices are correct
+        self.assertEqual(applicable_lines[0][0], D("100.00"))
+        self.assertEqual(applicable_lines[1][0], D("75.00"))
+        self.assertEqual(applicable_lines[2][0], D("50.00"))
+
+        # Test sorting in reverse (least expensive first)
+        applicable_lines = condition.get_applicable_lines(
+            offer, basket, most_expensive_first=False
+        )
+        self.assertEqual(applicable_lines[0][1].product, product_b)  # $50
+        self.assertEqual(applicable_lines[1][1].product, product_c)  # $75
+        self.assertEqual(applicable_lines[2][1].product, product_a)  # $100
+
 
 class ConditionURL(TestCase):
     def setUp(self):
