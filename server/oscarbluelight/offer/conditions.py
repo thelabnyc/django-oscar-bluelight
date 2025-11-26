@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from decimal import ROUND_UP, Decimal
 from typing import TYPE_CHECKING, Any, Literal
+import operator
 
 from django.core import exceptions
 from django.db import models
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from ..mixins import BluelightBasketLineMixin as BasketLine
     from ..mixins import BluelightBasketMixin as Basket
     from .models import ConditionalOffer
-    from .types import AffectedLines
+    from .types import AffectedLines, LinesTuple
 
 
 def _default_clean(self: Condition) -> None:
@@ -493,6 +494,36 @@ class CompoundCondition(Condition):
             if not complete and partial:
                 messages.append(condition.get_upsell_message(offer, basket))
         return human_readable_conjoin(self.conjunction, messages)
+
+    def get_applicable_lines(
+        self, offer: ConditionalOffer, basket: Basket, most_expensive_first: bool = True
+    ) -> list[LinesTuple]:
+        """
+        Return line data for the lines that can be consumed by this compound condition.
+
+        This aggregates applicable lines from all subconditions, returning the union
+        of lines that satisfy any of the subconditions.
+        """
+
+        # collect the lines from all subconditions, using a dict to avoid duplicates
+        lines_dict: dict[int, LinesTuple] = {}
+
+        for subcondition in self.children:
+            condition = subcondition.proxy()
+            line_tuples = condition.get_applicable_lines(
+                offer, basket, most_expensive_first=False
+            )
+            for price, line in line_tuples:
+                # Keep the first price we see for each line
+                if line.pk not in lines_dict:
+                    lines_dict[line.pk] = (price, line)
+
+        # Convert dict back to list and sort
+        line_tuples = list(lines_dict.values())
+        key = operator.itemgetter(0)
+        if most_expensive_first:
+            return sorted(line_tuples, reverse=True, key=key)
+        return sorted(line_tuples, key=key)
 
     def consume_items(
         self,
