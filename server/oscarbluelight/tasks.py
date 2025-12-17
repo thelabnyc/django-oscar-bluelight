@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from enum import StrEnum
+from functools import partial
 from typing import TYPE_CHECKING, Generic, assert_never
 import sys
 
 from django.conf import settings
+from django.db import transaction
 
 if TYPE_CHECKING:
     from celery.app.task import Task as _CeleryTask
@@ -64,7 +66,7 @@ class DjTasksTask[**P, T](Task[P, T]):
     def __init__(self, fn: Callable[P, T]) -> None:
         from django_tasks import task
 
-        self.fn = task(enqueue_on_commit=self.enqueue_on_commit)(fn)
+        self.fn = task()(fn)
 
     @property
     def enqueue_on_commit(self) -> bool:
@@ -80,7 +82,10 @@ class DjTasksTask[**P, T](Task[P, T]):
         return self.fn.call(*args, **kwargs)
 
     def enqueue(self, *args: P.args, **kwargs: P.kwargs) -> None:
-        self.fn.enqueue(*args, **kwargs)
+        if self.enqueue_on_commit:
+            transaction.on_commit(partial(self.fn.enqueue, *args, **kwargs))
+        else:
+            self.fn.enqueue(*args, **kwargs)
 
 
 def task[**P, T](fn: Callable[P, T]) -> Task[P, T]:
