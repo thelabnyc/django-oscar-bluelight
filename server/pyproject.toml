@@ -25,7 +25,7 @@ Homepage = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
 Repository = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
 
 [project.optional-dependencies]
-celery = ["celery (>=5.6.1)"]
+celery = ["celery (>=5.6.2)"]
 django-tasks = ["django-tasks (>=0.10.0,<0.10.1)"]
 
 [dependency-groups]

@@ -492,7 +492,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "celery", marker = "extra == 'celery'", specifier = ">=5.6.1" },
+    { name = "celery", marker = "extra == 'celery'", specifier = ">=5.6.2" },
     { name = "django", specifier = ">=5.2" },
     { name = "django-oscar", specifier = ">=4.0,<4.2" },
     { name = "django-tasks", marker = "extra == 'django-tasks'", specifier = ">=0.10.0,<0.10.1" },
