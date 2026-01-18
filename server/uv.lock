@@ -464,7 +464,7 @@ dev = [
     { name = "mypy", specifier = "==1.19.1" },
     { name = "psycopg2-binary", specifier = "==2.9.11" },
     { name = "redis", specifier = "==7.1.0" },
-    { name = "ruff", specifier = ">=0.14.12" },
+    { name = "ruff", specifier = ">=0.14.13" },
     { name = "sorl-thumbnail", specifier = "==12.11.0" },
     { name = "tox", specifier = "==4.34.1" },
     { name = "tox-uv", specifier = ">=1.29.0" },
