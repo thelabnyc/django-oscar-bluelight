@@ -318,20 +318,24 @@ class Voucher(AbstractVoucher):
         batch_size: int = 1_000,
         update_children: bool = True,
     ) -> set[str]:
-        children = []
+        if len(codes) <= 0:
+            return set()
         copy_fields = (
             "usage",
             "start_datetime",
             "end_datetime",
             "limit_usage_by_group",
         )
-        for code in codes:
-            child = self.__class__()
-            child.parent = self
-            child.code = code
-            for field in copy_fields:
-                setattr(child, field, getattr(self, field))
-            children.append(child)
+        # Pre-read parent fields once
+        parent_field_values = {field: getattr(self, field) for field in copy_fields}
+        children = [
+            self.__class__(
+                parent=self,
+                code=code,
+                **parent_field_values,
+            )
+            for code in codes
+        ]
         # Bulk insert all the new codes
         objs = self.__class__.objects.bulk_create(
             children,
@@ -345,27 +349,59 @@ class Voucher(AbstractVoucher):
         return {obj.code for obj in objs}
 
     def _get_child_code_batch(self, num_codes: int) -> list[str]:
-        # The empty .order_by() clause is important here to prevent introducing
-        # a bunch of JOINs for ordering by priority.
-        existing_codes = set(
-            self.__class__.objects.filter(code__startswith=self.code)
-            .order_by()
-            .values_list("code", flat=True)
-            .iterator()
-        )
+        if num_codes <= 0:
+            return []
+        # Track uniqueness within this generated batch first.
+        generated: set[str] = set()
+        new_codes: list[str] = []
+        remaining = num_codes
+        chunk_size = 10_000
+        # In a perfect world with 0 conflicts, we need ceil(num_codes / chunk_size) rounds.
+        # Conflicts can force extra rounds, so allow a reasonable safety margin by multiplying.
+        base_rounds = (num_codes + chunk_size - 1) // chunk_size
+        max_rounds = max(5, base_rounds * 3)
+        rounds = 0
 
+        # Uniqueness check for code generation
         def check_code_is_unique(code: str) -> bool:
-            return code not in existing_codes
+            if code in generated:
+                return False
+            generated.add(code)
+            return True
 
-        new_codes = []
-        for i in range(num_codes):
-            new_codes.append(
-                self._get_child_code(
+        while remaining > 0:
+            rounds += 1
+            if rounds > max_rounds:
+                raise RuntimeError(
+                    _("Couldn't find enough unique child codes after %s rounds.")
+                    % max_rounds
+                )
+            take = min(remaining, chunk_size)
+            # Generate candidates (ensure uniqueness inside this batch).
+            candidates: list[str] = []
+            start_index = len(new_codes)
+            end_index = start_index + take
+            for i in range(start_index, end_index):
+                code = self._get_child_code(
                     code_index=i,
                     max_index=num_codes,
                     check_code_is_unique=check_code_is_unique,
                 )
+                candidates.append(code)
+            # Check for conflicts against all existing voucher codes
+            # to ensure global uniqueness of voucher codes across the system
+            existing_codes = set(
+                self.__class__.objects.filter(code__in=candidates).values_list(
+                    "code", flat=True
+                )
             )
+            eligible_codes = (
+                candidates
+                if len(existing_codes) <= 0
+                else [c for c in candidates if c not in existing_codes]
+            )
+            new_codes.extend(eligible_codes)
+            remaining = num_codes - len(new_codes)
         return new_codes
 
     def _get_child_code(

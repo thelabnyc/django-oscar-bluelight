@@ -168,7 +168,7 @@ class VoucherStatsView(DefaultVoucherStatsView):  # type:ignore[no-redef]
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         # Child vouchers
-        ctx["children"] = self.object.list_children().order_by("code")
+        ctx["children_count"] = self.object.children.count()
         # Related orders
         discounts = self.get_related_order_discounts()
         paginator = Paginator(discounts, settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE)
