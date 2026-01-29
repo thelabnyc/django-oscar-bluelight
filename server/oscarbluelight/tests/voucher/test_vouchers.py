@@ -1,4 +1,5 @@
 from decimal import Decimal as D
+from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser, Group, User
 from django.test import TestCase, override_settings
@@ -164,6 +165,61 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(c1.end_datetime, p.end_datetime)
         self.assertFalse(c1.limit_usage_by_group)
 
+    def test_create_children_mixed_auto_and_custom(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+        custom_codes = ["CUSTOM-A", "CUSTOM-B"]
+        p.create_children(auto_generate_count=5, custom_codes=custom_codes)
+        self.assertEqual(p.children.all().count(), 7)
+        # Verify custom codes exist
+        created_codes = set(p.children.values_list("code", flat=True))
+        self.assertIn("CUSTOM-A", created_codes)
+        self.assertIn("CUSTOM-B", created_codes)
+        # Verify auto-generated codes exist
+        auto_codes = [c for c in created_codes if c.startswith("TEST-VOUCHER-")]
+        self.assertEqual(len(auto_codes), 5)
+
+    def test_create_children_with_custom_codes(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+        custom_codes = ["CUSTOM-1", "CUSTOM-2", "CUSTOM-3"]
+        p.create_children(custom_codes=custom_codes)
+        self.assertEqual(
+            set(p.children.values_list("code", flat=True)),
+            {"CUSTOM-1", "CUSTOM-2", "CUSTOM-3"},
+        )
+
+    def test_create_children_with_duplicate_custom_codes(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+        # Create initial child with custom code
+        p.create_children(custom_codes=["CUSTOM-1"])
+        self.assertEqual(set(p.children.values_list("code", flat=True)), {"CUSTOM-1"})
+        p.create_children(custom_codes=["CUSTOM-1", "CUSTOM-2"])
+        # Verify there are 2 unique codes and duplicate was silently ignored because
+        # bulk_create with ignore_conflicts=True only inserts the non-conflicting ones into the database
+        self.assertEqual(
+            set(p.children.values_list("code", flat=True)), {"CUSTOM-1", "CUSTOM-2"}
+        )
+
     def test_create_lots_of_children(self):
         p = Voucher.objects.create(
             name="Test Voucher",
@@ -175,27 +231,209 @@ class ParentChildVoucherTest(TestCase):
         )
         self.assertEqual(p.children.all().count(), 0)
 
-        # First batch. Query count should be (3 + (auto_generate_count / 1_000)), since
-        # the `bulk_create` batch size is 1_000
+        # First batch. Query count should be (3 + (auto_generate_count / 1_000) + ceil(auto_generate_count / 10_000)),
+        # since the `bulk_create` batch size is 1,000 and the round `chunk_size` is 10,000.
+        # Query breakdown:
+        # - 3 baseline (transaction start/commit + existing children count)
+        # - bulk_create batches (auto_generate_count / insert_batch_size), so for 100 thousand codes = 100 queries
+        # - check for existing codes in _get_child_code_batch: 1 query per round,
+        #   rounds = ceil(auto_generate_count / chunk_size), so for 100 thousand codes = 10 rounds
+        # Total: 3 + 100 + 10 = 113 queries
         baseline_num_queries = 3
+        round_chunk_size = 10_000
         insert_batch_size = 1_000
         auto_generate_count = 100_000
-        with self.assertNumQueries(
-            baseline_num_queries + (auto_generate_count / insert_batch_size)
-        ):
-            p.create_children(auto_generate_count=auto_generate_count)
+        # Mock _get_code_uniquifier to ensure deterministic suffixes.
+        # This prevents random collisions while still testing the actual code path with queries
+        call_count = [0]
 
-        self.assertEqual(p.children.all().count(), 100_000)
+        def mock_get_code_uniquifier(code_index, max_index, extra_length=3):
+            # Return deterministic uniquifier instead of timestamp-based one
+            call_count[0] += 1
+            index = str(code_index).zfill(len(str(max_index)))
+            suffix = str(call_count[0]).zfill(extra_length)
+            return f"{index}{suffix}"
+
+        with patch.object(
+            p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
+        ):
+            # Calculate expected queries with deterministic generation (no random conflicts)
+            rounds = (auto_generate_count + round_chunk_size - 1) // round_chunk_size
+            bulk_creates = auto_generate_count // insert_batch_size
+            expected_queries = baseline_num_queries + rounds + bulk_creates
+            with self.assertNumQueries(expected_queries):
+                p.create_children(auto_generate_count=auto_generate_count)
+            self.assertEqual(p.children.all().count(), 100_000)
 
         # Second batch. This tests the performance of checking new codes for
-        # conflicts against existing codes.
+        # no conflicts against existing codes.
+        # Query breakdown:
+        # - 3 baseline (transaction start/commit + existing children count)
+        # - bulk_create batches (auto_generate_count / insert_batch_size), so for 200 thousand codes = 200 queries
+        # - check for existing codes in _get_child_code_batch: 1 query per round,
+        #   rounds = ceil(auto_generate_count / chunk_size), so for 200 thousand codes = 20 rounds
+        # Total: 3 + 200 + 20 = 223 queries
         auto_generate_count = 200_000
-        with self.assertNumQueries(
-            baseline_num_queries + (auto_generate_count / insert_batch_size)
+        with patch.object(
+            p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
         ):
-            p.create_children(auto_generate_count=auto_generate_count)
-
+            rounds = (auto_generate_count + round_chunk_size - 1) // round_chunk_size
+            bulk_creates = auto_generate_count // insert_batch_size
+            expected_queries = baseline_num_queries + rounds + bulk_creates
+            with self.assertNumQueries(expected_queries):
+                p.create_children(auto_generate_count=auto_generate_count)
         self.assertEqual(p.children.all().count(), 300_000)
+
+    def test_create_children_with_conflict_causes_extra_rounds(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+        # Mock _get_code_uniquifier to force specific codes that will collide
+        # This way we test the actual conflict detection logic
+        call_count = [0]
+
+        def mock_get_code_uniquifier(code_index, max_index, extra_length=3):
+            call_count[0] += 1
+            index = str(code_index).zfill(len(str(max_index)))
+            # For first 500 codes, use a suffix that we'll pre-create to force conflicts
+            if call_count[0] <= 500:
+                suffix = "999"  # Will collide with pre-created codes
+            else:
+                # After conflicts, use unique suffixes
+                suffix = str(call_count[0]).zfill(extra_length)
+            return f"{index}{suffix}"
+
+        # Pre-create some codes that will conflict with generated ones.
+        # Since start_index is prefilled based on existing child count,
+        # new codes will start from index 500 (after these 500 pre-created codes).
+        # Create codes at indices 500-999 with suffix "999" to conflict with
+        # the first 500 generated codes (which start at index 500).
+        conflicted_codes = [f"TEST-VOUCHER-{i:05d}999" for i in range(500, 1000)]
+        p._create_child_batch(conflicted_codes, update_children=False)
+        self.assertEqual(p.children.all().count(), 500)
+        with patch.object(
+            p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
+        ):
+            # Request 20,000 codes
+            # First chunk (10,000 limit) will have 500 conflicts
+            # This should trigger the retry logic to generate 500 more codes
+            round_chunk_size = 10_000
+            auto_generate_count = 20_000
+            baseline_num_queries = 3
+            insert_batch_size = 1_000
+            # Query breakdown:
+            # - Round 1: Generate 10,000 codes, 500 conflicts, 9,500 codes collected
+            #   1 conflict check query
+            # - Round 2: Generate 10,000 more codes, 0 conflict, 10,000 codes collected
+            #   1 conflict check query
+            # - Round 3: Generate 500 more codes, 0 conflict, 500 codes collected
+            #   1 conflict check query
+            # - Three rounds' codes (9500 + 10,000 + 500 = 20,000)
+            #   20 bulk_create query for all 20,000 codes
+            # Total: 3 (baseline) + 3 (conflict checks = round number) + 20 (bulk_create) = 26 queries
+            rounds = (
+                (auto_generate_count + round_chunk_size - 1) // round_chunk_size
+            ) + 1  # ideal case round count plus 1 extra
+            bulk_creates = auto_generate_count // insert_batch_size
+            expected_queries = baseline_num_queries + rounds + bulk_creates
+            with self.assertNumQueries(expected_queries):
+                p.create_children(auto_generate_count=auto_generate_count)
+        self.assertEqual(
+            p.children.all().count(), 20_500
+        )  # 500 pre-existing + 20,000 new
+
+    def test_create_child_batch_empty_list(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.MULTI_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+        created_codes = p._create_child_batch([], update_children=False)
+        self.assertEqual(len(created_codes), 0)
+        self.assertEqual(p.children.all().count(), 0)
+
+    def test_get_child_code_batch_uniqueness(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+        # Generate a batch of codes
+        codes = p._get_child_code_batch(2000)
+        # All codes should be unique
+        self.assertEqual(len(codes), 2000)
+        self.assertEqual(len(set(codes)), 2000)
+
+    def test_get_child_code_batch_max_round_iterations_exceeded(self):
+        p = Voucher.objects.create(
+            name="Test Voucher",
+            code="test-voucher",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now(),
+            end_datetime=timezone.now(),
+            limit_usage_by_group=False,
+        )
+
+        call_count = [0]
+
+        def mock_get_code_uniquifier(code_index, max_index, extra_length=3):
+            call_count[0] += 1
+            index = str(code_index).zfill(len(str(max_index)))
+            # Use call_count to ensure each call returns a different value
+            return f"{index}{call_count[0]:03d}"
+
+        # Pre-create vouchers that will collide with codes for indices 0-99
+        # across all possible suffix values to cover multiple retry rounds.
+        # (simulating a concurrent job that inserted these codes with the same base count)
+        # For indices 100-109, we don't create conflicts, so they can succeed.
+        # This means out of 110 requested codes, only 10 will succeed per round,
+        # and 100 will keep failing, forcing retries until max_rounds is exceeded.
+        conflicted_codes = []
+        for i in range(100):
+            for suffix in range(600):
+                conflicted_codes.append(f"TEST-VOUCHER-{i:03d}{suffix:03d}")
+        p._create_child_batch(conflicted_codes, update_children=False)
+
+        # Mock the count to return 0 (simulating that we queried before the concurrent job inserted)
+        original_filter = p.__class__.objects.filter
+
+        def mock_filter(*args, **kwargs):
+            qs = original_filter(*args, **kwargs)
+            # Only mock the count for the startswith query (existing child count)
+            if "code__startswith" in kwargs:
+
+                class MockQS:
+                    def count(self):
+                        return 0  # Simulate race condition, we see 0 children
+
+                return MockQS()
+            return qs
+
+        with patch.object(p.__class__.objects, "filter", side_effect=mock_filter):
+            with patch.object(
+                p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
+            ):
+                # For 110 codes with chunk_size=10,000, base_rounds=1, max_rounds=max(5, 1*3)=5
+                # Codes for indices 100-109 will succeed, but codes for indices 0-99
+                # will always collide (start_index = 0 from mocked count), forcing retries.
+                # This continues until max_rounds is exceeded.
+                with self.assertRaises(RuntimeError) as cm:
+                    p._get_child_code_batch(110)
+                self.assertEqual(
+                    "Couldn't find enough unique child codes after 5 rounds.",
+                    str(cm.exception),
+                )
 
     def test_update_parent(self):
         customer = Group.objects.create(name="Customers")
