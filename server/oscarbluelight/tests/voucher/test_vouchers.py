@@ -231,15 +231,15 @@ class ParentChildVoucherTest(TestCase):
         )
         self.assertEqual(p.children.all().count(), 0)
 
-        # First batch. Query count should be (2 + (auto_generate_count / 1_000) + ceil(auto_generate_count / 10_000)),
+        # First batch. Query count should be (3 + (auto_generate_count / 1_000) + ceil(auto_generate_count / 10_000)),
         # since the `bulk_create` batch size is 1,000 and the round `chunk_size` is 10,000.
         # Query breakdown:
-        # - 2 baseline (transaction start/commit)
+        # - 3 baseline (transaction start/commit + existing children count)
         # - bulk_create batches (auto_generate_count / insert_batch_size), so for 100 thousand codes = 100 queries
         # - check for existing codes in _get_child_code_batch: 1 query per round,
         #   rounds = ceil(auto_generate_count / chunk_size), so for 100 thousand codes = 10 rounds
-        # Total: 2 + 100 + 10 = 112 queries
-        baseline_num_queries = 2
+        # Total: 3 + 100 + 10 = 113 queries
+        baseline_num_queries = 3
         round_chunk_size = 10_000
         insert_batch_size = 1_000
         auto_generate_count = 100_000
@@ -268,11 +268,11 @@ class ParentChildVoucherTest(TestCase):
         # Second batch. This tests the performance of checking new codes for
         # no conflicts against existing codes.
         # Query breakdown:
-        # - 2 baseline (transaction start/commit)
+        # - 3 baseline (transaction start/commit + existing children count)
         # - bulk_create batches (auto_generate_count / insert_batch_size), so for 200 thousand codes = 200 queries
         # - check for existing codes in _get_child_code_batch: 1 query per round,
         #   rounds = ceil(auto_generate_count / chunk_size), so for 200 thousand codes = 20 rounds
-        # Total: 2 + 200 + 20 = 222 queries
+        # Total: 3 + 200 + 20 = 223 queries
         auto_generate_count = 200_000
         with patch.object(
             p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
@@ -308,9 +308,12 @@ class ParentChildVoucherTest(TestCase):
                 suffix = str(call_count[0]).zfill(extra_length)
             return f"{index}{suffix}"
 
-        # Pre-create some codes that will conflict with generated ones
-        # Create codes with the pattern that will match first 500 generated codes
-        conflicted_codes = [f"TEST-VOUCHER-{i:05d}999" for i in range(500)]
+        # Pre-create some codes that will conflict with generated ones.
+        # Since start_index is prefilled based on existing child count,
+        # new codes will start from index 500 (after these 500 pre-created codes).
+        # Create codes at indices 500-999 with suffix "999" to conflict with
+        # the first 500 generated codes (which start at index 500).
+        conflicted_codes = [f"TEST-VOUCHER-{i:05d}999" for i in range(500, 1000)]
         p._create_child_batch(conflicted_codes, update_children=False)
         self.assertEqual(p.children.all().count(), 500)
         with patch.object(
@@ -321,7 +324,7 @@ class ParentChildVoucherTest(TestCase):
             # This should trigger the retry logic to generate 500 more codes
             round_chunk_size = 10_000
             auto_generate_count = 20_000
-            baseline_num_queries = 2
+            baseline_num_queries = 3
             insert_batch_size = 1_000
             # Query breakdown:
             # - Round 1: Generate 10,000 codes, 500 conflicts, 9,500 codes collected
@@ -332,7 +335,7 @@ class ParentChildVoucherTest(TestCase):
             #   1 conflict check query
             # - Three rounds' codes (9500 + 10,000 + 500 = 20,000)
             #   20 bulk_create query for all 20,000 codes
-            # Total: 2 (baseline) + 3 (conflict checks = round number) + 20 (bulk_create) = 25 queries
+            # Total: 3 (baseline) + 3 (conflict checks = round number) + 20 (bulk_create) = 26 queries
             rounds = (
                 (auto_generate_count + round_chunk_size - 1) // round_chunk_size
             ) + 1  # ideal case round count plus 1 extra
@@ -391,29 +394,46 @@ class ParentChildVoucherTest(TestCase):
             return f"{index}{call_count[0]:03d}"
 
         # Pre-create vouchers that will collide with codes for indices 0-99
-        # across all possible suffix values (to cover multiple retry rounds).
+        # across all possible suffix values to cover multiple retry rounds.
+        # (simulating a concurrent job that inserted these codes with the same base count)
         # For indices 100-109, we don't create conflicts, so they can succeed.
         # This means out of 110 requested codes, only 10 will succeed per round,
         # and 100 will keep failing, forcing retries until max_rounds is exceeded.
         conflicted_codes = []
-        for i in range(100):  # Only indices 0-99 will have conflicts
-            # Mock generates the '550' suffix max across 5 rounds. So cover all to create conflicts
+        for i in range(100):
             for suffix in range(600):
                 conflicted_codes.append(f"TEST-VOUCHER-{i:03d}{suffix:03d}")
         p._create_child_batch(conflicted_codes, update_children=False)
 
-        with patch.object(
-            p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
-        ):
-            # For 110 codes with chunk_size=10,000, base_rounds=1, max_rounds=max(5, 1*3)=5
-            # Codes for indices 100-109 will succeed, but codes for indices 0-99
-            # will always collide, forcing retries. This continues until max_rounds is exceeded.
-            with self.assertRaises(RuntimeError) as cm:
-                p._get_child_code_batch(110)
-            self.assertEqual(
-                "Couldn't find enough unique child codes after 5 rounds.",
-                str(cm.exception),
-            )
+        # Mock the count to return 0 (simulating that we queried before the concurrent job inserted)
+        original_filter = p.__class__.objects.filter
+
+        def mock_filter(*args, **kwargs):
+            qs = original_filter(*args, **kwargs)
+            # Only mock the count for the startswith query (existing child count)
+            if "code__startswith" in kwargs:
+
+                class MockQS:
+                    def count(self):
+                        return 0  # Simulate race condition, we see 0 children
+
+                return MockQS()
+            return qs
+
+        with patch.object(p.__class__.objects, "filter", side_effect=mock_filter):
+            with patch.object(
+                p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
+            ):
+                # For 110 codes with chunk_size=10,000, base_rounds=1, max_rounds=max(5, 1*3)=5
+                # Codes for indices 100-109 will succeed, but codes for indices 0-99
+                # will always collide (start_index = 0 from mocked count), forcing retries.
+                # This continues until max_rounds is exceeded.
+                with self.assertRaises(RuntimeError) as cm:
+                    p._get_child_code_batch(110)
+                self.assertEqual(
+                    "Couldn't find enough unique child codes after 5 rounds.",
+                    str(cm.exception),
+                )
 
     def test_update_parent(self):
         customer = Group.objects.create(name="Customers")

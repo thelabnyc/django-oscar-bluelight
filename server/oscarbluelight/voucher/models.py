@@ -361,6 +361,10 @@ class Voucher(AbstractVoucher):
         base_rounds = (num_codes + chunk_size - 1) // chunk_size
         max_rounds = max(5, base_rounds * 3)
         rounds = 0
+        existing_child_count = self.__class__.objects.filter(
+            code__startswith=f"{self.code}-"
+        ).count()
+        max_index = existing_child_count + num_codes
 
         # Uniqueness check for code generation
         def check_code_is_unique(code: str) -> bool:
@@ -379,12 +383,13 @@ class Voucher(AbstractVoucher):
             take = min(remaining, chunk_size)
             # Generate candidates (ensure uniqueness inside this batch).
             candidates: list[str] = []
-            start_index = len(new_codes)
+            # Prefill start_index based on existing children to avoid code space exhaustion.
+            start_index = existing_child_count + len(new_codes)
             end_index = start_index + take
             for i in range(start_index, end_index):
                 code = self._get_child_code(
                     code_index=i,
-                    max_index=num_codes,
+                    max_index=max_index,
                     check_code_is_unique=check_code_is_unique,
                 )
                 candidates.append(code)
