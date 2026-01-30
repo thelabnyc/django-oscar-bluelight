@@ -1,4 +1,23 @@
-# Changes
+## v5.12.0 (2026-01-30)
+
+### Feat
+
+- support Python 3.14
+
+### Fix
+
+- avoid voucher code space exhaustion by pre-filling start_index
+- optimize voucher child creation and uniqueness checks
+- **deps**: update dependency django-tasks to >=0.11.0,<0.11.1
+- **deps**: update dependency celery to >=5.6.2
+- **deps**: update dependency celery to >=5.6.1
+- **deps**: update dependency thelabdb to >=0.6.1
+- **deps**: update dependency django-tasks to >=0.10.0,<0.10.1
+- **deps**: update dependency django to >=5.2
+- **deps**: update dependency django to >=4.2.27
+- **deps**: update dependency thelabdb to >=0.6.0
+- **deps**: update dependency celery to >=5.6.0
+- override get_applicable_lines() in CompoundCondition
 
 ## v5.11.2 (2025-11-19)
 
