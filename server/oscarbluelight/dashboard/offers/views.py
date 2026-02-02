@@ -17,12 +17,17 @@ from django.contrib import messages
 from django.core import serializers
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from oscar.apps.dashboard.offers import views
 from oscar.apps.dashboard.offers.views import *  # noqa
+from oscar.apps.dashboard.offers.views import (  # type: ignore[attr-defined]
+    sort_queryset,
+)
 from oscar.core.loading import get_class
 
 from oscarbluelight.offer.models import (
@@ -33,6 +38,7 @@ from oscarbluelight.offer.models import (
     ConditionalOffer,
     OfferGroup,
 )
+from oscarbluelight.voucher.models import Voucher
 
 from .forms import (
     BenefitForm,
@@ -201,15 +207,112 @@ class OfferListView(views.OfferListView):  # type:ignore[no-redef]
     form_class = OfferSearchForm
 
     def get_queryset(self) -> QuerySet[ConditionalOffer]:
-        qs = super().get_queryset()
-        if self.form.is_valid():
-            offer_group_slug = self.form.cleaned_data["offer_group"]
-            if offer_group_slug:
-                qs = qs.filter(offer_group__slug=offer_group_slug).distinct()
-                self.search_filters.append(
-                    _('Offer Group matches "%s"') % offer_group_slug
+        self.search_filters = []
+
+        # Start with base queryset WITHOUT voucher_count annotation
+        # We'll compute voucher_count after pagination to avoid N subquery executions
+        qs = self.model._default_manager.select_related(
+            "benefit", "condition", "offer_group"
+        )
+
+        qs = sort_queryset(
+            qs,
+            self.request,
+            [
+                "name",
+                "offer_type",
+                "start_datetime",
+                "end_datetime",
+                "num_applications",
+                "total_discount",
+            ],
+        )
+
+        self.form = self.form_class(self.request.GET)
+        self.advanced_form = self.form_class(self.request.GET, auto_id="id_advanced_%s")
+        if not all([self.form.is_valid(), self.advanced_form.is_valid()]):
+            # Add explicit ordering to fix UnorderedObjectListWarning
+            # Only apply if sort_queryset didn't already set ordering
+            if not qs.query.order_by:
+                qs = qs.order_by("-offer_group__priority", "-priority", "pk")
+            return qs
+
+        name = self.form.cleaned_data.get("name")
+        offer_type = self.form.cleaned_data.get("offer_type")
+        is_active = self.form.cleaned_data.get("is_active")
+        has_vouchers = self.form.cleaned_data.get("has_vouchers")
+        voucher_code = self.form.cleaned_data.get("voucher_code")
+
+        if name:
+            qs = qs.filter(name__icontains=name)
+            self.search_filters.append(_('Name matches "%s"') % name)
+        if is_active is not None:
+            now = timezone.now()
+            if is_active:
+                qs = qs.filter(
+                    (Q(start_datetime__lte=now) | Q(start_datetime__isnull=True))
+                    & (Q(end_datetime__gte=now) | Q(end_datetime__isnull=True)),
+                    status=ConditionalOffer.OPEN,
                 )
+                self.search_filters.append(_("Is active"))
+            else:
+                qs = qs.filter(
+                    Q(start_datetime__gt=now)
+                    | Q(end_datetime__lt=now)
+                    | Q(status=ConditionalOffer.SUSPENDED)
+                )
+                self.search_filters.append(_("Is inactive"))
+        if offer_type:
+            qs = qs.filter(offer_type=offer_type)
+            self.search_filters.append(
+                _('Is of type "%s"') % dict(ConditionalOffer.TYPE_CHOICES)[offer_type]
+            )
+        if has_vouchers is not None:
+            qs = qs.filter(vouchers__isnull=not has_vouchers).distinct()
+            self.search_filters.append(
+                _("Has vouchers") if has_vouchers else _("Has no vouchers")
+            )
+        if voucher_code:
+            qs = qs.filter(vouchers__code__icontains=voucher_code).distinct()
+            self.search_filters.append(_('Voucher code matches "%s"') % voucher_code)
+
+        # Apply Bluelight-specific offer_group filtering
+        offer_group_slug = self.form.cleaned_data.get("offer_group")
+        if offer_group_slug:
+            qs = qs.filter(offer_group__slug=offer_group_slug).distinct()
+            self.search_filters.append(_('Offer Group matches "%s"') % offer_group_slug)
+
+        # Add explicit ordering to fix UnorderedObjectListWarning and ensure consistent pagination
+        # Only apply default ordering if sort_queryset didn't already set an ordering
+        if not qs.query.order_by:
+            # This uses the existing priority index (migration 0019)
+            qs = qs.order_by("-offer_group__priority", "-priority", "pk")
+
         return qs
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        # Compute voucher_count only for the offers on this page (after pagination)
+        # This is MUCH faster than annotating in get_queryset(), which executes
+        # the subquery for every row before OFFSET (e.g., 100 times for page 5)
+        offers = list(context.get("object_list", []))
+        if offers:
+            VoucherOffers = Voucher.offers.through
+
+            offer_ids = [offer.pk for offer in offers]
+
+            voucher_counts = dict(
+                VoucherOffers.objects.filter(conditionaloffer_id__in=offer_ids)
+                .values("conditionaloffer_id")
+                .annotate(count=Count("*"))
+                .values_list("conditionaloffer_id", "count")  # type: ignore[misc]
+            )
+
+            for offer in offers:
+                offer.voucher_count = voucher_counts.get(offer.pk, 0)
+
+        return context
 
 
 class OfferRestrictionsView(OfferWizardStepView):  # type:ignore[no-redef]
