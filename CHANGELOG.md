@@ -1,3 +1,9 @@
+## v5.12.1 (2026-02-02)
+
+### Fix
+
+- Unable to Access Second Page of Offers
+
 ## v5.12.0 (2026-01-30)
 
 ### Feat
