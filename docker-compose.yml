@@ -1,11 +1,11 @@
 services:
   postgres:
-    image: postgres:latest@sha256:5773fe724c49c42a7a9ca70202e11e1dff21fb7235b335a73f39297d200b73a2
+    image: postgres:latest@sha256:3bb77a07b9ce8b8de0fe6d9b063adf20b9cca1068a1bcdc054cac71a69ce0ca6
     environment:
       POSTGRES_HOST_AUTH_METHOD: "trust"
 
   redis:
-    image: redis:latest@sha256:73dad4271642c5966db88db7a7585fae7cf10b685d1e48006f31e0294c29fdd7
+    image: redis:latest@sha256:e59abdb114af4c9106fc16d4c2e9d9ad408db8c7db333ae05055949a5f3df41e
 
   node:
     build:
