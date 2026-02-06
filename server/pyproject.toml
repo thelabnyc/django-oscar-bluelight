@@ -30,7 +30,7 @@ django-tasks = ["django-tasks (>=0.11.0,<0.11.1)"]
 
 [dependency-groups]
 dev = [
-    "coverage (==7.13.2)",
+    "coverage (==7.13.3)",
     "django-debug-toolbar (==6.2.0)",
     "django-redis (==6.0.0)",
     "ruff (>=0.14.14)",
