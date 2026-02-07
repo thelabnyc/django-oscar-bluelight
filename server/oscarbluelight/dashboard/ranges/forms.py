@@ -105,8 +105,9 @@ class BatchPriceUpdateForm(forms.Form):
         amount = self.cleaned_data["amount"]
         operations = {
             self.PERCENTAGE_RETAIL: lambda: price_retail * (amount / 100),
-            self.PERCENTAGE_ACTUAL: lambda: price_excl_tax
-            + (price_excl_tax * (amount / 100)),
+            self.PERCENTAGE_ACTUAL: lambda: (
+                price_excl_tax + (price_excl_tax * (amount / 100))
+            ),
             self.ABSOLUTE: lambda: price_excl_tax + amount,
         }
         return operations[otype]()
