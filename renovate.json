@@ -1,4 +1,10 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": ["gitlab>thelabnyc/renovate-config:library"]
+    "extends": ["gitlab>thelabnyc/renovate-config:library"],
+    "packageRules": [
+        {
+            "matchPackageNames": ["django-tasks"],
+            "rangeStrategy": "widen"
+        }
+    ]
 }
