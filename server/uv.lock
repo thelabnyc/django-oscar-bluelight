@@ -444,7 +444,7 @@ requires-dist = [
     { name = "django-oscar", specifier = ">=4.0,<4.2" },
     { name = "django-tasks", marker = "extra == 'django-tasks'", specifier = ">=0.11.0,<0.11.1" },
     { name = "djangorestframework", specifier = ">=3.16.1,<4" },
-    { name = "thelabdb", specifier = ">=0.6.1" },
+    { name = "thelabdb", specifier = ">=0.7.0" },
 ]
 provides-extras = ["celery", "django-tasks"]
 
@@ -1165,7 +1165,7 @@ wheels = [
 
 [[package]]
 name = "thelabdb"
-version = "0.6.1"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -1174,9 +1174,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "thelab-typing" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/04/1725100f690fa82238a059190b493622731060c27971a1827fd98df7c29d/thelabdb-0.6.1.tar.gz", hash = "sha256:4e71d7ad4f1cc066cb8d33201339a020aa65023a063d066555670ce77c93d1f5", size = 90786, upload-time = "2025-12-15T21:32:25.469Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/46/18bee17263f38981147e4ba09d15e8464cc5eb779c30913b760ce94e5f71/thelabdb-0.7.0.tar.gz", hash = "sha256:5445797a61deec24100fb4ae1321a564a0834e519d183f20aac13271cd0fb711", size = 98089, upload-time = "2026-02-06T17:25:09.725Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7c/99/2ce2c891fad6141e27a4f5f97639695098a4fe358853bd54dd425d4a912b/thelabdb-0.6.1-py3-none-any.whl", hash = "sha256:203dad4eb47839e80d3b5e7ffa42c537f8f4f800536caf7e7aba7305eb188670", size = 34662, upload-time = "2025-12-15T21:32:24.405Z" },
+    { url = "https://files.pythonhosted.org/packages/96/9a/d0fa2c4ef566b1723bd86b865d9a76f22a51d02d60f8a43c378c7f527e0f/thelabdb-0.7.0-py3-none-any.whl", hash = "sha256:73fdc72dd039e171d7fea8e9633572603f917dbfc7c31a7d7a459cc5b79cf956", size = 39953, upload-time = "2026-02-06T17:25:08.687Z" },
 ]
 
 [[package]]
