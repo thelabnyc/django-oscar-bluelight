@@ -1,3 +1,13 @@
+## v5.13.0 (2026-02-10)
+
+### Feat
+
+- widen django-tasks support to >=0.7.0 for Wagtail compatibility
+
+### Fix
+
+- **deps**: update dependency thelabdb to >=0.7.0
+
 ## v5.12.1 (2026-02-02)
 
 ### Fix
