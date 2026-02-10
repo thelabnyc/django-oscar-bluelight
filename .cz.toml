@@ -12,7 +12,7 @@ version_files = [
     "server/pyproject.toml:version",
 ]
 pre_bump_hooks = [
-    "pre-commit run --all-files || true",
+    "prek run --all-files || true",
 ]
 post_bump_hooks = [
     "git push origin master $CZ_POST_CURRENT_TAG_VERSION"
