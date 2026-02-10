@@ -444,7 +444,7 @@ requires-dist = [
     { name = "django-oscar", specifier = ">=4.0,<4.2" },
     { name = "django-tasks", marker = "extra == 'django-tasks'", specifier = ">=0.11.0,<0.11.1" },
     { name = "djangorestframework", specifier = ">=3.16.1,<4" },
-    { name = "thelabdb", specifier = ">=0.6.1" },
+    { name = "thelabdb", specifier = ">=0.7.0" },
 ]
 provides-extras = ["celery", "django-tasks"]
 
