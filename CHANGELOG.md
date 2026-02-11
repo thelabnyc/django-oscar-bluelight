@@ -1,3 +1,16 @@
+## v6.0.0b0 (2026-02-10)
+
+### BREAKING CHANGE
+
+- Celery is no longer supported as a task backend.
+django-tasks is now a required dependency instead of optional. The
+OSCAR_BLUELIGHT_TASKS_BACKEND setting and the celery/django-tasks
+pip extras have been removed.
+
+### Refactor
+
+- remove Celery, use django-tasks exclusively
+
 ## v5.13.0 (2026-02-10)
 
 ### Feat
