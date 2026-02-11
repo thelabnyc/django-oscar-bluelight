@@ -256,7 +256,7 @@ INSTALLED_APPS = [
 - **Offer Caching**: Offer application is cached via `caching.py` to avoid redundant calculations
 - **Database Views**: Range products use PostgreSQL materialized views (`RangeProductSet`) for fast lookups
 - **Compound Conditions**: Can be expensive with deep nesting - benchmark with realistic basket sizes
-- **Background Tasks**: Celery and django-tasks integrations available for async operations (see optional dependencies)
+- **Background Tasks**: Uses django-tasks for async operations (required dependency)
 - **Parent Voucher Updates**: Bulk child voucher updates can be slow - consider async tasks for large volumes
 
 ## Package Distribution

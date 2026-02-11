@@ -5,8 +5,8 @@ from datetime import datetime
 import logging
 
 from django.db import connection, transaction
+from django_tasks import task
 
-from ..tasks import task
 from .applicator import pricing_cache_ns
 from .models import RangeProductSet, ViewRefreshLog
 from .signals import range_product_set_view_updated
@@ -38,7 +38,7 @@ def _do_view_refresh(
     logger.info("Finished refreshing %s view", view_type)
 
 
-@task
+@task()
 @transaction.atomic
 def recalculate_offer_application_totals(
     requested_on_timestamp: float | None = None,
@@ -55,7 +55,7 @@ def recalculate_offer_application_totals(
     )
 
 
-@task
+@task()
 @transaction.atomic
 def refresh_rps_view(requested_on_timestamp: float) -> None:
     # Invalidate the pricing cache (since range membership may affect pricing)

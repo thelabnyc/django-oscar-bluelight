@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import date, datetime
+from functools import partial
 from typing import TYPE_CHECKING, Any, TypedDict
 import csv
 import json
@@ -44,8 +45,8 @@ from oscar.core.loading import get_class, get_model
 from oscar.views import sort_queryset
 from oscar.views.generic import BulkEditMixin
 
-from oscarbluelight.voucher import tasks
 from oscarbluelight.voucher.models import Voucher
+from oscarbluelight.voucher.tasks import add_child_codes
 
 from ..offers.forms import OrderDiscountSearchForm
 from .forms import AddChildCodesForm, CodeExportForm, VoucherForm
@@ -88,13 +89,16 @@ def _create_child_codes(
     # Only start a bg task if a lot of codes were requested.
     total_requested_codes = auto_generate_count + len(custom_child_codes)
     if total_requested_codes >= CHILD_CODE_BG_TASK_THRESHOLD:
-        tasks.add_child_codes.enqueue(
-            voucher.pk,
-            auto_generate_count=auto_generate_count,
-            custom_codes=custom_child_codes,
+        transaction.on_commit(
+            partial(
+                add_child_codes.enqueue,
+                voucher.pk,
+                auto_generate_count=auto_generate_count,
+                custom_codes=custom_child_codes,
+            )
         )
     else:
-        errors, success_count = tasks.add_child_codes(
+        errors, success_count = add_child_codes.call(
             voucher.pk,
             auto_generate_count=auto_generate_count,
             custom_codes=custom_child_codes,

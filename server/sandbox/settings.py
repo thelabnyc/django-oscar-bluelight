@@ -201,9 +201,6 @@ OSCARAPI_BLOCK_ADMIN_API_ACCESS = False
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
-# Celery Config
-CELERY_TASK_ALWAYS_EAGER = True
-
 # Django Tasks Config
 TASKS = {
     "default": {

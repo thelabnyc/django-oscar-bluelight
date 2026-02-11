@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Collection, Iterable, Sequence
 from datetime import datetime
 from decimal import Decimal
+from functools import partial
 from typing import TYPE_CHECKING, Any, Self
 import time
 
@@ -258,7 +259,7 @@ class Voucher(AbstractVoucher):
         )
         # Update children?
         if update_children:
-            tasks.update_child_vouchers.enqueue(self.id)
+            transaction.on_commit(partial(tasks.update_child_vouchers.enqueue, self.id))
         # Restore the original name
         if self.parent:
             self.name = _orig_name

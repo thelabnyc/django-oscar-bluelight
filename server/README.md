@@ -24,7 +24,7 @@ offers and vouchers features in Django Oscar.
 
 ## Roadmap
 
--   Make child code creation and updating more performant, possibly by (1) extracting some of the work into asynchronous Celery tasks and (2) better tracking of dirty model fields before saving.
+-   Make child code creation and updating more performant, possibly by better tracking of dirty model fields before saving.
 -   Add ability to duplicate vouchers.
 -   Add ability to add conditions to vouchers.
 
