@@ -461,13 +461,15 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(c1.end_datetime, p.end_datetime)
         self.assertFalse(c1.limit_usage_by_group)
 
-        p.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            p.save()
         self.assertEqual(c1.groups.count(), 1)
         self.assertEqual(c1.groups.get(), customer)
 
         p.name = "Some Other Name"
         p.groups.set([csrs])
-        p.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            p.save()
 
         c1 = p.children.order_by("code").first()
         self.assertEqual(c1.name, "Some Other Name")
@@ -601,7 +603,8 @@ class ParentChildVoucherTest(TestCase):
             )
 
         with self.assertNumQueries(11):
-            c1.record_discount({"discount": 5})
+            with self.captureOnCommitCallbacks(execute=True):
+                c1.record_discount({"discount": 5})
 
     def test_record_discount(self):
         p = Voucher.objects.create(

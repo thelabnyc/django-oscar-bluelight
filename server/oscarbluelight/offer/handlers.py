@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
@@ -102,4 +103,6 @@ def queue_recalculate_offer_application_totals(
     **kwargs: Any,
 ) -> None:
     now = datetime.timestamp(timezone.now())
-    tasks.recalculate_offer_application_totals.enqueue(now)
+    transaction.on_commit(
+        partial(tasks.recalculate_offer_application_totals.enqueue, now)
+    )
