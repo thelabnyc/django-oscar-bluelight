@@ -1,4 +1,4 @@
-## v6.0.0b0 (2026-02-10)
+## v6.0.0 (2026-02-18)
 
 ### BREAKING CHANGE
 
@@ -6,6 +6,10 @@
 django-tasks is now a required dependency instead of optional. The
 OSCAR_BLUELIGHT_TASKS_BACKEND setting and the celery/django-tasks
 pip extras have been removed.
+
+### Feat
+
+- add configurable delay for offer recalc task enqueue
 
 ### Refactor
 

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "django-oscar-bluelight"
-version = "6.0.0b0"
+version = "6.0.0"
 description = "Bluelight Specials - Enhancements to the offer and vouchers features for Django Oscar."
 readme = "README.md"
 license = { text = "ISC" }
