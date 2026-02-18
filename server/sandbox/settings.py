@@ -1,3 +1,4 @@
+from datetime import timedelta
 from fnmatch import fnmatch
 import os
 import sys
@@ -207,3 +208,6 @@ TASKS = {
         "BACKEND": "django_tasks.backends.immediate.ImmediateBackend",
     },
 }
+
+# ImmediateBackend does not support run_after, so disable the recalc delay
+BLUELIGHT_OFFER_RECALC_DELAY = timedelta(seconds=0)

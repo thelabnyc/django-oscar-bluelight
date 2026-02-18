@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from django.utils.translation import gettext_lazy as _
@@ -119,3 +120,5 @@ BLUELIGHT_VOUCHER_AVAILABILITY_RULES = [
 ]
 
 BLUELIGHT_IGNORED_ORDER_STATUSES: list[str] = []
+
+BLUELIGHT_OFFER_RECALC_DELAY = timedelta(minutes=5)

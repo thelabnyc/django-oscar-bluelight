@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models.signals import m2m_changed, post_migrate, post_save
 from django.dispatch import receiver
@@ -102,7 +103,13 @@ def queue_recalculate_offer_application_totals(
     sender: type[Order] | type[OrderDiscount],
     **kwargs: Any,
 ) -> None:
-    now = datetime.timestamp(timezone.now())
-    transaction.on_commit(
-        partial(tasks.recalculate_offer_application_totals.enqueue, now)
+    now = timezone.now()
+    delay: timedelta = getattr(
+        settings,
+        "BLUELIGHT_OFFER_RECALC_DELAY",
+        timedelta(minutes=5),
     )
+    task = tasks.recalculate_offer_application_totals
+    if delay:
+        task = task.using(run_after=now + delay)
+    transaction.on_commit(partial(task.enqueue, datetime.timestamp(now)))
