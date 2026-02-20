@@ -33,7 +33,7 @@ dev = [
     "ruff (>=0.15.1)",
     "hiredis (==3.3.0)",
     "psycopg2-binary (==2.9.11)",
-    "redis (==7.1.1)",
+    "redis (==7.2.0)",
     "sorl-thumbnail (==12.11.0)",
     "tox (==4.36.1)",
     "unittest-xml-reporting (==3.2.0)",
