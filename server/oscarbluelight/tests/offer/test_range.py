@@ -358,22 +358,14 @@ class TestContainsProductBulk(TransactionTestCase):
 
     def test_standard_ranges(self):
         """Standard ranges are checked via the RangeProductSet materialized view."""
-        rng1 = models.Range.objects.create(
-            name="Range 1", includes_all_products=False
-        )
-        rng2 = models.Range.objects.create(
-            name="Range 2", includes_all_products=False
-        )
-        rng3 = models.Range.objects.create(
-            name="Range 3", includes_all_products=False
-        )
+        rng1 = models.Range.objects.create(name="Range 1", includes_all_products=False)
+        rng2 = models.Range.objects.create(name="Range 2", includes_all_products=False)
+        rng3 = models.Range.objects.create(name="Range 3", includes_all_products=False)
         rng1.add_product(self.product)
         rng2.add_product(self.other_product)
         rng3.add_product(self.product)
 
-        result = models.Range.contains_product_bulk(
-            self.product, [rng1, rng2, rng3]
-        )
+        result = models.Range.contains_product_bulk(self.product, [rng1, rng2, rng3])
         self.assertEqual(result, {rng1.pk, rng3.pk})
 
     def test_includes_all_products_ranges(self):
@@ -397,9 +389,7 @@ class TestContainsProductBulk(TransactionTestCase):
             name="Standard", includes_all_products=False
         )
         rng_standard.add_product(self.product)
-        rng_all = models.Range.objects.create(
-            name="All", includes_all_products=True
-        )
+        rng_all = models.Range.objects.create(name="All", includes_all_products=True)
         rng_empty = models.Range.objects.create(
             name="Empty", includes_all_products=False
         )
