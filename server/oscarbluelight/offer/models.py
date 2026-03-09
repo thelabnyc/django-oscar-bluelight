@@ -491,6 +491,60 @@ class Range(AbstractRange):
         # Query the cache view
         return Product.objects.all().filter(cached_ranges__range=self)
 
+    @classmethod
+    def contains_product_bulk(
+        cls,
+        product: Product,
+        ranges: Iterable[Range],
+    ) -> set[int]:
+        """Check which of the given ranges contain the product, in bulk.
+
+        Returns a set of Range primary keys that contain the product.
+        Uses the RangeProductSet materialized view for standard ranges (single
+        query), Oscar's RangeQuerySet for includes_all_products ranges (single
+        query), and falls back to individual contains_product() calls only for
+        proxy ranges whose logic can't be batched.
+        """
+        standard_range_ids: set[int] = set()
+        all_products_range_ids: set[int] = set()
+        proxy_ranges: list[Range] = []
+
+        for rng in ranges:
+            if rng.proxy_class:
+                proxy_ranges.append(rng)
+            elif rng.includes_all_products:
+                all_products_range_ids.add(rng.pk)
+            else:
+                standard_range_ids.add(rng.pk)
+
+        result: set[int] = set()
+
+        # Batch 1: Standard ranges — single query against the materialized view
+        if standard_range_ids:
+            result.update(
+                RangeProductSet.objects.filter(
+                    product=product,
+                    range_id__in=standard_range_ids,
+                ).values_list("range_id", flat=True)
+            )
+
+        # Batch 2: includes_all_products ranges — single query via Oscar's
+        # RangeQuerySet.contains_product() which handles exclusions
+        if all_products_range_ids:
+            result.update(
+                cls.objects.filter(pk__in=all_products_range_ids)
+                .contains_product(product)
+                .values_list("pk", flat=True)
+            )
+
+        # Batch 3: Proxy ranges — must call individually since proxy logic
+        # is arbitrary Python code
+        for rng in proxy_ranges:
+            if rng.contains_product(product):
+                result.add(rng.pk)
+
+        return result
+
     def all_products_consistent(self) -> QuerySet[Product]:
         """
         Get the list of products without using the materialized view.
