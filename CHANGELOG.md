@@ -1,3 +1,9 @@
+## v6.0.1 (2026-03-10)
+
+### Perf
+
+- add Range.contains_product_bulk() for O(1) batch membership checks (#32435)
+
 ## v6.0.0 (2026-02-18)
 
 ### BREAKING CHANGE
