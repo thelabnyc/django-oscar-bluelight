@@ -351,6 +351,103 @@ class TestRangeExcludeProductBatch(TransactionTestCase):
         self.assertFalse(rng2.contains_product(product4))
 
 
+class TestContainsProductBulk(TransactionTestCase):
+    def setUp(self):
+        self.product = create_product()
+        self.other_product = create_product()
+
+    def test_standard_ranges(self):
+        """Standard ranges are checked via the RangeProductSet materialized view."""
+        rng1 = models.Range.objects.create(name="Range 1", includes_all_products=False)
+        rng2 = models.Range.objects.create(name="Range 2", includes_all_products=False)
+        rng3 = models.Range.objects.create(name="Range 3", includes_all_products=False)
+        rng1.add_product(self.product)
+        rng2.add_product(self.other_product)
+        rng3.add_product(self.product)
+
+        result = models.Range.contains_product_bulk(self.product, [rng1, rng2, rng3])
+        self.assertEqual(result, {rng1.pk, rng3.pk})
+
+    def test_includes_all_products_ranges(self):
+        """includes_all_products ranges are checked via Oscar's queryset."""
+        rng_all = models.Range.objects.create(
+            name="All Products", includes_all_products=True
+        )
+        rng_all_excluded = models.Range.objects.create(
+            name="All But Excluded", includes_all_products=True
+        )
+        rng_all_excluded.excluded_products.add(self.product)
+
+        result = models.Range.contains_product_bulk(
+            self.product, [rng_all, rng_all_excluded]
+        )
+        self.assertEqual(result, {rng_all.pk})
+
+    def test_mixed_range_types(self):
+        """Bulk check works across standard and includes_all ranges."""
+        rng_standard = models.Range.objects.create(
+            name="Standard", includes_all_products=False
+        )
+        rng_standard.add_product(self.product)
+        rng_all = models.Range.objects.create(name="All", includes_all_products=True)
+        rng_empty = models.Range.objects.create(
+            name="Empty", includes_all_products=False
+        )
+
+        result = models.Range.contains_product_bulk(
+            self.product, [rng_standard, rng_all, rng_empty]
+        )
+        self.assertEqual(result, {rng_standard.pk, rng_all.pk})
+
+    def test_empty_ranges_list(self):
+        """Passing no ranges returns empty set."""
+        result = models.Range.contains_product_bulk(self.product, [])
+        self.assertEqual(result, set())
+
+    def test_query_count_does_not_scale_with_range_count(self):
+        """Bulk check uses O(1) queries, not O(N) per range."""
+        ranges = []
+        for i in range(10):
+            rng = models.Range.objects.create(
+                name=f"Range {i}", includes_all_products=False
+            )
+            rng.add_product(self.product)
+            ranges.append(rng)
+
+        # Warm up any caches / lazy lookups
+        models.Range.contains_product_bulk(self.product, ranges)
+
+        with self.assertNumQueries(1):
+            result = models.Range.contains_product_bulk(self.product, ranges)
+        self.assertEqual(len(result), 10)
+
+    def test_query_count_with_mixed_types(self):
+        """Mixed standard + includes_all uses 2 queries total."""
+        standard_ranges = []
+        for i in range(5):
+            rng = models.Range.objects.create(
+                name=f"Standard {i}", includes_all_products=False
+            )
+            rng.add_product(self.product)
+            standard_ranges.append(rng)
+
+        all_ranges = []
+        for i in range(5):
+            rng = models.Range.objects.create(
+                name=f"All {i}", includes_all_products=True
+            )
+            all_ranges.append(rng)
+
+        combined = standard_ranges + all_ranges
+
+        # Warm up
+        models.Range.contains_product_bulk(self.product, combined)
+
+        with self.assertNumQueries(2):
+            result = models.Range.contains_product_bulk(self.product, combined)
+        self.assertEqual(len(result), 10)
+
+
 class TestRangeProductListView(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
