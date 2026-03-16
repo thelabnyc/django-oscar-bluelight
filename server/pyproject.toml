@@ -30,7 +30,7 @@ dev = [
     "coverage (==7.13.4)",
     "django-debug-toolbar (==6.2.0)",
     "django-redis (==6.0.0)",
-    "ruff (>=0.15.5)",
+    "ruff (>=0.15.6)",
     "hiredis (==3.3.0)",
     "psycopg2-binary (==2.9.11)",
     "redis (==7.3.0)",
