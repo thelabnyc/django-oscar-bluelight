@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date, datetime
 from functools import partial
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import Any, TypedDict
 import csv
 import json
 import re
@@ -51,11 +51,8 @@ from oscarbluelight.voucher.tasks import add_child_codes
 from ..offers.forms import OrderDiscountSearchForm
 from .forms import AddChildCodesForm, CodeExportForm, VoucherForm
 
-if TYPE_CHECKING:
-    from oscar.apps.order.models import Order, OrderDiscount
-else:
-    OrderDiscount = get_model("order", "OrderDiscount")
-    Order = get_model("order", "Order")
+OrderDiscount = get_model("order", "OrderDiscount")
+Order = get_model("order", "Order")
 
 BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER")
 CHILD_CODE_BG_TASK_THRESHOLD = 1000
@@ -111,19 +108,19 @@ def _create_child_codes(
         )
 
 
-class VoucherListView(DefaultVoucherListView):  # type:ignore[no-redef]
+class VoucherListView(DefaultVoucherListView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     def get_queryset(self) -> QuerySet[Voucher]:
         qs = super().get_queryset()
-        return qs.exclude_children()
+        return qs.exclude_children()  # type: ignore[attr-defined]  # bluelight's VoucherQuerySet method not in Oscar stubs
 
 
-class VoucherCreateView(DefaultVoucherCreateView):  # type:ignore[no-redef]
+class VoucherCreateView(DefaultVoucherCreateView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     form_class = VoucherForm
 
     def form_valid(self, form: VoucherForm) -> HttpResponse:
         with transaction.atomic():
             response = super().form_valid(form)
-            self.object.groups.add(  # type:ignore[union-attr]
+            self.object.groups.add(  # type:ignore[union-attr]  # self.object is set after super().form_valid()
                 *form.cleaned_data["groups"]
             )
         # Create child codes
@@ -133,12 +130,15 @@ class VoucherCreateView(DefaultVoucherCreateView):  # type:ignore[no-redef]
             )
             custom_child_codes = form.cleaned_data.get("custom_child_codes") or []
             _create_child_codes(
-                self.request, self.object, auto_generate_count, custom_child_codes
+                self.request,
+                self.object,  # type: ignore[arg-type]  # self.object is Voucher after form_valid but typed as Model|None
+                auto_generate_count,
+                custom_child_codes,
             )
         return response
 
 
-class VoucherStatsView(DefaultVoucherStatsView):  # type:ignore[no-redef]
+class VoucherStatsView(DefaultVoucherStatsView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     form_class = OrderDiscountSearchForm
 
     def get_related_order_discounts(self) -> QuerySet[OrderDiscount]:
@@ -197,7 +197,7 @@ class VoucherStatsView(DefaultVoucherStatsView):  # type:ignore[no-redef]
         return super().render_to_response(context, **response_kwargs)
 
 
-class VoucherUpdateView(DefaultVoucherUpdateView):  # type:ignore[no-redef]
+class VoucherUpdateView(DefaultVoucherUpdateView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     form_class = VoucherForm
 
     def get_initial(self) -> dict[str, Any]:
@@ -362,7 +362,7 @@ class ExportChildCodesFormView(generic.FormView):
             .annotate(num_codes=Count("code"))
             .order_by("-date_created__date")
         )
-        return created_on_counts
+        return created_on_counts  # type: ignore[return-value]  # Django ORM values().annotate() returns ValuesQuerySet, not list
 
 
 class ChildCodesListView(BulkEditMixin, generic.ListView):
@@ -371,7 +371,7 @@ class ChildCodesListView(BulkEditMixin, generic.ListView):
     template_name = "oscar/dashboard/vouchers/voucher_list_children.html"
     form_class = VoucherSearchForm
     paginate_by = settings.OSCAR_DASHBOARD_ITEMS_PER_PAGE
-    actions = ("delete_selected_codes",)  # type:ignore[assignment]
+    actions = ("delete_selected_codes",)
 
     def dispatch(
         self, request: HttpRequest, parent_pk: int, *args: Any, **kwargs: Any

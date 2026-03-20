@@ -17,6 +17,7 @@ from oscar.apps.offer.applicator import Applicator as BaseApplicator
 from oscar.core.loading import get_model
 
 from ..caching import CacheNamespace, FluentCache
+from ..mixins import BluelightBasketLineMixin
 from .models import ConditionalOffer
 from .signals import (
     post_offer_group_apply,
@@ -77,7 +78,7 @@ class Applicator(BaseApplicator):
 
     def get_site_offers(self) -> QuerySet[ConditionalOffer]:
         qs = ConditionalOffer.active.filter(offer_type=ConditionalOffer.SITE)
-        return qs.select_related(*self._offer_select_related_fields)
+        return qs.select_related(*self._offer_select_related_fields)  # type: ignore[return-value]  # select_related returns same QS type but mypy narrows to base QuerySet
 
     def get_basket_offers(
         self,
@@ -108,7 +109,7 @@ class Applicator(BaseApplicator):
         Return user offers that are available to current user
         """
         if not user or user.is_anonymous:
-            return ConditionalOffer.objects.none()
+            return ConditionalOffer.objects.none()  # type: ignore[return-value]  # .none() returns QuerySet, not custom manager QS type
 
         cutoff = now()
         date_based = Q(
@@ -118,13 +119,13 @@ class Applicator(BaseApplicator):
         nondate_based = Q(start_datetime=None, end_datetime=None)
         groups = [g for g in user.groups.all()]
 
-        qs = ConditionalOffer.objects.filter(
+        qs = ConditionalOffer.objects.filter(  # type: ignore[misc]  # complex Q objects with mixed types
             date_based | nondate_based,
             offer_type=ConditionalOffer.USER,
             groups__in=groups,
             status=ConditionalOffer.OPEN,
         )
-        return qs.select_related(*self._offer_select_related_fields)
+        return qs.select_related(*self._offer_select_related_fields)  # type: ignore[return-value]  # select_related narrows QS type
 
     def get_session_offers(
         self,
@@ -169,7 +170,8 @@ class Applicator(BaseApplicator):
                 offers=offers_in_group,
             )
             for line in basket.all_lines():
-                line.begin_offer_group_application()
+                if isinstance(line, BluelightBasketLineMixin):
+                    line.begin_offer_group_application()
 
             # Apply each offer in the group
             for offer in offers_in_group:
@@ -199,7 +201,8 @@ class Applicator(BaseApplicator):
 
             # Signal the lines that we've finished applying an offer group
             for line in basket.all_lines():
-                line.end_offer_group_application()
+                if isinstance(line, BluelightBasketLineMixin):
+                    line.end_offer_group_application()
             post_offer_group_apply.send(
                 sender=self.__class__,
                 basket=basket,
@@ -209,7 +212,8 @@ class Applicator(BaseApplicator):
 
         # Signal the lines that we've finished applying all offer groups
         for line in basket.all_lines():
-            line.finalize_offer_group_applications()
+            if isinstance(line, BluelightBasketLineMixin):
+                line.finalize_offer_group_applications()
 
         # Store this list of discounts with the basket so it can be rendered in templates
         basket.offer_applications = applications

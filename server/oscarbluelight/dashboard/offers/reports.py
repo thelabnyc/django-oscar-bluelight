@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from oscar.apps.order.models import OrderDiscount
 
 
-class OrderDiscountCSVFormatter(  # type:ignore[no-redef]
+class OrderDiscountCSVFormatter(  # type:ignore[no-redef]  # Oscar view customization requires class redefinition
     reports.OrderDiscountCSVFormatter
 ):
     def generate_csv(

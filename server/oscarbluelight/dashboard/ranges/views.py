@@ -200,11 +200,11 @@ class RangeProductListView(BaseRangeProductListView):
             form.cleaned_data["upload_type"]
             == RangeProductFileUpload.EXCLUDED_PRODUCTS_TYPE
         ):
-            product_range.exclude_product_batch(products)
+            product_range.exclude_product_batch(products)  # type: ignore[arg-type]  # products from form is list[Product] but type inference widens it
             action = _("excluded from this range")
         else:
             # Add the products to the range in a batch
-            product_range.add_product_batch(products)
+            product_range.add_product_batch(products)  # type: ignore[arg-type]  # products from form is list[Product] but type inference widens it
             action = _("added to this range")
         # Message the user
         num_products = len(products)
@@ -235,4 +235,4 @@ class RangeProductListView(BaseRangeProductListView):
                 _("No product(s) were found with SKU or UPC matching %s")
                 % ", ".join(missing_skus),
             )
-        self.check_imported_products_sku_duplicates(request, products)
+        self.check_imported_products_sku_duplicates(request, products)  # type: ignore[arg-type]  # products type mismatch from form

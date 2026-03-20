@@ -86,7 +86,7 @@ class VoucherForm(BaseVoucherForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["offers"].queryset = (  # type:ignore[attr-defined]
+            self.fields["offers"].queryset = (  # type:ignore[attr-defined]  # dynamic field access; queryset attr not on base Field
                 self.instance.offers.all()
             )
 
@@ -98,7 +98,7 @@ class VoucherForm(BaseVoucherForm):
     def is_valid(self) -> bool:
         # To ensure the selected value is considered valid/invalid correctly during the form's validation process,
         # update the `offers` field queryset to include all possible voucher-type offer choices.
-        self.fields["offers"].queryset = (  # type:ignore[attr-defined]
+        self.fields["offers"].queryset = (  # type:ignore[attr-defined]  # dynamic field access; queryset attr not on base Field
             ConditionalOffer.objects.filter(offer_type=ConditionalOffer.VOUCHER)
         )
         res = super().is_valid()

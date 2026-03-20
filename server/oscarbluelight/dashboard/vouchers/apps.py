@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from django.urls import path
-from django.urls.resolvers import URLPattern
+from django.urls.resolvers import URLPattern, URLResolver
 from oscar.apps.dashboard.vouchers import apps
 from oscar.core.loading import get_class
 
@@ -33,7 +33,7 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
             "vouchers_dashboard.views", "VoucherSuspensionView"
         )
 
-    def get_urls(self) -> list[URLPattern]:
+    def get_urls(self) -> list[URLPattern | URLResolver]:
         from .views import (
             AddChildCodesView,
             ChildCodesListView,
@@ -43,7 +43,7 @@ class VouchersDashboardConfig(apps.VouchersDashboardConfig):
             VoucherSuspensionView,
         )
 
-        urls = [
+        urls: list[URLPattern | URLResolver] = [
             path(
                 "stats/<int:parent_pk>/children/",
                 ChildCodesListView.as_view(),

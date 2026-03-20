@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable
+from collections.abc import Collection, Iterable, Sequence
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, TypedDict, TypeVar
@@ -30,7 +30,7 @@ from oscar.apps.offer.abstract_models import (
 from oscar.apps.offer.results import ApplicationResult
 from oscar.apps.offer.utils import load_proxy, unit_price
 from oscar.core.loading import get_class, get_model
-from oscar.models.fields import AutoSlugField  # type:ignore[attr-defined]
+from oscar.models.fields import AutoSlugField
 from oscar.templatetags.currency_filters import currency
 from thelabdb.pgviews import view as pg
 
@@ -38,7 +38,6 @@ from .results import (
     SHIPPING_DISCOUNT,
     ZERO_DISCOUNT,
     BasketDiscount,
-    OfferApplication,
     PostOrderAction,
     ShippingDiscount,
 )
@@ -47,8 +46,9 @@ from .utils import get_line_filter_strategy
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
-    from oscar.apps.catalogue.expressions import ExpandDownwardsCategoryQueryset
+    from oscar.apps.basket.abstract_models import AbstractBasket, AbstractLine
     from oscar.apps.catalogue.models import Product
+    from oscar.apps.offer.results import OfferApplication as _OscarOfferApplication
     from oscar.apps.order.models import Order as _Order
     from oscar.apps.order.models import OrderDiscount as _OrderDiscount
 
@@ -57,29 +57,29 @@ if TYPE_CHECKING:
     from ..voucher.models import Voucher as _Voucher
     from .types import LinesTuple
     from .upsells import OfferUpsell
-else:
-    ExpandDownwardsCategoryQueryset = get_class(
-        "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
-    )
+
+ExpandDownwardsCategoryQueryset = get_class(
+    "catalogue.expressions", "ExpandDownwardsCategoryQueryset"
+)
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=type[models.Model])
+T = TypeVar("T", bound=models.Model)
 
 
-def _init_proxy_class(obj: T, Klass: type[T]) -> T:
+def _init_proxy_class(obj: T, Klass: type) -> T:
     # Check if we're already the correct class
-    if obj.__class__ == Klass:  # type:ignore[comparison-overlap]
+    if obj.__class__ == Klass:
         return obj
 
     # Check if we're using multi-table inheritance
-    model_name = Klass._meta.model_name  # type:ignore[attr-defined]
-    if hasattr(obj, model_name):
+    model_name = Klass._meta.model_name  # type: ignore[attr-defined]  # Django _meta API not fully typed
+    if model_name and hasattr(obj, model_name):
         return getattr(obj, model_name)
 
     # Else, it's just a proxy model
     proxy = copy.deepcopy(obj)
-    proxy.__class__ = Klass  # type:ignore[method-assign, assignment]
+    proxy.__class__ = Klass
     return proxy
 
 
@@ -164,7 +164,7 @@ class ConditionalOffer(AbstractConditionalOffer):
         ),
     )
 
-    _condition_satisfying_lines: list[BasketLine] | None = None
+    _condition_satisfying_lines: list[AbstractLine] | None = None
 
     class Meta:
         ordering = ("-offer_group__priority", "-priority", "pk")
@@ -206,7 +206,10 @@ class ConditionalOffer(AbstractConditionalOffer):
         return restrictions
 
     def get_upsell_details(self, basket: Basket) -> OfferUpsell | None:
-        return self.condition.proxy().get_upsell_details(self, basket)
+        condition = self.condition.proxy()
+        if isinstance(condition, Condition):
+            return condition.get_upsell_details(self, basket)
+        return None
 
     def apply_benefit(self, basket: Basket) -> ApplicationResult:
         self.reset_condition_satisfying_lines()
@@ -216,29 +219,32 @@ class ConditionalOffer(AbstractConditionalOffer):
             logger.exception(e)
             return ZERO_DISCOUNT
 
-    def record_usage(self, discount: OfferApplication) -> None:
+    def record_usage(self, discount: _OscarOfferApplication | dict[str, Any]) -> None:
         ConditionalOffer.objects.filter(pk=self.pk).update(
             num_applications=(F("num_applications") + discount["freq"]),
             total_discount=(F("total_discount") + discount["discount"]),
             num_orders=(F("num_orders") + 1),
         )
 
-    record_usage.alters_data = True  # type:ignore[attr-defined]
+    record_usage.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
     def reset_condition_satisfying_lines(self) -> None:
         self._condition_satisfying_lines = []
 
-    def add_condition_satisfying_lines(self, lines: list[BasketLine]) -> None:
+    def add_condition_satisfying_lines(self, lines: Sequence[AbstractLine]) -> None:
         """Set the list of basket lines that satisfied the offer's condition."""
-        if self._condition_satisfying_lines is None:
-            self._condition_satisfying_lines = []
-        self._condition_satisfying_lines += [
-            line for line in lines if line not in self._condition_satisfying_lines
-        ]
+        current: list[AbstractLine] = (
+            list(self._condition_satisfying_lines)
+            if self._condition_satisfying_lines is not None
+            else []
+        )
+        current += [line for line in lines if line not in current]
+        self._condition_satisfying_lines = current
 
-    def get_condition_satisfying_lines(self) -> list[BasketLine]:
+    def get_condition_satisfying_lines(self) -> Sequence[AbstractLine]:
         """Get the list of basket lines that satisfied the offer's condition."""
-        return self._condition_satisfying_lines or []
+        lines: Sequence[AbstractLine] = self._condition_satisfying_lines or []
+        return lines
 
 
 class Benefit(AbstractBenefit):
@@ -271,7 +277,7 @@ class Benefit(AbstractBenefit):
         benefit_classes = getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])
         names = dict(benefit_classes)
         names["oscarbluelight.offer.benefits.CompoundBenefit"] = _("Compound benefit")
-        return names.get(self.proxy_class, self.proxy_class)
+        return names.get(self.proxy_class, self.proxy_class) or ""
 
     @property
     def non_voucher_offers(self) -> QuerySet[ConditionalOffer]:
@@ -314,8 +320,8 @@ class Benefit(AbstractBenefit):
             Klass = load_proxy(self.proxy_class)
             if (
                 self.__class__ != Klass
-                and not Klass._meta.proxy
-                and not Klass.objects.filter(pk=self.pk).exists()
+                and not Klass._meta.proxy  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                and not Klass.objects.filter(pk=self.pk).exists()  # type: ignore[attr-defined]  # dynamic proxy class loaded at runtime
             ):
                 proxy = copy.deepcopy(self)
                 proxy.__class__ = Klass
@@ -340,8 +346,8 @@ class Benefit(AbstractBenefit):
 
     def get_applicable_lines(
         self,
-        offer: ConditionalOffer,
-        basket: Basket,
+        offer: AbstractConditionalOffer,
+        basket: AbstractBasket,
         range: AbstractRange | None = None,
     ) -> list[LinesTuple]:
         """
@@ -378,7 +384,7 @@ class Condition(AbstractCondition):
         names["oscarbluelight.offer.conditions.CompoundCondition"] = _(
             "Compound condition"
         )
-        return names.get(self.proxy_class, self.proxy_class)
+        return names.get(self.proxy_class, self.proxy_class)  # type: ignore[return-value]  # dict.get returns str|StrOrPromise but that matches return type
 
     @property
     def non_voucher_offers(self) -> QuerySet[ConditionalOffer]:
@@ -408,8 +414,8 @@ class Condition(AbstractCondition):
 
     def get_applicable_lines(
         self,
-        offer: ConditionalOffer,
-        basket: Basket,
+        offer: AbstractConditionalOffer,
+        basket: AbstractBasket,
         most_expensive_first: bool = True,
     ) -> list[LinesTuple]:
         """
@@ -425,8 +431,8 @@ class Condition(AbstractCondition):
             line_tuples.append((price, line))
         key = operator.itemgetter(0)
         if most_expensive_first:
-            return sorted(line_tuples, reverse=True, key=key)
-        return sorted(line_tuples, key=key)
+            return sorted(line_tuples, reverse=True, key=key)  # type: ignore[arg-type]  # AbstractLine is BluelightBasketLineMixin at runtime (mixin required)
+        return sorted(line_tuples, key=key)  # type: ignore[arg-type]  # AbstractLine is BluelightBasketLineMixin at runtime (mixin required)
 
     def clean(self) -> None:
         if self.type:
@@ -456,8 +462,8 @@ class Condition(AbstractCondition):
             Klass = load_proxy(self.proxy_class)
             if (
                 self.__class__ != Klass
-                and not Klass._meta.proxy
-                and not Klass.objects.filter(pk=self.pk).exists()
+                and not Klass._meta.proxy  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                and not Klass.objects.filter(pk=self.pk).exists()  # type: ignore[attr-defined]  # dynamic proxy class loaded at runtime
             ):
                 proxy_instance = copy.deepcopy(self)
                 proxy_instance.__class__ = Klass
@@ -533,7 +539,7 @@ class Range(AbstractRange):
         if all_products_range_ids:
             result.update(
                 cls.objects.filter(pk__in=all_products_range_ids)
-                .contains_product(product)
+                .contains_product(product)  # type: ignore[attr-defined]  # Oscar's RangeQuerySet method not in stubs
                 .values_list("pk", flat=True)
             )
 
@@ -551,7 +557,7 @@ class Range(AbstractRange):
         oscar.apps.offer.abstract_models.AbstractRange.product_queryset
         without utilizing @cached_property
         """
-        return AbstractRange.product_queryset.real_func(  # type:ignore[attr-defined]
+        return AbstractRange.product_queryset.real_func(  # type:ignore[attr-defined]  # accessing cached_property internals
             self
         )
 
@@ -564,12 +570,12 @@ class Range(AbstractRange):
 
         # Insert new rows into the included_products relationship
         RangeProduct = self.included_products.through
-        rows = [RangeProduct(range=self, product=product) for product in products]
+        rows = [RangeProduct(range=self, product=product) for product in products]  # type: ignore[misc]  # m2m through model constructor
         RangeProduct.objects.bulk_create(rows, ignore_conflicts=True)
         # Remove product from excluded products if it was removed earlier and
         # re-added again, thus it returns back to the range product list.
         ExcludedProduct = self.excluded_products.through
-        ExcludedProduct.objects.filter(  # type:ignore[attr-defined]
+        ExcludedProduct.objects.filter(  # type: ignore[misc]  # m2m through model manager
             range=self,
             product__in=products,
         ).all().delete()
@@ -586,15 +592,15 @@ class Range(AbstractRange):
 
         # Insert new rows into the excluded_products relationship
         ExcludedProduct = self.excluded_products.through
-        rows = [ExcludedProduct(range=self, product=product) for product in products]
-        ExcludedProduct.objects.bulk_create(  # type:ignore[attr-defined]
+        rows = [ExcludedProduct(range=self, product=product) for product in products]  # type: ignore[misc]  # m2m through model constructor
+        ExcludedProduct.objects.bulk_create(
             rows,
             ignore_conflicts=True,
         )
         # Remove product from excluded products if it was removed earlier and
         # re-added again, thus it returns back to the range product list.
         RangeProduct = self.included_products.through
-        RangeProduct.objects.filter(range=self, product__in=products).all().delete()
+        RangeProduct.objects.filter(range=self, product__in=products).all().delete()  # type: ignore[misc]  # m2m through model manager
         # Queue a view refresh
         queue_rps_view_refresh()
         # Invalidate cache because queryset has changed
@@ -683,7 +689,7 @@ class ViewRefreshLog(models.Model):
 
 
 # Make proxy_class field not unique.
-Condition._meta.get_field("proxy_class")._unique = False  # type:ignore[attr-defined]
+Condition._meta.get_field("proxy_class")._unique = False  # type:ignore[attr-defined]  # Django _meta internals; required to allow non-unique proxy_class
 
 
 __all__: list[str] = [
@@ -707,5 +713,5 @@ from .benefits import __all__ as benefit_classes  # NOQA
 from .conditions import *  # NOQA
 from .conditions import __all__ as condition_classes  # NOQA
 
-__all__.extend(benefit_classes)  # type:ignore[has-type]
-__all__.extend(condition_classes)  # type:ignore[has-type]
+__all__.extend(benefit_classes)
+__all__.extend(condition_classes)

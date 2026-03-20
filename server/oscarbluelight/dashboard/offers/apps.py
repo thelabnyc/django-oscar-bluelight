@@ -129,4 +129,4 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
                 name="offergroup-delete",
             ),
         ]
-        return base_urls + self.post_process_urls(custom_urls)
+        return base_urls + self.post_process_urls(custom_urls)  # type: ignore[arg-type]  # list[path] vs list[URLPattern] mismatch

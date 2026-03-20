@@ -67,7 +67,7 @@ class OfferReportCSVFormatter(BaseOfferReportCSVFormatter):
 
 class OfferReportGenerator(BaseOfferReportGenerator):
     code = "conditional-offers"
-    description = _("All Offers on Site")
+    description = _("All Offers on Site")  # type: ignore[assignment]  # lazy string → str field
 
     formatters = {
         "CSV_formatter": OfferReportCSVFormatter,
