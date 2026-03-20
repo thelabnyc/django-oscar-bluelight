@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Sequence
 
 from django.http import HttpResponse
@@ -10,6 +12,8 @@ from oscar.apps.voucher.reports import (
 from oscar.apps.voucher.reports import (
     VoucherReportGenerator as BaseVoucherReportGenerator,
 )
+
+from oscarbluelight.offer.models import ConditionalOffer
 
 from .models import Voucher
 
@@ -42,6 +46,7 @@ class VoucherReportCSVFormatter(BaseVoucherReportCSVFormatter):
         writer.writerow(header_row)
 
         for voucher in vouchers:
+            offer: ConditionalOffer
             for offer in voucher.offers.all():
                 row = [
                     voucher.pk,
@@ -77,7 +82,7 @@ class VoucherReportCSVFormatter(BaseVoucherReportCSVFormatter):
 
 class VoucherReportGenerator(BaseVoucherReportGenerator):
     code = "vouchers"
-    description = _("All Vouchers on Site")
+    description = _("All Vouchers on Site")  # type: ignore[assignment]  # lazy string → str field
 
     formatters = {
         "CSV_formatter": VoucherReportCSVFormatter,

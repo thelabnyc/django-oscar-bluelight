@@ -14,6 +14,7 @@ from oscarbluelight.offer.models import (
     BluelightValueCondition,
     Range,
 )
+from oscarbluelight.voucher.models import Voucher
 
 
 class TestAPercentageDiscountAppliedWithCountCondition(TransactionTestCase):
@@ -94,7 +95,7 @@ class TestAPercentageDiscountAppliedWithCountCondition(TransactionTestCase):
         self.assertIsNone(descrs[0].voucher_code)
 
     def test_records_reason_for_discount_with_voucher(self):
-        voucher = mock.Mock()
+        voucher = mock.Mock(spec=Voucher)
         voucher.name = "My Voucher"
         voucher.code = "SWEETDEAL"
         self.offer.name = "Offer for Voucher"

@@ -33,13 +33,13 @@ class VoucherSerializer(serializers.ModelSerializer):
 
     def get_desktop_image(self, obj: Voucher) -> str:
         offer = obj.offers.first()
-        if offer:
+        if isinstance(offer, ConditionalOffer):
             return offer.desktop_image.url if offer.desktop_image else ""
         return ""
 
     def get_mobile_image(self, obj: Voucher) -> str:
         offer = obj.offers.first()
-        if offer:
+        if isinstance(offer, ConditionalOffer):
             return offer.mobile_image.url if offer.mobile_image else ""
         return ""
 
@@ -68,8 +68,8 @@ class OfferSerializer(serializers.ModelSerializer):
 
     def get_vouchers(self, obj: ConditionalOffer) -> list[dict[str, Any]]:
         ser = VoucherSerializer(many=True, context=self.context)
-        return ser.to_representation(  # type:ignore[return-value]
-            obj.vouchers.exclude_children().all()
+        return ser.to_representation(  # type:ignore[return-value]  # DRF ListSerializer.to_representation returns ReturnList, not list
+            obj.vouchers.exclude_children().all()  # type: ignore[attr-defined]  # bluelight's VoucherQuerySet.exclude_children not in Oscar stubs
         )
 
     def get_desktop_image(self, obj: ConditionalOffer) -> str:
@@ -116,10 +116,10 @@ class OfferGroupSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         page: Iterable[ConditionalOffer] | None
         try:
-            page = paginator.paginate_queryset(offers, request)  # type:ignore[arg-type]
+            page = paginator.paginate_queryset(offers, request)  # type:ignore[arg-type]  # request from context may be None
         except NotFound:
             page = obj.offers.none()
-        return OfferSerializer(  # type:ignore[return-value]
+        return OfferSerializer(  # type:ignore[return-value]  # DRF .data returns ReturnList, compatible with declared return
             page, many=True, context=self.context
         ).data
 

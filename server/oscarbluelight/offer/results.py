@@ -26,7 +26,7 @@ class OfferApplication(TypedDict):
 
 class OfferApplications(BaseOfferApplications):
     def __init__(self) -> None:
-        self.applications: dict[int, OfferApplication] = {}
+        self.applications: dict[int, OfferApplication] = {}  # type: ignore[assignment]  # bluelight OfferApplication TypedDict extends Oscar's with extra fields
 
     def add(self, offer: ConditionalOffer, result: BasketDiscount) -> None:
         super().add(offer, result)
@@ -44,7 +44,7 @@ class OfferApplications(BaseOfferApplications):
         Return successful offer applications which didn't lead to a discount
         """
         return [
-            application
+            application  # type: ignore[misc]  # bluelight OfferApplication ⊃ Oscar's OfferApplication
             for application in self.post_order_actions
             if not application["voucher"]
         ]
@@ -55,7 +55,7 @@ class OfferApplications(BaseOfferApplications):
         Return successful voucher applications which didn't lead to a discount
         """
         return [
-            application
+            application  # type: ignore[misc]  # bluelight OfferApplication ⊃ Oscar's OfferApplication
             for application in self.post_order_actions
             if application["voucher"]
         ]
@@ -82,7 +82,7 @@ class HiddenPostOrderAction(results.PostOrderAction):
 
 
 # Have to monkey patch this in since Oscar, for some reason, doesn't use get_class for this class
-results.OfferApplications = OfferApplications  # type:ignore[misc]
+results.OfferApplications = OfferApplications  # type:ignore[misc]  # Oscar doesn't use get_class for this; monkey-patch required
 
 
 # Helper global as returning zero discount is quite common

@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from django import forms
 from django.contrib.postgres.search import SearchVector
@@ -11,10 +11,7 @@ from oscar.core.loading import get_model
 
 from oscarbluelight.offer.models import Range, RangeProductFileUpload
 
-if TYPE_CHECKING:
-    from oscar.apps.catalogue.models import Product
-else:
-    Product = get_model("catalogue", "Product")
+Product = get_model("catalogue", "Product")
 
 
 class BaseRangeSearchForm(forms.Form):

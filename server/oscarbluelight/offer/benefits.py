@@ -44,8 +44,30 @@ if TYPE_CHECKING:
 
     ConsumeItems = Callable[[ConditionalOffer, Basket, AffectedLines], AffectedLines]
 
+    class BluelightBenefitMixin:
+        """Type stub for max_discount methods defined on bluelight's Benefit model.
 
-class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
+        At runtime, these methods are inherited via Django's proxy model resolution
+        to bluelight's Benefit class. This mixin makes them visible to mypy.
+        """
+
+        max_discount: Decimal | None
+
+        def _get_max_discount_amount(
+            self, max_total_discount: Decimal | None = None
+        ) -> Decimal: ...
+
+        def _append_max_discount_to_text(self, text: StrOrPromise) -> StrOrPromise: ...
+
+else:
+
+    class BluelightBenefitMixin:
+        pass
+
+
+class BluelightPercentageDiscountBenefit(
+    BluelightBenefitMixin, PercentageDiscountBenefit
+):
     """
     An offer benefit that gives a percentage discount
     """
@@ -114,15 +136,21 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
                 _("Percentage discount requires a value between 0 and 100")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(  # narrows param types from Any; safe because callers always pass concrete types
         self,
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
+        # discount_percent is part of the parent class signature (Oscar's
+        # PercentageDiscountBenefit.apply) and must be kept for compatibility,
+        # but we always use self.value instead.
+        discount_percent: Decimal | None = None,
         max_total_discount: Decimal | None = None,
         consume_items: ConsumeItems | None = None,
+        **kwargs: Any,
     ) -> BasketDiscount:
         self._clean()
+        assert self.value is not None
 
         discount_percent = self.value
         discount_amount_available = self._get_max_discount_amount(max_total_discount)
@@ -170,7 +198,7 @@ class BluelightPercentageDiscountBenefit(PercentageDiscountBenefit):
         return BasketDiscount(discount)
 
 
-class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
+class BluelightAbsoluteDiscountBenefit(BluelightBenefitMixin, AbsoluteDiscountBenefit):
     """
     An offer benefit that gives an absolute discount
     """
@@ -188,7 +216,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
-                "value": currency(self.value),
+                "value": currency(self.value or 0),
                 "range": self.range.name.lower() if self.range else _("product range"),
                 "max_affected_items": (
                     (
@@ -210,7 +238,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
-                "value": currency(self.value),
+                "value": currency(self.value or 0),
                 "range": (
                     utils.range_anchor(self.range) if self.range else _("product range")
                 ),
@@ -239,15 +267,21 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
                 _("Fixed discount benefits require a value")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(  # narrows param types from Any; safe because callers always pass concrete types
         self,
         basket: Basket,
         condition: Condition,
         offer: ConditionalOffer,
+        # discount_amount is part of the parent class signature (Oscar's
+        # AbsoluteDiscountBenefit.apply) and must be kept for compatibility,
+        # but we always use self.value instead.
+        discount_amount: Decimal | None = None,
         max_total_discount: Decimal | None = None,
         consume_items: ConsumeItems | None = None,
+        **kwargs: Any,
     ) -> BasketDiscount:
         self._clean()
+        assert self.value is not None
 
         discount_amount = self.value
 
@@ -308,7 +342,7 @@ class BluelightAbsoluteDiscountBenefit(AbsoluteDiscountBenefit):
         return BasketDiscount(discount)
 
 
-class BluelightFixedPriceBenefit(FixedPriceBenefit):
+class BluelightFixedPriceBenefit(BluelightBenefitMixin, FixedPriceBenefit):
     """
     An offer benefit that gives the items in the range for a fixed price.
 
@@ -335,7 +369,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
             self._description
             % {
                 "range": self.range,
-                "amount": currency(self.value),
+                "amount": currency(self.value or 0),
                 "max_affected_items": (
                     (
                         ngettext(
@@ -357,7 +391,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
                 _("Fixed price benefits require a product range.")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(
         self,
         basket: Basket,
         condition: Condition,
@@ -366,6 +400,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
+        assert self.value is not None
 
         # Fetch basket lines that are in the range and available to be used in an offer.
         line_tuples = self.get_applicable_lines(offer, basket)
@@ -415,7 +450,7 @@ class BluelightFixedPriceBenefit(FixedPriceBenefit):
         return BasketDiscount(discount)
 
 
-class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
+class BluelightFixedPricePerItemBenefit(BluelightBenefitMixin, FixedPriceBenefit):
     """
     An offer benefit that gives the items in the range for a fixed price.
 
@@ -442,7 +477,7 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
             self._description
             % {
                 "range": self.range,
-                "amount": currency(self.value),
+                "amount": currency(self.value or 0),
                 "max_affected_items": (
                     (
                         ngettext(
@@ -464,7 +499,7 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
                 _("Fixed price per item benefits require a product range.")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(
         self,
         basket: Basket,
         condition: Condition,
@@ -473,6 +508,7 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
         consume_items: ConsumeItems | None = None,
     ) -> BasketDiscount:
         self._clean()
+        assert self.value is not None
 
         # Fetch basket lines that are in the range and available to be used in an offer.
         line_tuples = self.get_applicable_lines(offer, basket)
@@ -520,7 +556,7 @@ class BluelightFixedPricePerItemBenefit(FixedPriceBenefit):
         return BasketDiscount(discount_applied)
 
 
-class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
+class BluelightMultibuyDiscountBenefit(BluelightBenefitMixin, MultibuyDiscountBenefit):
     _description = _("Second most expensive product from %(range)s is free")
 
     class Meta:
@@ -563,7 +599,7 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
                 _("Multibuy benefits don't require a 'max affected items' attribute")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(
         self,
         basket: Basket,
         condition: Condition,
@@ -592,29 +628,31 @@ class BluelightMultibuyDiscountBenefit(MultibuyDiscountBenefit):
         #       Then the third highest consumer pays for, then the fourth item
         #       would be free.
 
-        discount, line = None, None
+        selected_discount: Decimal | None = None
+        selected_line = None
         _more_expensive_items_without_discount = 0
         for _discount, _line in reversed(line_tuples):
             _more_expensive_items_without_discount += _line.quantity_without_discount
             if _more_expensive_items_without_discount > 1:
-                discount, line = _discount, _line
+                selected_discount, selected_line = _discount, _line
                 break
 
         # This must be a single line basket; use the cheapest line as a fallback.
-        if not line:
-            discount, line = line_tuples[0]
+        if not selected_line:
+            selected_discount, selected_line = line_tuples[0]
+        assert selected_discount is not None
 
         # Make sure we can actually discount this line
-        if line.quantity_without_discount <= 0:
+        if selected_line.quantity_without_discount <= 0:
             return ZERO_DISCOUNT
 
         discount_amount_available = self._get_max_discount_amount(max_total_discount)
-        discount = min(discount, discount_amount_available)
+        discount = min(selected_discount, discount_amount_available)
 
         if discount > 0:
-            line.discount(discount, 1, incl_tax=False, offer=offer)
+            selected_line.discount(discount, 1, incl_tax=False, offer=offer)
 
-            affected_lines: AffectedLines = [(line, discount, 1)]
+            affected_lines: AffectedLines = [(selected_line, discount, 1)]
             if consume_items:
                 consume_items(offer, basket, affected_lines)
             else:
@@ -629,7 +667,9 @@ class BluelightShippingBenefit(ShippingBenefit):
         proxy = True
 
 
-class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
+class BluelightShippingAbsoluteDiscountBenefit(
+    BluelightBenefitMixin, ShippingAbsoluteDiscountBenefit
+):
     _description = _("%(amount)s off shipping cost")
 
     class Meta:
@@ -643,7 +683,7 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
-                "amount": currency(self.value),
+                "amount": currency(self.value or 0),
             }
         )
 
@@ -661,7 +701,7 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
                 _("Shipping discounts don't require a 'max affected items' attribute")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(
         self,
         basket: Basket,
         condition: Condition,
@@ -670,10 +710,14 @@ class BluelightShippingAbsoluteDiscountBenefit(ShippingAbsoluteDiscountBenefit):
         consume_items: ConsumeItems | None = None,
     ) -> ShippingDiscount:
         self._clean()
-        return super().apply(basket, condition, offer)
+        result = super().apply(basket, condition, offer)
+        assert isinstance(result, ShippingDiscount)
+        return result
 
 
-class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
+class BluelightShippingFixedPriceBenefit(
+    BluelightBenefitMixin, ShippingFixedPriceBenefit
+):
     _description = _("Get shipping for %(amount)s")
 
     class Meta:
@@ -687,7 +731,7 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
         return self._append_max_discount_to_text(
             self._description
             % {
-                "amount": currency(self.value),
+                "amount": currency(self.value or 0),
             }
         )
 
@@ -703,7 +747,7 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
                 _("Shipping discounts don't require a 'max affected items' attribute")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(
         self,
         basket: Basket,
         condition: Condition,
@@ -712,10 +756,14 @@ class BluelightShippingFixedPriceBenefit(ShippingFixedPriceBenefit):
         consume_items: ConsumeItems | None = None,
     ) -> ShippingDiscount:
         self._clean()
-        return super().apply(basket, condition, offer)
+        result = super().apply(basket, condition, offer)
+        assert isinstance(result, ShippingDiscount)
+        return result
 
 
-class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenefit):
+class BluelightShippingPercentageDiscountBenefit(
+    BluelightBenefitMixin, ShippingPercentageDiscountBenefit
+):
     _description = _("%(value)s%% off of shipping cost")
 
     class Meta:
@@ -734,6 +782,7 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
         )
 
     def _clean(self) -> None:
+        assert self.value is not None
         if self.value > 100:
             raise exceptions.ValidationError(
                 _("Percentage discount cannot be greater than 100")
@@ -749,7 +798,7 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
                 _("Shipping discounts don't require a 'max affected items' attribute")
             )
 
-    def apply(  # type:ignore[override]
+    def apply(
         self,
         basket: Basket,
         condition: Condition,
@@ -758,7 +807,9 @@ class BluelightShippingPercentageDiscountBenefit(ShippingPercentageDiscountBenef
         consume_items: ConsumeItems | None = None,
     ) -> ShippingDiscount:
         self._clean()
-        return super().apply(basket, condition, offer)
+        result = super().apply(basket, condition, offer)
+        assert isinstance(result, ShippingDiscount)
+        return result
 
 
 class CompoundBenefit(Benefit):
@@ -813,7 +864,7 @@ class CompoundBenefit(Benefit):
     @property
     def description(self) -> StrOrPromise:
         descrs = (c.description for c in self.children)
-        descr = human_readable_conjoin(self.conjunction, descrs, _("Empty Benefit"))
+        descr = human_readable_conjoin(self.conjunction, descrs, _("Empty Benefit"))  # type: ignore[arg-type]  # description could be None per stubs but never is in practice
         return self._append_max_discount_to_text(descr)
 
     def apply(
@@ -836,7 +887,7 @@ class CompoundBenefit(Benefit):
         discount_amount_available = self._get_max_discount_amount(max_total_discount)
 
         for child in self.children:
-            result = child.apply(  # type:ignore[call-arg]
+            result = child.apply(
                 basket,
                 condition,
                 offer,
@@ -848,6 +899,7 @@ class CompoundBenefit(Benefit):
                 # one exception to the to "can't combine differing types rule".
                 pass
             elif combined_result is None:
+                assert isinstance(result, BasketDiscount)
                 combined_result = copy.deepcopy(result)
                 discount_amount_available -= result.discount
             elif combined_result.affects == result.affects:
@@ -909,7 +961,7 @@ class CompoundBenefit(Benefit):
         return discount
 
 
-__all__ = [
+__all__: list[str] = [
     "BluelightAbsoluteDiscountBenefit",
     "BluelightFixedPriceBenefit",
     "BluelightFixedPricePerItemBenefit",

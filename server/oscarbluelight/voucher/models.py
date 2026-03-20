@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Collection, Iterable, Sequence
 from datetime import datetime
-from decimal import Decimal
 from functools import partial
 from typing import TYPE_CHECKING, Any, Self
 import time
 
 from django.conf import settings
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.cache import cache
 from django.db import connection, models, transaction
@@ -17,12 +17,13 @@ from django.utils.translation import gettext_lazy as _
 from oscar.apps.voucher.abstract_models import AbstractVoucher
 from thelabdb.fields import NullCharField
 
-from ..offer.models import Benefit, Condition, OfferGroup
+from ..offer.models import Benefit, Condition, ConditionalOffer, OfferGroup
 from . import sql, tasks
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
-    from oscar.apps.order.models import Order
+    from oscar.apps.offer.results import OfferApplication as _OscarOfferApplication
+    from oscar.apps.order.abstract_models import AbstractOrder
 
 
 class VoucherQuerySet(models.QuerySet["Voucher"]):
@@ -118,7 +119,9 @@ class Voucher(AbstractVoucher):
     @property
     def offer_group(self) -> OfferGroup | None:
         offer = self.offers.first()
-        return offer.offer_group if offer else None
+        if isinstance(offer, ConditionalOffer):
+            return offer.offer_group
+        return None
 
     @property
     def priority(self) -> int:
@@ -128,12 +131,18 @@ class Voucher(AbstractVoucher):
     @property
     def condition(self) -> Condition | None:
         offer = self.offers.first()
-        return offer.condition if offer else None
+        if isinstance(offer, ConditionalOffer):
+            condition = offer.condition
+            return condition if isinstance(condition, Condition) else None
+        return None
 
     @property
     def benefit(self) -> Benefit | None:
         offer = self.offers.first()
-        return offer.benefit if offer else None
+        if isinstance(offer, ConditionalOffer):
+            benefit = offer.benefit
+            return benefit if isinstance(benefit, Benefit) else None
+        return None
 
     @property
     def is_open(self) -> bool:
@@ -147,17 +156,17 @@ class Voucher(AbstractVoucher):
         self.status = self.SUSPENDED
         self.save()
 
-    suspend.alters_data = True  # type:ignore[attr-defined]
+    suspend.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
     def unsuspend(self) -> None:
         self.status = self.OPEN
         self.save()
 
-    unsuspend.alters_data = True  # type:ignore[attr-defined]
+    unsuspend.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
     def is_available_to_user(
         self,
-        user: User | AnonymousUser | None = None,
+        user: AbstractBaseUser | AnonymousUser | None = None,
     ) -> tuple[bool, str]:
         is_available, message = True, ""
         rule_classes = getattr(settings, "BLUELIGHT_VOUCHER_AVAILABILITY_RULES", [])
@@ -277,24 +286,30 @@ class Voucher(AbstractVoucher):
                 condition.delete()
         return rc
 
-    def record_usage(self, order: Order, user: User, *args: Any, **kwargs: Any) -> None:
+    def record_usage(
+        self,
+        order: AbstractOrder,
+        user: User | AnonymousUser | None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         if self.parent:
-            if user.is_authenticated:
-                self.parent.applications.create(
+            if user is not None and user.is_authenticated:
+                self.parent.applications.create(  # type: ignore[misc]  # AbstractOrder vs concrete Order
                     voucher=self.parent, order=order, user=user
                 )
             else:
-                self.parent.applications.create(voucher=self.parent, order=order)
+                self.parent.applications.create(voucher=self.parent, order=order)  # type: ignore[misc]  # AbstractOrder vs concrete Order
             self.parent.num_orders += 1
             self.parent.save(update_children=False)
 
         return super().record_usage(order, user, *args, **kwargs)
 
-    record_usage.alters_data = True  # type:ignore[attr-defined]
+    record_usage.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
     def record_discount(
         self,
-        discount: dict[str, Decimal],
+        discount: _OscarOfferApplication | dict[str, Any],
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -306,7 +321,7 @@ class Voucher(AbstractVoucher):
             self.parent.save(update_children=False)
         return super().record_discount(discount, *args, **kwargs)
 
-    record_discount.alters_data = True  # type:ignore[attr-defined]
+    record_discount.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
     def _create_child(self, code: str, update_children: bool = True) -> Voucher | None:
         self._create_child_batch([code], update_children=update_children)
@@ -449,4 +464,4 @@ class Voucher(AbstractVoucher):
         return f"{index}{suffix}"
 
 
-from oscar.apps.voucher.models import *  # type:ignore[assignment]  # NOQA
+from oscar.apps.voucher.models import *  # type:ignore[assignment]  # NOQA  # Oscar model customization pattern

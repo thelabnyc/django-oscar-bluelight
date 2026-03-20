@@ -8,7 +8,6 @@ from typing import (
     NewType,
     TypedDict,
     TypeVar,
-    cast,
     get_args,
 )
 import json
@@ -25,7 +24,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from oscar.apps.dashboard.offers import views
 from oscar.apps.dashboard.offers.views import *  # noqa
-from oscar.apps.dashboard.offers.views import (  # type: ignore[attr-defined]
+from oscar.apps.dashboard.offers.views import (
     sort_queryset,
 )
 from oscar.core.loading import get_class
@@ -78,8 +77,8 @@ class ConditionItem(TypedDict):
     name: ConditionItemName
 
 
-class OfferWizardStepView(  # type:ignore[no-redef]
-    views.OfferWizardStepView,
+class OfferWizardStepView(
+    views.OfferWizardStepView,  # type: ignore[name-defined]  # Oscar wildcard import; class exists at runtime
     Generic[T],
 ):
     form_class: type[T]
@@ -170,7 +169,7 @@ class OfferWizardStepView(  # type:ignore[no-redef]
         return super().form_valid(form)
 
 
-class OfferMetaDataView(OfferWizardStepView):  # type:ignore[no-redef]
+class OfferMetaDataView(OfferWizardStepView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     step_name = "metadata"
     form_class = MetaDataForm
     template_name = "oscar/dashboard/offers/metadata_form.html"
@@ -181,7 +180,7 @@ class OfferMetaDataView(OfferWizardStepView):  # type:ignore[no-redef]
         return _("Name and description")
 
 
-class OfferBenefitView(OfferWizardStepView):  # type:ignore[no-redef]
+class OfferBenefitView(OfferWizardStepView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     step_name = "benefit"
     form_class = BenefitSelectionForm
     template_name = "oscar/dashboard/offers/benefit_selection_form.html"
@@ -194,7 +193,7 @@ class OfferBenefitView(OfferWizardStepView):  # type:ignore[no-redef]
         return _("Incentive")
 
 
-class OfferConditionView(OfferWizardStepView):  # type:ignore[no-redef]
+class OfferConditionView(OfferWizardStepView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     step_name = "condition"
     form_class = ConditionSelectionForm
     template_name = "oscar/dashboard/offers/condition_selection_form.html"
@@ -203,14 +202,15 @@ class OfferConditionView(OfferWizardStepView):  # type:ignore[no-redef]
     previous_view = OfferBenefitView
 
 
-class OfferListView(views.OfferListView):  # type:ignore[no-redef]
+class OfferListView(views.OfferListView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     form_class = OfferSearchForm
 
     def get_queryset(self) -> QuerySet[ConditionalOffer]:
-        self.search_filters = []
+        self.search_filters: list[str | StrOrPromise] = []
 
         # Start with base queryset WITHOUT voucher_count annotation
         # We'll compute voucher_count after pagination to avoid N subquery executions
+        assert self.model is not None
         qs = self.model._default_manager.select_related(
             "benefit", "condition", "offer_group"
         )
@@ -303,10 +303,10 @@ class OfferListView(views.OfferListView):  # type:ignore[no-redef]
             offer_ids = [offer.pk for offer in offers]
 
             voucher_counts = dict(
-                VoucherOffers.objects.filter(conditionaloffer_id__in=offer_ids)
+                VoucherOffers.objects.filter(conditionaloffer_id__in=offer_ids)  # type: ignore[misc]  # m2m through model manager
                 .values("conditionaloffer_id")
                 .annotate(count=Count("*"))
-                .values_list("conditionaloffer_id", "count")  # type: ignore[misc]
+                .values_list("conditionaloffer_id", "count")
             )
 
             for offer in offers:
@@ -315,7 +315,7 @@ class OfferListView(views.OfferListView):  # type:ignore[no-redef]
         return context
 
 
-class OfferRestrictionsView(OfferWizardStepView):  # type:ignore[no-redef]
+class OfferRestrictionsView(OfferWizardStepView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     step_name = "restrictions"
     form_class = RestrictionsForm
     template_name = "oscar/dashboard/offers/restrictions_form.html"
@@ -359,7 +359,7 @@ class OfferImageUpdateView(UpdateView):
         return reverse("dashboard:offer-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
-class OfferDetailView(views.OfferDetailView):  # type:ignore[no-redef]
+class OfferDetailView(views.OfferDetailView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     form_class = OrderDiscountSearchForm
 
     def get_queryset(self) -> QuerySet[OrderDiscount]:
@@ -516,7 +516,7 @@ class ConditionListView(ListView):
                 )
             data = self._get_items_for_condition(
                 ConditionItemPk(int(condition_pk)),
-                cast(ConditionItemType, item_type),
+                item_type,  # type: ignore[arg-type]  # validated via get_args() check above; isinstance doesn't work with Literal types
                 page,
             )
             return JsonResponse(data)

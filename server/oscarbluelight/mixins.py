@@ -3,17 +3,17 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, NamedTuple
 import itertools
+import logging
 
 from django.utils.translation import gettext_lazy as _
 from oscar.core.utils import round_half_up
 
 if TYPE_CHECKING:
     from oscar.apps.basket.abstract_models import AbstractBasket, AbstractLine
+    from oscar.apps.offer.results import PostOrderAction
 
-    from .offer import results
     from .offer.models import ConditionalOffer
     from .offer.upsells import OfferUpsell
-    from .voucher.models import Voucher
 else:
 
     class AbstractBasket:
@@ -21,6 +21,9 @@ else:
 
     class AbstractLine:
         pass
+
+
+logger = logging.getLogger(__name__)
 
 
 class PriceBreakdownStackEntry(NamedTuple):
@@ -44,33 +47,64 @@ class LinePriceBreakdownItem(NamedTuple):
 
 class BluelightBasketMixin(AbstractBasket):
     @property
-    def offer_post_order_actions(self) -> list[results.PostOrderAction]:
+    def offer_post_order_actions(self) -> list[PostOrderAction]:
         """
         Return post order actions from offers
         """
-        return self.offer_applications.offer_post_order_actions
+        from .offer.results import OfferApplications as BluelightOfferApplications
+
+        apps = self.offer_applications
+        if isinstance(apps, BluelightOfferApplications):
+            return list(apps.offer_post_order_actions)
+        return []
 
     @property
-    def voucher_post_order_actions(self) -> list[results.PostOrderAction]:
+    def voucher_post_order_actions(self) -> list[PostOrderAction]:
         """
         Return post order actions from offers
         """
-        return self.offer_applications.voucher_post_order_actions
+        from .offer.results import OfferApplications as BluelightOfferApplications
+
+        apps = self.offer_applications
+        if isinstance(apps, BluelightOfferApplications):
+            return list(apps.voucher_post_order_actions)
+        return []
 
     def clear_offer_upsells(self) -> None:
         for line in self.all_lines():
-            line.clear_offer_upsells()
+            if isinstance(line, BluelightBasketLineMixin):
+                line.clear_offer_upsells()
+            else:
+                logger.warning(
+                    "Basket line %r does not use BluelightBasketLineMixin. "
+                    "Ensure your basket Line model includes this mixin.",
+                    line,
+                )
 
     def add_offer_upsell(self, offer_upsell: OfferUpsell) -> None:
         for line in self.all_lines():
-            if line.product and offer_upsell.is_relevant_to_product(line.product):
-                line.add_offer_upsell(offer_upsell)
+            if isinstance(line, BluelightBasketLineMixin):
+                if line.product and offer_upsell.is_relevant_to_product(line.product):
+                    line.add_offer_upsell(offer_upsell)
+            else:
+                logger.warning(
+                    "Basket line %r does not use BluelightBasketLineMixin. "
+                    "Ensure your basket Line model includes this mixin.",
+                    line,
+                )
 
     def get_offer_upsells(self) -> list[OfferUpsell]:
         offer_upsells = set()
         for line in self.all_lines():
-            for upsell in line.get_offer_upsells():
-                offer_upsells.add(upsell)
+            if isinstance(line, BluelightBasketLineMixin):
+                for upsell in line.get_offer_upsells():
+                    offer_upsells.add(upsell)
+            else:
+                logger.warning(
+                    "Basket line %r does not use BluelightBasketLineMixin. "
+                    "Ensure your basket Line model includes this mixin.",
+                    line,
+                )
         return list(offer_upsells)
 
 
@@ -144,7 +178,7 @@ class BluelightBasketLineMixin(AbstractLine):
         In order for point 2.1 to work that way and subtract $100 instead of $200, it must start with the already
         discounted line price of $100, which equates to a unit_effective_price of $50.
         """
-        if self._discount_incl_tax > Decimal("0.00"):
+        if self.discounts.incl_tax > Decimal("0.00"):
             raise RuntimeError(
                 _("Bluelight does not support tax-inclusive discounting.")
             )
@@ -164,8 +198,9 @@ class BluelightBasketLineMixin(AbstractLine):
     @property
     def line_price_incl_tax_incl_discounts(self) -> Decimal | None:
         if self.line_price_incl_tax is not None:
-            return Decimal(
-                max(0, round_half_up(self.line_price_incl_tax - self.discount_value))
+            return max(
+                Decimal(0),
+                round_half_up(self.line_price_incl_tax - self.discount_value),
             )
         return None
 
@@ -198,7 +233,7 @@ class BluelightBasketLineMixin(AbstractLine):
                     "when tax-exclusive discounts are already applied"
                 )
             )
-        if self._discount_incl_tax > 0:
+        if self.discounts.incl_tax > 0:
             raise RuntimeError(
                 _(
                     "Attempting to discount the tax-exclusive price of a line "
@@ -211,7 +246,7 @@ class BluelightBasketLineMixin(AbstractLine):
 
         # Push description of discount onto the stack
         if offer:
-            voucher: Voucher | None = offer.get_voucher()
+            voucher = offer.get_voucher()
             descr = LineDiscountDescription(
                 amount=discount_value,
                 offer_name=offer.name,
@@ -234,7 +269,7 @@ class BluelightBasketLineMixin(AbstractLine):
         still calculating their discount amounts correctly.
         """
         self.discounts.begin_offer_group_application()
-        self._offer_group_starting_discount = self.discount_value
+        self._offer_group_starting_discount = Decimal(self.discount_value)
 
     def end_offer_group_application(self) -> None:
         """
@@ -256,7 +291,7 @@ class BluelightBasketLineMixin(AbstractLine):
         Signal that all offer groups (and therefore all offers) have now been applied.
         """
         self.discounts.finalize_offer_group_applications()
-        self._offer_group_starting_discount = self.discount_value
+        self._offer_group_starting_discount = Decimal(self.discount_value)
 
     def clear_offer_upsells(self) -> None:
         self._offer_upsells = []
@@ -267,7 +302,7 @@ class BluelightBasketLineMixin(AbstractLine):
     def get_offer_upsells(self) -> list[OfferUpsell]:
         return self._offer_upsells
 
-    def get_price_breakdown(self) -> list[LinePriceBreakdownItem]:
+    def get_price_breakdown(self) -> list[LinePriceBreakdownItem]:  # type: ignore[override]  # list invariance prevents covariant NamedTuple→tuple return
         """
         Return a breakdown of line prices after discounts have been applied.
 
@@ -279,6 +314,7 @@ class BluelightBasketLineMixin(AbstractLine):
             )
 
         # Create an array of the pre-discount unit prices with length equal to the line quantity
+        assert self.unit_price_excl_tax is not None
         item_prices: list[Decimal] = []
         for i in range(self.quantity):
             item_prices.append(self.unit_price_excl_tax)
@@ -317,6 +353,10 @@ class BluelightBasketLineMixin(AbstractLine):
 
         # Avoid a divide by 0 error when the line is completely free, but still has tax applied to it.
         free = Decimal("0.00")
+        if line_price_excl_tax_incl_discounts is None:
+            line_price_excl_tax_incl_discounts = free
+        if line_tax is None:
+            line_tax = free
         if line_price_excl_tax_incl_discounts <= free:
             prices.append(
                 LinePriceBreakdownItem(

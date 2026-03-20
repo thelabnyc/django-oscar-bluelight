@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -23,23 +23,13 @@ from .models import (
     RangeProduct,
 )
 
-if TYPE_CHECKING:
-    from oscar.apps.catalogue.models import (
-        Category,
-        Product,
-        ProductCategory,
-        ProductClass,
-    )
-    from oscar.apps.order.models import Order, OrderDiscount
-    from oscar.apps.partner.models import StockRecord
-else:
-    Category = get_model("catalogue", "Category")
-    ProductCategory = get_model("catalogue", "ProductCategory")
-    Product = get_model("catalogue", "Product")
-    ProductClass = get_model("catalogue", "ProductClass")
-    StockRecord = get_model("partner", "StockRecord")
-    Order = get_model("order", "Order")
-    OrderDiscount = get_model("order", "OrderDiscount")
+Category = get_model("catalogue", "Category")
+ProductCategory = get_model("catalogue", "ProductCategory")
+Product = get_model("catalogue", "Product")
+ProductClass = get_model("catalogue", "ProductClass")
+StockRecord = get_model("partner", "StockRecord")
+Order = get_model("order", "Order")
+OrderDiscount = get_model("order", "OrderDiscount")
 
 
 # Invalidate cosmetic price cache whenever any Offer or StockRecord data changes

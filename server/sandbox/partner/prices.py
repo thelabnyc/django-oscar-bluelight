@@ -13,7 +13,7 @@ class FixedPrice(BaseFixedPrice):
     and cosmetic_incl_tax properties
     """
 
-    excl_tax: Decimal  # type:ignore[assignment]
+    excl_tax: Decimal
     _get_cosmetic_excl_tax: Callable[[], Decimal]
 
     def __init__(

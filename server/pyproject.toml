@@ -42,6 +42,7 @@ dev = [
     "mypy (==1.19.1)",
     "types-psycopg2 (>=2.9.21.20260223,<3)",
     "djangorestframework-stubs (==3.16.8)",
+    "django-oscar-stubs (>=4.1.0b2)",
     "tox-uv>=1.33.4",
 ]
 
@@ -58,7 +59,7 @@ explicit = true
 
 [tool.mypy]
 python_version = "3.13"
-plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main", "mypy_oscar_plugin"]
 
 # Strict mode, see mypy --help
 warn_unused_configs = true
@@ -77,10 +78,6 @@ no_implicit_reexport = true
 show_error_codes = true
 # Not turned on by strict
 strict_equality = true
-
-[[tool.mypy.overrides]]
-module = "oscar.*"
-follow_untyped_imports = true
 
 [[tool.mypy.overrides]]
 module = "debug_toolbar.*"

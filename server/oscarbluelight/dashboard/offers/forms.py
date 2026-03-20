@@ -25,12 +25,10 @@ from oscarbluelight.offer.models import (
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
-    from oscar.apps.order.models import Order, OrderDiscount
-    from oscar.apps.payment.models import SourceType
-else:
-    Order = get_model("order", "Order")
-    OrderDiscount = get_model("order", "OrderDiscount")
-    SourceType = get_model("payment", "SourceType")
+
+Order = get_model("order", "Order")
+OrderDiscount = get_model("order", "OrderDiscount")
+SourceType = get_model("payment", "SourceType")
 
 
 def get_offer_group_choices() -> list[tuple[str, str]]:
@@ -45,7 +43,8 @@ class BenefitSearchForm(forms.Form):
     _benefit_classes = getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])
     _benefit_classes.append((compound_benefit_cpath, _("Compound Benefit")))
     range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
-        required=False, queryset=Range.objects.order_by("name")
+        required=False,
+        queryset=Range.objects.order_by("name"),  # type: ignore[arg-type]  # QuerySet type mismatch with ModelChoiceField
     )
     benefit_type = forms.ChoiceField(
         choices=[
@@ -61,7 +60,8 @@ class BenefitSearchForm(forms.Form):
 
 class ConditionSearchForm(forms.Form):
     range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
-        required=False, queryset=Range.objects.order_by("name")
+        required=False,
+        queryset=Range.objects.order_by("name"),  # type: ignore[arg-type]  # QuerySet type mismatch with ModelChoiceField
     )
 
 
@@ -87,15 +87,15 @@ class OrderDiscountSearchForm(forms.Form):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.fields["status"].choices = (  # type:ignore[attr-defined]
+        self.fields["status"].choices = (  # type:ignore[attr-defined]  # dynamic field access on forms.Field
             self.get_order_status_choices()
         )
-        self.fields["payment_method"].choices = (  # type:ignore[attr-defined]
+        self.fields["payment_method"].choices = (  # type:ignore[attr-defined]  # dynamic field access on forms.Field
             self.get_payment_method_choices()
         )
 
-    def get_order_status_choices(self) -> list[tuple[str, StrOrPromise]]:
-        return [("", "---------")] + [(v, v) for v in Order.all_statuses()]
+    def get_order_status_choices(self) -> list[tuple[str, str | StrOrPromise]]:
+        return [("", "---------")] + [(v, v) for v in Order.all_statuses()]  # type: ignore[return-value]  # all_statuses() returns set[str], mismatch with tuple type
 
     def get_payment_method_choices(self) -> list[tuple[str, StrOrPromise]]:
         return [("", "---------")] + [
@@ -269,6 +269,7 @@ class RestrictionsForm(BaseRestrictionsForm):
 
     def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean()
+        assert cleaned_data is not None
         # If offer_type is _User_, require at least 1 group to be selected
         if cleaned_data["offer_type"] == ConditionalOffer.USER:
             if len(cleaned_data["groups"]) <= 0:
