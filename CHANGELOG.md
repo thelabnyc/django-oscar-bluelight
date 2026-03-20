@@ -1,3 +1,9 @@
+## v6.1.0b0 (2026-03-20)
+
+### Feat
+
+- add django-oscar-stubs for type checking
+
 ## v6.0.1 (2026-03-10)
 
 ### Perf
