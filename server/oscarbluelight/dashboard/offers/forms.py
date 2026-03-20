@@ -270,9 +270,10 @@ class RestrictionsForm(BaseRestrictionsForm):
     def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean()
         assert cleaned_data is not None
+        offer_type = cleaned_data.get("offer_type")
         # If offer_type is _User_, require at least 1 group to be selected
-        if cleaned_data["offer_type"] == ConditionalOffer.USER:
-            if len(cleaned_data["groups"]) <= 0:
+        if offer_type == ConditionalOffer.USER:
+            if len(cleaned_data.get("groups", [])) <= 0:
                 raise forms.ValidationError(
                     {
                         "groups": _(
@@ -281,7 +282,7 @@ class RestrictionsForm(BaseRestrictionsForm):
                     }
                 )
         # If offer_type is anything other than _User_, clear the groups field.
-        else:
+        elif offer_type is not None:
             cleaned_data["groups"] = []
         return cleaned_data
 
