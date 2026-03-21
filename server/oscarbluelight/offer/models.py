@@ -46,14 +46,13 @@ from .utils import get_line_filter_strategy
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
-    from oscar.apps.basket.abstract_models import AbstractBasket, AbstractLine
+    from oscar.apps.basket.models import Basket, Line
     from oscar.apps.catalogue.models import Product
     from oscar.apps.offer.results import OfferApplication as _OscarOfferApplication
     from oscar.apps.order.models import Order as _Order
     from oscar.apps.order.models import OrderDiscount as _OrderDiscount
 
     from ..mixins import BluelightBasketLineMixin as BasketLine
-    from ..mixins import BluelightBasketMixin as Basket
     from ..voucher.models import Voucher as _Voucher
     from .types import LinesTuple
     from .upsells import OfferUpsell
@@ -164,7 +163,7 @@ class ConditionalOffer(AbstractConditionalOffer):
         ),
     )
 
-    _condition_satisfying_lines: list[AbstractLine] | None = None
+    _condition_satisfying_lines: list[Line] | None = None
 
     class Meta:
         ordering = ("-offer_group__priority", "-priority", "pk")
@@ -231,9 +230,9 @@ class ConditionalOffer(AbstractConditionalOffer):
     def reset_condition_satisfying_lines(self) -> None:
         self._condition_satisfying_lines = []
 
-    def add_condition_satisfying_lines(self, lines: Sequence[AbstractLine]) -> None:
+    def add_condition_satisfying_lines(self, lines: Sequence[Line]) -> None:
         """Set the list of basket lines that satisfied the offer's condition."""
-        current: list[AbstractLine] = (
+        current: list[Line] = (
             list(self._condition_satisfying_lines)
             if self._condition_satisfying_lines is not None
             else []
@@ -241,9 +240,9 @@ class ConditionalOffer(AbstractConditionalOffer):
         current += [line for line in lines if line not in current]
         self._condition_satisfying_lines = current
 
-    def get_condition_satisfying_lines(self) -> Sequence[AbstractLine]:
+    def get_condition_satisfying_lines(self) -> Sequence[Line]:
         """Get the list of basket lines that satisfied the offer's condition."""
-        lines: Sequence[AbstractLine] = self._condition_satisfying_lines or []
+        lines: Sequence[Line] = self._condition_satisfying_lines or []
         return lines
 
 
@@ -346,9 +345,9 @@ class Benefit(AbstractBenefit):
 
     def get_applicable_lines(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
-        range: AbstractRange | None = None,
+        offer: ConditionalOffer,
+        basket: Basket,
+        range: Range | None = None,
     ) -> list[LinesTuple]:
         """
         Return the basket lines that are available to be discounted, with line filter strategy applied.
@@ -414,8 +413,8 @@ class Condition(AbstractCondition):
 
     def get_applicable_lines(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         most_expensive_first: bool = True,
     ) -> list[LinesTuple]:
         """
@@ -431,8 +430,8 @@ class Condition(AbstractCondition):
             line_tuples.append((price, line))
         key = operator.itemgetter(0)
         if most_expensive_first:
-            return sorted(line_tuples, reverse=True, key=key)  # type: ignore[arg-type]  # AbstractLine is BluelightBasketLineMixin at runtime (mixin required)
-        return sorted(line_tuples, key=key)  # type: ignore[arg-type]  # AbstractLine is BluelightBasketLineMixin at runtime (mixin required)
+            return sorted(line_tuples, reverse=True, key=key)
+        return sorted(line_tuples, key=key)
 
     def clean(self) -> None:
         if self.type:

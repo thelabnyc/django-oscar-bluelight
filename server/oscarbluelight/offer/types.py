@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..mixins import BluelightBasketLineMixin as Line
+    from oscar.apps.basket.models import Line
 
     AffectedLine = tuple[Line, Decimal, int]
     AffectedLines = list[AffectedLine]

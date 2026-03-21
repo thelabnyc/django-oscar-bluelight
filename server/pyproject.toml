@@ -42,7 +42,7 @@ dev = [
     "mypy (==1.19.1)",
     "types-psycopg2 (>=2.9.21.20260223,<3)",
     "djangorestframework-stubs (==3.16.8)",
-    "django-oscar-stubs (>=4.1.0b2)",
+    "django-oscar-stubs (>=4.1.0b4)",
     "tox-uv>=1.33.4",
 ]
 

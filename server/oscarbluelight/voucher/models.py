@@ -23,7 +23,7 @@ from . import sql, tasks
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
     from oscar.apps.offer.results import OfferApplication as _OscarOfferApplication
-    from oscar.apps.order.abstract_models import AbstractOrder
+    from oscar.apps.order.models import Order
 
 
 class VoucherQuerySet(models.QuerySet["Voucher"]):
@@ -288,18 +288,18 @@ class Voucher(AbstractVoucher):
 
     def record_usage(
         self,
-        order: AbstractOrder,
+        order: Order,
         user: User | AnonymousUser | None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         if self.parent:
             if user is not None and user.is_authenticated:
-                self.parent.applications.create(  # type: ignore[misc]  # AbstractOrder vs concrete Order
+                self.parent.applications.create(
                     voucher=self.parent, order=order, user=user
                 )
             else:
-                self.parent.applications.create(voucher=self.parent, order=order)  # type: ignore[misc]  # AbstractOrder vs concrete Order
+                self.parent.applications.create(voucher=self.parent, order=order)
             self.parent.num_orders += 1
             self.parent.save(update_children=False)
 
