@@ -10,7 +10,7 @@ from .utils import human_readable_conjoin
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
-    from oscar.apps.basket.abstract_models import AbstractBasket as Basket
+    from oscar.apps.basket.models import Basket
     from oscar.apps.catalogue.models import Product
 
     from .models import ConditionalOffer, Range

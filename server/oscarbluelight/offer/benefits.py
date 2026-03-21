@@ -36,9 +36,9 @@ from .utils import get_conjoiner, human_readable_conjoin
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
+    from oscar.apps.basket.models import Basket
     from oscar.apps.order.models import Order
 
-    from ..mixins import BluelightBasketMixin as Basket
     from .models import Condition, ConditionalOffer
     from .types import AffectedLines
 

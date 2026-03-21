@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from oscar.apps.basket.abstract_models import AbstractBasket
-    from oscar.apps.offer.abstract_models import AbstractConditionalOffer
+    from oscar.apps.basket.models import Basket
 
+    from .models import ConditionalOffer
     from .types import LinesTuple
 
 
@@ -32,8 +32,8 @@ class BaseLineFilterStrategy:
 
     def filter_lines(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         line_tuples: list[LinesTuple],
     ) -> list[LinesTuple]:
         """

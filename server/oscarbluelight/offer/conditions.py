@@ -24,8 +24,7 @@ from .utils import human_readable_conjoin
 
 if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
-    from oscar.apps.basket.abstract_models import AbstractBasket, AbstractLine
-    from oscar.apps.offer.abstract_models import AbstractConditionalOffer
+    from oscar.apps.basket.models import Basket, Line
 
     from .models import ConditionalOffer
     from .types import AffectedLines, LinesTuple
@@ -39,8 +38,8 @@ def _default_clean(self: AbstractCondition) -> None:
 
 
 def _add_condition_satisfying_lines(
-    offer: AbstractConditionalOffer,
-    lines: list[AbstractLine],
+    offer: ConditionalOffer,
+    lines: list[Line],
 ) -> None:
     """Call add_condition_satisfying_lines if the offer supports it."""
     from .models import ConditionalOffer as _ConditionalOffer
@@ -77,11 +76,9 @@ class BluelightCountCondition(CountCondition):
     def _clean(self) -> None:
         return _default_clean(self)
 
-    def is_satisfied(
-        self, offer: AbstractConditionalOffer, basket: AbstractBasket
-    ) -> bool:
+    def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         """Override to track which lines satisfied the condition."""
-        satisfying_lines: list[AbstractLine] = []
+        satisfying_lines: list[Line] = []
         assert self.value is not None
 
         num_matches = 0
@@ -94,9 +91,7 @@ class BluelightCountCondition(CountCondition):
                     return True
         return False
 
-    def _get_num_matches(
-        self, basket: AbstractBasket, offer: AbstractConditionalOffer
-    ) -> int:
+    def _get_num_matches(self, basket: Basket, offer: ConditionalOffer) -> int:
         if hasattr(self, "_num_matches"):
             return getattr(self, "_num_matches")
         num_matches = 0
@@ -109,7 +104,7 @@ class BluelightCountCondition(CountCondition):
     def get_upsell_details(
         self,
         offer: ConditionalOffer,
-        basket: AbstractBasket,
+        basket: Basket,
     ) -> upsells.QuantityUpsell | None:
         num_matches = self._get_num_matches(basket, offer)
         assert self.value is not None
@@ -126,8 +121,8 @@ class BluelightCountCondition(CountCondition):
 
     def consume_items(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         affected_lines: AffectedLines,
     ) -> AffectedLines:
         """
@@ -185,9 +180,7 @@ class BluelightCoverageCondition(CoverageCondition):
             ),
         }
 
-    def _get_num_covered_products(
-        self, basket: AbstractBasket, offer: AbstractConditionalOffer
-    ) -> int:
+    def _get_num_covered_products(self, basket: Basket, offer: ConditionalOffer) -> int:
         covered_ids = set()
         for line in basket.all_lines():
             product = line.product
@@ -198,7 +191,7 @@ class BluelightCoverageCondition(CoverageCondition):
         return len(covered_ids)
 
     def get_upsell_details(
-        self, offer: ConditionalOffer, basket: AbstractBasket
+        self, offer: ConditionalOffer, basket: Basket
     ) -> upsells.CoverageUpsell | None:
         num_matches = self._get_num_covered_products(basket, offer)
         assert self.value is not None
@@ -216,13 +209,11 @@ class BluelightCoverageCondition(CoverageCondition):
     def _clean(self) -> None:
         return _default_clean(self)
 
-    def is_satisfied(
-        self, offer: AbstractConditionalOffer, basket: AbstractBasket
-    ) -> bool:
+    def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         """
         Determines whether a given basket meets this condition
         """
-        satisfying_lines: list[AbstractLine] = []
+        satisfying_lines: list[Line] = []
         covered_ids = []
         assert self.value is not None
         for line in basket.all_lines():
@@ -239,8 +230,8 @@ class BluelightCoverageCondition(CoverageCondition):
 
     def consume_items(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         affected_lines: AffectedLines,
     ) -> AffectedLines:
         """
@@ -316,13 +307,11 @@ class BluelightValueCondition(ValueCondition):
     def _clean(self) -> None:
         return _default_clean(self)
 
-    def is_satisfied(
-        self, offer: AbstractConditionalOffer, basket: AbstractBasket
-    ) -> bool:
+    def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         """
         Determine whether a given basket meets this condition
         """
-        satisfying_lines: list[AbstractLine] = []
+        satisfying_lines: list[Line] = []
         value_of_matches = Decimal("0.00")
         assert self.value is not None
         for line in basket.all_lines():
@@ -339,7 +328,7 @@ class BluelightValueCondition(ValueCondition):
     def get_upsell_details(
         self,
         offer: ConditionalOffer,
-        basket: AbstractBasket,
+        basket: Basket,
     ) -> upsells.AmountUpsell | None:
         value_of_matches = self._get_value_of_matches(offer, basket)
         assert self.value is not None
@@ -354,9 +343,7 @@ class BluelightValueCondition(ValueCondition):
             )
         return None
 
-    def _get_value_of_matches(
-        self, offer: AbstractConditionalOffer, basket: AbstractBasket
-    ) -> Decimal:
+    def _get_value_of_matches(self, offer: ConditionalOffer, basket: Basket) -> Decimal:
         if hasattr(self, "_value_of_matches"):
             return getattr(self, "_value_of_matches")
         value_of_matches = Decimal("0.00")
@@ -368,9 +355,7 @@ class BluelightValueCondition(ValueCondition):
         self._value_of_matches = value_of_matches
         return value_of_matches
 
-    def _get_unit_price(
-        self, offer: AbstractConditionalOffer, line: AbstractLine
-    ) -> Decimal:
+    def _get_unit_price(self, offer: ConditionalOffer, line: Line) -> Decimal:
         price = utils.unit_price(offer, line)
         if price is None:
             return Decimal("0.00")
@@ -380,8 +365,8 @@ class BluelightValueCondition(ValueCondition):
 
     def consume_items(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         affected_lines: AffectedLines,
     ) -> AffectedLines:
         """
@@ -494,14 +479,10 @@ class CompoundCondition(Condition):
                 _("Compound conditions should not have a value.")
             )
 
-    def is_satisfied(
-        self, offer: AbstractConditionalOffer, basket: AbstractBasket
-    ) -> bool:
+    def is_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         return self._reduce_results(self.conjunction, "is_satisfied", offer, basket)
 
-    def is_partially_satisfied(
-        self, offer: AbstractConditionalOffer, basket: AbstractBasket
-    ) -> bool:
+    def is_partially_satisfied(self, offer: ConditionalOffer, basket: Basket) -> bool:
         return self._reduce_results(
             Conjunction.OR, "is_partially_satisfied", offer, basket
         )
@@ -509,7 +490,7 @@ class CompoundCondition(Condition):
     def get_upsell_details(
         self,
         offer: ConditionalOffer,
-        basket: AbstractBasket,
+        basket: Basket,
     ) -> upsells.CompoundUpsell | None:
         from ..mixins import BluelightBasketMixin
 
@@ -535,8 +516,8 @@ class CompoundCondition(Condition):
 
     def get_upsell_message(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
     ) -> StrOrPromise:
         messages: list[StrOrPromise] = []
         for c in self.children:
@@ -551,8 +532,8 @@ class CompoundCondition(Condition):
 
     def get_applicable_lines(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         most_expensive_first: bool = True,
     ) -> list[LinesTuple]:
         """
@@ -584,8 +565,8 @@ class CompoundCondition(Condition):
 
     def consume_items(
         self,
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
         affected_lines: AffectedLines,
     ) -> AffectedLines:
         memo = affected_lines
@@ -600,8 +581,8 @@ class CompoundCondition(Condition):
         self,
         conjunction: str,
         method_name: Literal["is_satisfied", "is_partially_satisfied"],
-        offer: AbstractConditionalOffer,
-        basket: AbstractBasket,
+        offer: ConditionalOffer,
+        basket: Basket,
     ) -> bool:
         result = self._get_conjunction_root_memo(conjunction)
         for c in self.children:

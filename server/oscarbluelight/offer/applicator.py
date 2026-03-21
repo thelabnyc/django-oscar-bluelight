@@ -28,10 +28,9 @@ from .signals import (
 
 if TYPE_CHECKING:
     from django.db.models.query import QuerySet
+    from oscar.apps.basket.models import Basket
     from oscar.apps.catalogue.models import Product
     from oscar.apps.partner.strategy import Base as BaseStrategy
-
-    from ..mixins import BluelightBasketMixin
 
 
 pricing_cache_ns = CacheNamespace(cache, "oscarbluelight.pricing")
@@ -82,7 +81,7 @@ class Applicator(BaseApplicator):
 
     def get_basket_offers(
         self,
-        basket: BluelightBasketMixin,
+        basket: Basket,
         user: User | None,
     ) -> list[ConditionalOffer]:
         offers: list[ConditionalOffer] = []
@@ -135,7 +134,7 @@ class Applicator(BaseApplicator):
 
     def apply_offers(
         self,
-        basket: BluelightBasketMixin,
+        basket: Basket,
         offers: list[ConditionalOffer],
     ) -> None:
         """
@@ -238,7 +237,7 @@ class Applicator(BaseApplicator):
         )
 
         def _inner() -> Decimal:
-            Basket: type[BluelightBasketMixin] = get_model("basket", "Basket")
+            BasketModel: type[Basket] = get_model("basket", "Basket")
             # Calculate the price by simulating adding the product to the basket and comparing
             # the basket's total price before and after the new line item
             total_excl_tax_before: Decimal | None = None
@@ -246,7 +245,7 @@ class Applicator(BaseApplicator):
             try:
                 with transaction.atomic():
                     with self._cosmetic_pricing():
-                        basket = Basket()
+                        basket = BasketModel()
                         basket.strategy = strategy
                         # Capture the total_excl_tax before altering the basket line
                         total_excl_tax_before = basket.total_excl_tax

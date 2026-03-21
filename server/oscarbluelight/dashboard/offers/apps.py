@@ -63,7 +63,7 @@ class OffersDashboardConfig(apps.OffersDashboardConfig):
             # Offers
             path(
                 "<int:pk>/images/",
-                self.image_update_view.as_view(),
+                self.image_update_view.as_view(),  # type:ignore[attr-defined]
                 name="offer-images",
             ),
             path(
