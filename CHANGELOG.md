@@ -1,3 +1,9 @@
+## v6.1.0b1 (2026-03-21)
+
+### Fix
+
+- update django-oscar-stubs
+
 ## v6.1.0b0 (2026-03-20)
 
 ### Feat
