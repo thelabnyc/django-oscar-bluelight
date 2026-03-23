@@ -20,6 +20,7 @@ from oscar.apps.offer.benefits import (
     ShippingFixedPriceBenefit,
     ShippingPercentageDiscountBenefit,
 )
+from oscar.apps.offer.results import ApplicationResult
 from oscar.templatetags.currency_filters import currency
 
 from oscarbluelight.offer.models import Benefit
@@ -874,8 +875,8 @@ class CompoundBenefit(Benefit):
         offer: ConditionalOffer,
         max_total_discount: Decimal | None = None,
         consume_items: ConsumeItems | None = None,
-    ) -> BasketDiscount:
-        combined_result: BasketDiscount | None = None
+    ) -> ApplicationResult:
+        combined_result: ApplicationResult | None = None
         affected_lines: AffectedLines = []
 
         def _consume_items(
@@ -899,7 +900,6 @@ class CompoundBenefit(Benefit):
                 # one exception to the to "can't combine differing types rule".
                 pass
             elif combined_result is None:
-                assert isinstance(result, BasketDiscount)
                 combined_result = copy.deepcopy(result)
                 discount_amount_available -= result.discount
             elif combined_result.affects == result.affects:
