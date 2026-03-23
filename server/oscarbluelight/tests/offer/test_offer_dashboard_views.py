@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django_redis import get_redis_connection
 
+from oscarbluelight.dashboard.offers.forms import RestrictionsForm
 from oscarbluelight.offer.models import (
     Benefit,
     Condition,
@@ -452,3 +453,123 @@ class OfferListViewTest(TestCase):
                 1,
                 f"Expected 1 voucher count query, got {len(voucher_count_queries)}",
             )
+
+
+class RestrictionsFormTest(TestCase):
+    """
+    Tests for the RestrictionsForm, particularly around validation edge cases
+    where clean_offer_type() fails and clean() must handle the missing key.
+    """
+
+    def setUp(self):
+        # Flush the cache
+        conn = get_redis_connection("redis")
+        conn.flushall()
+
+        # Create a range that includes all products
+        self.all_products = Range()
+        self.all_products.name = "All Products"
+        self.all_products.includes_all_products = True
+        self.all_products.save()
+
+        # Create condition
+        self.condition = Condition()
+        self.condition.proxy_class = (
+            "oscarbluelight.offer.conditions.BluelightCountCondition"
+        )
+        self.condition.value = 1
+        self.condition.range = self.all_products
+        self.condition.save()
+
+        # Create benefit
+        self.benefit = Benefit()
+        self.benefit.proxy_class = (
+            "oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit"
+        )
+        self.benefit.value = 10
+        self.benefit.range = self.all_products
+        self.benefit.save()
+
+    def _build_form_data(self, offer, **overrides):
+        """Build a valid form data dict for the RestrictionsForm."""
+        data = {
+            "start_datetime": "",
+            "end_datetime": "",
+            "max_basket_applications": "",
+            "max_user_applications": "",
+            "max_global_applications": "",
+            "max_discount": "",
+            "priority": offer.priority,
+            "exclusive": offer.exclusive,
+            "combinations": [],
+            "offer_type": offer.offer_type,
+            "groups": [],
+        }
+        data.update(overrides)
+        return data
+
+    def test_change_offer_type_from_voucher_with_vouchers_attached(self):
+        """
+        When an offer has offer_type=VOUCHER and has vouchers attached,
+        attempting to change offer_type should produce a validation error
+        from clean_offer_type(). The subsequent clean() must not crash with
+        a KeyError when 'offer_type' is missing from cleaned_data.
+        """
+        # Create a VOUCHER offer
+        offer = ConditionalOffer.objects.create(
+            name="Voucher Offer",
+            short_name="VoucherOffer",
+            condition=self.condition,
+            benefit=self.benefit,
+            offer_type=ConditionalOffer.VOUCHER,
+            status=ConditionalOffer.OPEN,
+        )
+
+        # Attach a voucher to the offer
+        start_dt = timezone.make_aware(timezone.datetime(2020, 1, 1))
+        end_dt = timezone.make_aware(timezone.datetime(2030, 1, 1))
+        voucher = Voucher.objects.create(
+            name="Test Voucher",
+            code="TESTVOUCHER",
+            usage=Voucher.SINGLE_USE,
+            start_datetime=start_dt,
+            end_datetime=end_dt,
+        )
+        voucher.offers.add(offer)
+
+        # Try to change offer_type from VOUCHER to SITE
+        form_data = self._build_form_data(
+            offer,
+            offer_type=ConditionalOffer.SITE,
+        )
+        form = RestrictionsForm(data=form_data, instance=offer)
+
+        # The form should be invalid (not raise a KeyError)
+        self.assertFalse(form.is_valid())
+        # The error should be on the offer_type field
+        self.assertIn("offer_type", form.errors)
+        self.assertIn(
+            "This can only be changed if it has no vouchers attached to it",
+            form.errors["offer_type"][0],
+        )
+
+    def test_change_offer_type_from_voucher_without_vouchers(self):
+        """
+        When an offer has offer_type=VOUCHER but no vouchers are attached,
+        changing offer_type should be allowed.
+        """
+        offer = ConditionalOffer.objects.create(
+            name="Voucher Offer No Vouchers",
+            short_name="VoucherOfferNV",
+            condition=self.condition,
+            benefit=self.benefit,
+            offer_type=ConditionalOffer.VOUCHER,
+            status=ConditionalOffer.OPEN,
+        )
+
+        form_data = self._build_form_data(
+            offer,
+            offer_type=ConditionalOffer.SITE,
+        )
+        form = RestrictionsForm(data=form_data, instance=offer)
+        self.assertTrue(form.is_valid(), form.errors)
