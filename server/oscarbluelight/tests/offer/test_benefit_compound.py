@@ -10,9 +10,11 @@ from oscarbluelight.offer.models import (
     BluelightAbsoluteDiscountBenefit,
     BluelightCountCondition,
     BluelightPercentageDiscountBenefit,
+    BluelightShippingAbsoluteDiscountBenefit,
     CompoundBenefit,
     Range,
 )
+from oscarbluelight.offer.results import ShippingDiscount
 
 
 class TestCompoundAbsoluteBenefitDiscount(TransactionTestCase):
@@ -347,3 +349,77 @@ class TestCompoundBluelightPercentageBenefitDiscount(TransactionTestCase):
                 (line_3, D("78.00"), 1),
             ],
         )
+
+
+class TestCompoundBenefitWithShippingChild(TransactionTestCase):
+    """Test that CompoundBenefit correctly handles shipping benefit children.
+
+    Shipping benefits return ShippingDiscount (not BasketDiscount), and the
+    compound benefit must handle this without raising an AssertionError.
+    """
+
+    def setUp(self):
+        conn = get_redis_connection("redis")
+        conn.flushall()
+
+        self.range_all = Range.objects.create(
+            name="All products", includes_all_products=True
+        )
+        self.range_slippers = Range.objects.create(name="Slippers")
+
+        self.slipper = factories.create_product(title="Slippers", price=D("50.00"))
+        self.range_slippers.add_product(self.slipper)
+
+        self.condition = BluelightCountCondition.objects.create(
+            range=self.range_all,
+            proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+            value=1,
+        )
+
+        self.benefit_slippers = BluelightAbsoluteDiscountBenefit.objects.create(
+            range=self.range_slippers,
+            proxy_class="oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit",
+            value=D("10.00"),
+        )
+        self.benefit_shipping = BluelightShippingAbsoluteDiscountBenefit.objects.create(
+            proxy_class="oscarbluelight.offer.benefits.BluelightShippingAbsoluteDiscountBenefit",
+            value=D("5.00"),
+        )
+
+        self.offer = mock.Mock()
+        self.basket = factories.create_basket(empty=True)
+
+    def test_shipping_only_compound_benefit(self):
+        """A compound benefit with only a shipping child should not raise."""
+        benefit_compound = CompoundBenefit.objects.create()
+        benefit_compound.subbenefits.set([self.benefit_shipping])
+
+        self.basket.add_product(self.slipper, 1)
+
+        result = benefit_compound.apply(self.basket, self.condition, self.offer)
+        self.assertIsInstance(result, ShippingDiscount)
+
+    def test_shipping_and_basket_compound_benefit(self):
+        """A compound benefit mixing basket and shipping children should not raise."""
+        benefit_compound = CompoundBenefit.objects.create()
+        benefit_compound.subbenefits.set([self.benefit_slippers, self.benefit_shipping])
+
+        self.basket.add_product(self.slipper, 1)
+
+        # Should not raise AssertionError; the differing types should be
+        # caught by the "Can not combine offer benefits of differing types"
+        # ValueError.
+        with self.assertRaises(ValueError):
+            benefit_compound.apply(self.basket, self.condition, self.offer)
+
+    def test_shipping_only_or_conjunction(self):
+        """An OR compound benefit with a shipping child should return ShippingDiscount."""
+        benefit_compound = CompoundBenefit.objects.create(
+            conjunction=Conjunction.OR,
+        )
+        benefit_compound.subbenefits.set([self.benefit_shipping])
+
+        self.basket.add_product(self.slipper, 1)
+
+        result = benefit_compound.apply(self.basket, self.condition, self.offer)
+        self.assertIsInstance(result, ShippingDiscount)
