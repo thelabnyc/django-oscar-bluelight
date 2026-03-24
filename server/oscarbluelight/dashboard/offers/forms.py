@@ -44,7 +44,7 @@ class BenefitSearchForm(forms.Form):
     _benefit_classes.append((compound_benefit_cpath, _("Compound Benefit")))
     range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
         required=False,
-        queryset=Range.objects.order_by("name"),  # type: ignore[arg-type]  # QuerySet type mismatch with ModelChoiceField
+        queryset=Range.objects.order_by("name"),
     )
     benefit_type = forms.ChoiceField(
         choices=[
@@ -61,7 +61,7 @@ class BenefitSearchForm(forms.Form):
 class ConditionSearchForm(forms.Form):
     range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
         required=False,
-        queryset=Range.objects.order_by("name"),  # type: ignore[arg-type]  # QuerySet type mismatch with ModelChoiceField
+        queryset=Range.objects.order_by("name"),
     )
 
 
