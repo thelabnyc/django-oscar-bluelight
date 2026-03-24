@@ -16,7 +16,7 @@ from oscar.apps.offer.conditions import (
 )
 from oscar.templatetags.currency_filters import currency
 
-from oscarbluelight.offer.models import Condition, Range
+from oscarbluelight.offer.models import Condition
 
 from . import upsells
 from .constants import Conjunction
@@ -110,11 +110,10 @@ class BluelightCountCondition(CountCondition):
         assert self.value is not None
         delta = self.value - num_matches
         if delta > 0:
-            assert isinstance(self.range, Range)
             return upsells.QuantityUpsell(
                 offer=offer,
                 basket=basket,
-                product_range=self.range,
+                product_range=self.range,  # type: ignore[arg-type]  # range is validated non-None by _clean()
                 delta=Decimal(delta),
             )
         return None
@@ -197,11 +196,10 @@ class BluelightCoverageCondition(CoverageCondition):
         assert self.value is not None
         delta = self.value - num_matches
         if delta > 0:
-            assert isinstance(self.range, Range)
             return upsells.CoverageUpsell(
                 offer=offer,
                 basket=basket,
-                product_range=self.range,
+                product_range=self.range,  # type: ignore[arg-type]  # range is validated non-None by _clean()
                 delta=Decimal(delta),
             )
         return None
@@ -334,11 +332,10 @@ class BluelightValueCondition(ValueCondition):
         assert self.value is not None
         delta = self.value - value_of_matches
         if delta > 0:
-            assert isinstance(self.range, Range)
             return upsells.AmountUpsell(
                 offer=offer,
                 basket=basket,
-                product_range=self.range,
+                product_range=self.range,  # type: ignore[arg-type]  # range is validated non-None by _clean()
                 delta=delta,
             )
         return None

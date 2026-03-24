@@ -712,8 +712,7 @@ class BluelightShippingAbsoluteDiscountBenefit(
     ) -> ShippingDiscount:
         self._clean()
         result = super().apply(basket, condition, offer)
-        assert isinstance(result, ShippingDiscount)
-        return result
+        return result  # type: ignore[return-value]  # Oscar's ShippingBenefit.apply() always returns ShippingDiscount
 
 
 class BluelightShippingFixedPriceBenefit(
@@ -758,8 +757,7 @@ class BluelightShippingFixedPriceBenefit(
     ) -> ShippingDiscount:
         self._clean()
         result = super().apply(basket, condition, offer)
-        assert isinstance(result, ShippingDiscount)
-        return result
+        return result  # type: ignore[return-value]  # Oscar's ShippingBenefit.apply() always returns ShippingDiscount
 
 
 class BluelightShippingPercentageDiscountBenefit(
@@ -809,8 +807,7 @@ class BluelightShippingPercentageDiscountBenefit(
     ) -> ShippingDiscount:
         self._clean()
         result = super().apply(basket, condition, offer)
-        assert isinstance(result, ShippingDiscount)
-        return result
+        return result  # type: ignore[return-value]  # Oscar's ShippingBenefit.apply() always returns ShippingDiscount
 
 
 class CompoundBenefit(Benefit):
