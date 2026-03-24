@@ -77,7 +77,7 @@ class Applicator(BaseApplicator):
 
     def get_site_offers(self) -> QuerySet[ConditionalOffer]:
         qs = ConditionalOffer.active.filter(offer_type=ConditionalOffer.SITE)
-        return qs.select_related(*self._offer_select_related_fields)  # type: ignore[return-value]  # select_related returns same QS type but mypy narrows to base QuerySet
+        return qs.select_related(*self._offer_select_related_fields)
 
     def get_basket_offers(
         self,
@@ -108,7 +108,7 @@ class Applicator(BaseApplicator):
         Return user offers that are available to current user
         """
         if not user or user.is_anonymous:
-            return ConditionalOffer.objects.none()  # type: ignore[return-value]  # .none() returns QuerySet, not custom manager QS type
+            return ConditionalOffer.objects.none()
 
         cutoff = now()
         date_based = Q(
@@ -118,13 +118,13 @@ class Applicator(BaseApplicator):
         nondate_based = Q(start_datetime=None, end_datetime=None)
         groups = [g for g in user.groups.all()]
 
-        qs = ConditionalOffer.objects.filter(  # type: ignore[misc]  # complex Q objects with mixed types
+        qs = ConditionalOffer.objects.filter(
             date_based | nondate_based,
             offer_type=ConditionalOffer.USER,
             groups__in=groups,
             status=ConditionalOffer.OPEN,
         )
-        return qs.select_related(*self._offer_select_related_fields)  # type: ignore[return-value]  # select_related narrows QS type
+        return qs.select_related(*self._offer_select_related_fields)
 
     def get_session_offers(
         self,
