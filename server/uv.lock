@@ -341,7 +341,7 @@ dev = [
     { name = "coverage", specifier = "==7.13.5" },
     { name = "django-debug-toolbar", specifier = "==6.2.0" },
     { name = "django-haystack", git = "https://github.com/django-haystack/django-haystack.git?rev=master" },
-    { name = "django-oscar-stubs", specifier = ">=4.1.0b4" },
+    { name = "django-oscar-stubs", specifier = ">=4.1.0b6" },
     { name = "django-redis", specifier = "==6.0.0" },
     { name = "django-stubs", specifier = "==5.2.9" },
     { name = "djangorestframework-stubs", specifier = "==3.16.8" },
