@@ -1,14 +1,17 @@
-## v6.1.0b1 (2026-03-21)
-
-### Fix
-
-- update django-oscar-stubs
-
-## v6.1.0b0 (2026-03-20)
+## v6.1.0 (2026-03-28)
 
 ### Feat
 
 - add django-oscar-stubs for type checking
+
+### Fix
+
+- **deps**: update dependency djangorestframework to >=3.17.1,<4
+- remove assert isinstance() checks that could change runtime behavior
+- allow non-BasketDiscount results in CompoundBenefit.apply()
+- handle missing offer_type in RestrictionsForm.clean()
+- **deps**: update dependency djangorestframework to >=3.17.0,<4
+- update django-oscar-stubs
 
 ## v6.0.1 (2026-03-10)
 
