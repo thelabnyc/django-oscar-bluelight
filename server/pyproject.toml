@@ -40,7 +40,7 @@ dev = [
     "django-haystack @ git+https://github.com/django-haystack/django-haystack.git@master",
     "django-stubs (==5.2.9)",
     "mypy (==1.20.0)",
-    "types-psycopg2 (>=2.9.21.20260408,<3)",
+    "types-psycopg2 (>=2.9.21.20260422,<3)",
     "djangorestframework-stubs (==3.16.9)",
     "django-oscar-stubs (>=4.1.0b6)",
     "tox-uv>=1.35.1",
