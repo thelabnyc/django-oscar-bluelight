@@ -33,7 +33,7 @@ CMD ["webpack", "--watch"]
 # =============================================================================
 # Python / Django Application Server
 # =============================================================================
-FROM registry.gitlab.com/thelabnyc/python:3.14@sha256:1c2dce98d4f424414f0d80ba890060a609d6487b5806717539407bdd817ff3c4 AS server
+FROM registry.gitlab.com/thelabnyc/python:3.14@sha256:e77d57fcd66a0fe3a9ea39b7881add899ca5e48c87a7069414f9bf25689ffff4 AS server
 
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/server
