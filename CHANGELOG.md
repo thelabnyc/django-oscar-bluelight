@@ -1,3 +1,9 @@
+## v6.2.0 (2026-05-14)
+
+### Feat
+
+- make offer status overridable in the offerwizard (#28972)
+
 ## v6.1.0 (2026-03-28)
 
 ### Feat
