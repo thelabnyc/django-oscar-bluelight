@@ -120,3 +120,10 @@ BLUELIGHT_VOUCHER_AVAILABILITY_RULES = [
 BLUELIGHT_IGNORED_ORDER_STATUSES: list[str] = []
 
 BLUELIGHT_OFFER_RECALC_DELAY = timedelta(minutes=5)
+
+# Status applied to offers when they are first created via the dashboard
+# wizard. Defaults to "Open" to match Oscar's historical behavior. Set to
+# "Suspended" to require an explicit activation step after creation, which
+# prevents accidental Prod activation when a builder forgets to set a future
+# start_datetime.
+BLUELIGHT_NEW_OFFERS_DEFAULT_STATUS = "Open"

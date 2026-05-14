@@ -1,12 +1,16 @@
+from unittest.mock import MagicMock
+
 from django.contrib.auth.models import User
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.db import connection
-from django.test import Client, TestCase
+from django.test import Client, RequestFactory, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 from django_redis import get_redis_connection
 
 from oscarbluelight.dashboard.offers.forms import RestrictionsForm
+from oscarbluelight.dashboard.offers.views import OfferRestrictionsView
 from oscarbluelight.offer.models import (
     Benefit,
     Condition,
@@ -573,3 +577,79 @@ class RestrictionsFormTest(TestCase):
         )
         form = RestrictionsForm(data=form_data, instance=offer)
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class SaveOfferDefaultStatusTest(TestCase):
+    """
+    The wizard does not expose `status` as a form field. `save_offer` reads
+    BLUELIGHT_NEW_OFFERS_DEFAULT_STATUS on create so consumer projects can
+    require an explicit activation step instead of having new offers go live
+    the moment the wizard is completed.
+    """
+
+    def setUp(self):
+        rng = Range.objects.create(name="All", includes_all_products=True)
+        self.condition = Condition.objects.create(
+            proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+            value=1,
+            range=rng,
+        )
+        self.benefit = Benefit.objects.create(
+            proxy_class="oscarbluelight.offer.benefits.BluelightPercentageDiscountBenefit",
+            value=10,
+            range=rng,
+        )
+        self.offer_group = OfferGroup.objects.create(name="G", priority=10)
+
+    def _build_offer(self):
+        return ConditionalOffer(
+            name="x",
+            short_name="x",
+            description="",
+            offer_group=self.offer_group,
+            affects_cosmetic_pricing=False,
+            priority=0,
+            offer_type=ConditionalOffer.SITE,
+            condition=self.condition,
+            benefit=self.benefit,
+        )
+
+    def _save_via_wizard(self, offer, *, update):
+        view = OfferRestrictionsView()
+        request = RequestFactory().post("/")
+        request.session = {}
+        request._messages = FallbackStorage(request)
+        view.request = request
+        view.update = update
+        view._fetch_session_offer = lambda: offer
+        view._fetch_object = lambda key: None
+        view._flush_session = lambda: None
+
+        form = MagicMock()
+        form.cleaned_data = {"offer_type": ConditionalOffer.SITE}
+        form.save_m2m = lambda: None
+
+        view.save_offer(offer, form)
+        offer.refresh_from_db()
+        return offer
+
+    def test_default_status_is_open_without_override(self):
+        # defaults.py ships BLUELIGHT_NEW_OFFERS_DEFAULT_STATUS = "Open" so
+        # consumers that don't opt in keep the historical behavior.
+        offer = self._save_via_wizard(self._build_offer(), update=False)
+        self.assertEqual(offer.status, ConditionalOffer.OPEN)
+
+    @override_settings(BLUELIGHT_NEW_OFFERS_DEFAULT_STATUS=ConditionalOffer.SUSPENDED)
+    def test_setting_overrides_status_on_create(self):
+        offer = self._save_via_wizard(self._build_offer(), update=False)
+        self.assertEqual(offer.status, ConditionalOffer.SUSPENDED)
+
+    @override_settings(BLUELIGHT_NEW_OFFERS_DEFAULT_STATUS=ConditionalOffer.SUSPENDED)
+    def test_update_does_not_override_existing_status(self):
+        # An existing live offer must not be silently flipped to Suspended
+        # when an admin edits it through the wizard.
+        offer = self._build_offer()
+        offer.status = ConditionalOffer.OPEN
+        offer.save()
+        offer = self._save_via_wizard(offer, update=True)
+        self.assertEqual(offer.status, ConditionalOffer.OPEN)
