@@ -12,6 +12,7 @@ from typing import (
 )
 import json
 
+from django.conf import settings
 from django.contrib import messages
 from django.core import serializers
 from django.core.paginator import Paginator
@@ -130,6 +131,13 @@ class OfferWizardStepView(
             if "offer_type" in form.cleaned_data
             else session_offer.offer_type
         )
+
+        # Apply the configured default status for newly-created offers.
+        # The wizard does not expose status as a form field, so without this
+        # the model default ("Open") is used and a freshly-built offer is
+        # immediately live.
+        if not self.update:
+            offer.status = settings.BLUELIGHT_NEW_OFFERS_DEFAULT_STATUS
 
         # Save the related models and assign to the offer
         temp_offer = self._fetch_object("benefit")
