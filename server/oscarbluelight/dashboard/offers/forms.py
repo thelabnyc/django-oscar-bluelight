@@ -32,7 +32,9 @@ SourceType = get_model("payment", "SourceType")
 
 
 def get_offer_group_choices() -> list[tuple[str, str]]:
-    return [("", "---------")] + [(og.slug, og.name) for og in OfferGroup.objects.all()]
+    return [("", "---------")] + [
+        (og.slug, og.name) for og in OfferGroup.objects.all() if og.slug is not None
+    ]
 
 
 class BenefitSearchForm(forms.Form):
