@@ -103,7 +103,7 @@
               </caption>
               <thead>
                 <tr>
-                  <th></th>
+                  <th><input type="checkbox" class="select-all" aria-label="{% trans "Select all" %}" title="{% trans "Select all" %}" /></th>
                   <th>{% trans "UPC" %}</th>
                   <th>{% trans "Title" context "Product title" %}</th>
                   <th>{% trans "Is product discountable?" %}</th>
@@ -213,7 +213,7 @@
                 </caption>
                 <thead>
                   <tr>
-                    <th></th>
+                    <th><input type="checkbox" class="select-all" aria-label="{% trans "Select all" %}" title="{% trans "Select all" %}" /></th>
                     <th>{% trans "UPC" %}</th>
                     <th>{% trans "Title" context "Product title" %}</th>
                     <th>{% trans "Is product discountable?" %}</th>
@@ -259,3 +259,30 @@
 </div>
 
 {% endblock dashboard_content %}
+
+{% block extrascripts %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll("thead .select-all").forEach(selectAll => {
+                const tbody = selectAll.closest("table").querySelector("tbody.product_list");
+                const boxes = Array.from(tbody.querySelectorAll('input[type="checkbox"][name="selected_product"]'));
+
+                function syncSelectAll() {
+                    const checked = boxes.filter(b => b.checked);
+                    selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
+                    selectAll.indeterminate = checked.length > 0 && checked.length < boxes.length;
+                }
+
+                selectAll.addEventListener("change", () => {
+                    boxes.forEach(box => { box.checked = selectAll.checked; });
+                });
+
+                tbody.addEventListener("change", e => {
+                    if (e.target.name === "selected_product") syncSelectAll();
+                });
+            });
+        });
+    </script>
+{% endblock extrascripts %}
