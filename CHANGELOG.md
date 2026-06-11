@@ -1,3 +1,9 @@
+## v6.3.0 (2026-06-11)
+
+### Feat
+
+- **ranges**: add select-all checkbox to product tables (#29494)
+
 ## v6.2.1 (2026-05-21)
 
 ## v6.2.0 (2026-05-14)
