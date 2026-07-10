@@ -76,6 +76,19 @@ def _init_proxy_class(obj: T, Klass: type) -> T:
     if model_name and hasattr(obj, model_name):
         return getattr(obj, model_name)
 
+    # A non-proxy (MTI) class needs its own child row. If one doesn't exist the
+    # row is orphaned (e.g. corrupted before the save() auto-create was fixed);
+    # class-swapping onto the concrete class here would 500 on any pk access, so
+    # leave the instance as its base class instead.
+    if not Klass._meta.proxy:  # type: ignore[attr-defined]  # Django _meta API not fully typed
+        logger.warning(
+            "%s %s has proxy_class %s but no child row; leaving as base",
+            obj._meta.model_name,
+            obj.pk,
+            Klass.__name__,
+        )
+        return obj
+
     # Else, it's just a proxy model
     proxy = copy.deepcopy(obj)
     proxy.__class__ = Klass
@@ -269,7 +282,13 @@ class Benefit(AbstractBenefit):
 
     @property
     def name(self) -> StrOrPromise:
-        return force_str(super().name)
+        proxy_instance = self.proxy()
+        # An orphaned compound row (proxy_class set but no child row) resolves
+        # its proxy back to the base class; fall back to the type label rather
+        # than letting the base name property raise and 500 the dashboard.
+        if self.proxy_class and self.__class__ == proxy_instance.__class__:
+            return force_str(self.type_name)
+        return force_str(proxy_instance.name)
 
     @property
     def type_name(self) -> str:
@@ -322,9 +341,12 @@ class Benefit(AbstractBenefit):
                 and not Klass._meta.proxy  # type: ignore[attr-defined]  # Django _meta API not fully typed
                 and not Klass.objects.filter(pk=self.pk).exists()  # type: ignore[attr-defined]  # dynamic proxy class loaded at runtime
             ):
-                proxy = copy.deepcopy(self)
-                proxy.__class__ = Klass
-                proxy.save()
+                child = Klass()
+                for field in Klass._meta.concrete_fields:  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                    if hasattr(self, field.attname):
+                        setattr(child, field.attname, getattr(self, field.attname))
+                setattr(child, Klass._meta.pk.attname, self.pk)  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                child.save()
         return ret
 
     def _get_max_discount_amount(
@@ -374,7 +396,13 @@ class Condition(AbstractCondition):
 
     @property
     def name(self) -> StrOrPromise:
-        return force_str(super().name)
+        proxy_instance = self.proxy()
+        # An orphaned compound row (proxy_class set but no child row) resolves
+        # its proxy back to the base class; fall back to the type label rather
+        # than letting the base name property raise and 500 the dashboard.
+        if self.proxy_class and self.__class__ == proxy_instance.__class__:
+            return force_str(self.type_name)
+        return force_str(proxy_instance.name)
 
     @property
     def type_name(self) -> str:
@@ -464,9 +492,12 @@ class Condition(AbstractCondition):
                 and not Klass._meta.proxy  # type: ignore[attr-defined]  # Django _meta API not fully typed
                 and not Klass.objects.filter(pk=self.pk).exists()  # type: ignore[attr-defined]  # dynamic proxy class loaded at runtime
             ):
-                proxy_instance = copy.deepcopy(self)
-                proxy_instance.__class__ = Klass
-                proxy_instance.save(force_insert=True)
+                child = Klass()
+                for field in Klass._meta.concrete_fields:  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                    if hasattr(self, field.attname):
+                        setattr(child, field.attname, getattr(self, field.attname))
+                setattr(child, Klass._meta.pk.attname, self.pk)  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                child.save()
         return ret
 
 
