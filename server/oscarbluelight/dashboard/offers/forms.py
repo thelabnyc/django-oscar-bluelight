@@ -42,8 +42,9 @@ class BenefitSearchForm(forms.Form):
         CompoundBenefit.__module__,
         CompoundBenefit.__name__,
     )
-    _benefit_classes = getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])
-    _benefit_classes.append((compound_benefit_cpath, _("Compound Benefit")))
+    _benefit_classes = list(getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])) + [
+        (compound_benefit_cpath, _("Compound Benefit")),
+    ]
     range: forms.ModelChoiceField[Range] = forms.ModelChoiceField(
         required=False,
         queryset=Range.objects.order_by("name"),
