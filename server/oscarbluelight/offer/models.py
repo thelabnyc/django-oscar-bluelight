@@ -322,9 +322,12 @@ class Benefit(AbstractBenefit):
                 and not Klass._meta.proxy  # type: ignore[attr-defined]  # Django _meta API not fully typed
                 and not Klass.objects.filter(pk=self.pk).exists()  # type: ignore[attr-defined]  # dynamic proxy class loaded at runtime
             ):
-                proxy = copy.deepcopy(self)
-                proxy.__class__ = Klass
-                proxy.save()
+                child = Klass()
+                for field in Klass._meta.concrete_fields:  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                    if hasattr(self, field.attname):
+                        setattr(child, field.attname, getattr(self, field.attname))
+                setattr(child, Klass._meta.pk.attname, self.pk)  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                child.save()
         return ret
 
     def _get_max_discount_amount(
@@ -464,9 +467,12 @@ class Condition(AbstractCondition):
                 and not Klass._meta.proxy  # type: ignore[attr-defined]  # Django _meta API not fully typed
                 and not Klass.objects.filter(pk=self.pk).exists()  # type: ignore[attr-defined]  # dynamic proxy class loaded at runtime
             ):
-                proxy_instance = copy.deepcopy(self)
-                proxy_instance.__class__ = Klass
-                proxy_instance.save(force_insert=True)
+                child = Klass()
+                for field in Klass._meta.concrete_fields:  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                    if hasattr(self, field.attname):
+                        setattr(child, field.attname, getattr(self, field.attname))
+                setattr(child, Klass._meta.pk.attname, self.pk)  # type: ignore[attr-defined]  # Django _meta API not fully typed
+                child.save()
         return ret
 
 
