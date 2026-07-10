@@ -1,3 +1,11 @@
+## v6.3.1 (2026-07-10)
+
+### Fix
+
+- render orphaned compound rows instead of 500ing the dashboard
+- create MTI child row when saving compound proxy_class
+- stop benefit search form polluting shared settings list
+
 ## v6.3.0 (2026-06-11)
 
 ### Feat
