@@ -18,8 +18,8 @@ stages:
   - release
 
 services:
-  - postgres:latest@sha256:22c89fe0d0f507606260237fd55e51f6137f58b2d5bcf6152242b96d9fe8f9a4
-  - redis:latest@sha256:2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32
+  - postgres:latest@sha256:b913fd5699b8bd23fa4b06d72ecdd939fad43b80fb8651bac06caa0e6d135cac
+  - redis:latest@sha256:0b13f549ab871acafaa84b673c4e29bd7dce8d12526aaafe3b4ea3366c322daf
 
 cache:
   key: '$CI_PROJECT_NAME'
