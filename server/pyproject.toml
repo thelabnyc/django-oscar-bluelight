@@ -27,7 +27,7 @@ Repository = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
 
 [dependency-groups]
 dev = [
-    "coverage (==7.15.1)",
+    "coverage (==7.15.2)",
     "django-debug-toolbar (==6.3.0)",
     "django-redis (==6.0.0)",
     "ruff (>=0.15.21)",
