@@ -35,7 +35,7 @@ dev = [
     "psycopg2-binary (==2.9.12)",
     "redis (==7.4.1)",
     "sorl-thumbnail (==13.0.0)",
-    "tox (==4.57.1)",
+    "tox (==4.58.0)",
     "unittest-xml-reporting (==4.0.0)",
     "django-haystack @ git+https://github.com/django-haystack/django-haystack.git@master",
     "django-stubs (==6.0.7)",
@@ -43,7 +43,7 @@ dev = [
     "types-psycopg2 (>=2.9.21.20260724,<3)",
     "djangorestframework-stubs (==3.17.1)",
     "django-oscar-stubs (>=4.1.0b6)",
-    "tox-uv>=1.35.2",
+    "tox-uv>=1.36.0",
 ]
 
 [tool.hatch.metadata]
