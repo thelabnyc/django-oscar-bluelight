@@ -22,7 +22,7 @@ class BluelightLineOfferConsumer:
 
     def __init__(self, line: Line) -> None:
         self._line = line
-        self._offers: dict[int, ConditionalOffer] = dict()
+        self._offers: dict[int, ConditionalOffer] = {}
         self._affected_quantity = 0
         self._consumptions: defaultdict[int, int] = defaultdict(int)
 
@@ -90,7 +90,7 @@ class BluelightLineOfferConsumer:
         Check how many items are available for offers
         """
         if offer:
-            exclusive = any([x.exclusive for x in self._offers.values()])
+            exclusive = any(x.exclusive for x in self._offers.values())
             exclusive |= bool(offer.exclusive)
         else:
             exclusive = True

@@ -50,5 +50,3 @@ class DefaultLineFilterStrategy(BaseLineFilterStrategy):
     """
     Default strategy that applies no filtering - returns all lines unchanged.
     """
-
-    pass

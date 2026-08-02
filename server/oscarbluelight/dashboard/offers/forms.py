@@ -38,10 +38,7 @@ def get_offer_group_choices() -> list[tuple[str, str]]:
 
 
 class BenefitSearchForm(forms.Form):
-    compound_benefit_cpath = "{}.{}".format(
-        CompoundBenefit.__module__,
-        CompoundBenefit.__name__,
-    )
+    compound_benefit_cpath = f"{CompoundBenefit.__module__}.{CompoundBenefit.__name__}"
     _benefit_classes = list(getattr(settings, "BLUELIGHT_BENEFIT_CLASSES", [])) + [
         (compound_benefit_cpath, _("Compound Benefit")),
     ]
@@ -127,8 +124,8 @@ class OrderDiscountSearchForm(forms.Form):
         if data.get("product"):
             qs = qs.filter(
                 Q(order__lines__title__icontains=data["product"])
-                | Q(order__lines__upc__icontains=data["product"])  # NOQA
-                | Q(order__lines__partner_sku__icontains=data["product"])  # NOQA
+                | Q(order__lines__upc__icontains=data["product"])
+                | Q(order__lines__partner_sku__icontains=data["product"])
             )
             is_filtered = True
         if data.get("payment_method"):

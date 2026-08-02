@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 import logging
 
 from django.db import connection, transaction
@@ -28,7 +28,7 @@ def _do_view_refresh(
     if requested_on_timestamp is None:
         logger.info("Skipping redundant %s refresh", view_type)
         return
-    requested_on_dt = datetime.fromtimestamp(requested_on_timestamp)
+    requested_on_dt = datetime.fromtimestamp(requested_on_timestamp, tz=UTC)
     if not ViewRefreshLog.is_refresh_needed(view_type, requested_on_dt):
         logger.info("Skipping redundant %s refresh", view_type)
         return

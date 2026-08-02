@@ -82,9 +82,7 @@ class OfferAPIViewTest(TestCase):
         data = resp.json()
         self.assertEqual(len(data["results"]), 8)
         self.assertTrue(
-            all(
-                [r["text"].startswith("Product voucher offer") for r in data["results"]]
-            )
+            all(r["text"].startswith("Product voucher offer") for r in data["results"])
         )
         self.assertTrue(data["pagination"]["more"])
 

@@ -52,9 +52,7 @@ def insupd_system_offer_group(
     )
     if created:
         logger.info(
-            "Create system offer group: {}, priority {}".format(
-                group.slug, group.priority
-            )
+            f"Create system offer group: {group.slug}, priority {group.priority}"
         )
     return group
 
@@ -131,16 +129,12 @@ def _offer_group_receiver(
             offer_group = OfferGroup.objects.filter(slug=offer_group_slug).first()
             if not offer_group:
                 logger.error(
-                    "Listener is attached to offer group {}, but no such offer group exists!".format(
-                        offer_group_slug
-                    )
+                    f"Listener is attached to offer group {offer_group_slug}, but no such offer group exists!"
                 )
                 return
             if not offer_group.is_system_group:
                 logger.warning(
-                    "You should not attach listens to non-system offer group {}.".format(
-                        offer_group_slug
-                    )
+                    f"You should not attach listens to non-system offer group {offer_group_slug}."
                 )
             if kwargs.get("group") and kwargs["group"].pk == offer_group.pk:
                 return func(sender, **kwargs)

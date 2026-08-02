@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                         default="AND",
                         max_length=10,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "subconditions",
                     models.ManyToManyField(

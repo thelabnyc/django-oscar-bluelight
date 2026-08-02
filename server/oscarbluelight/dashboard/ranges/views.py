@@ -130,8 +130,11 @@ class RangePriceListView(UpdateView):
             sr.price = new_price
             sr.save()
             logger.info(
-                "User %s adjusted price of StockRecord[%s] from %s to %s"
-                % (self.request.user, sr.pk, old_price, new_price)
+                "User %s adjusted price of StockRecord[%s] from %s to %s",
+                self.request.user,
+                sr.pk,
+                old_price,
+                new_price,
             )
 
         for product in rng.all_products():

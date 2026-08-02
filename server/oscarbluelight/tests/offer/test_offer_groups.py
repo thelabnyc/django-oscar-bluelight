@@ -4,6 +4,7 @@ from unittest import mock
 from urllib.parse import urlencode, urljoin
 
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -175,7 +176,7 @@ class OfferGroupModelTest(TestCase):
 
     def test_unique_priority(self):
         offer_group = OfferGroup(name="test", priority=1)
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             offer_group.save()
 
 
@@ -365,7 +366,7 @@ class ConsumeOfferGroupOfferTest(TestCase):
         # Try to apply first ConditionalOffer to the basket
         offer = ConditionalOffer.objects.first()
         discount = offer.apply_benefit(self.basket)
-        self.assertEqual(discount.discount, D("0"))
+        self.assertEqual(discount.discount, D(0))
 
     def test_add_another_offer_group(self):
         cond_a = Condition()

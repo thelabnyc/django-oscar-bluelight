@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                         max_length=128,
                         help_text="This will be shown in the checkout and basket once the voucher is entered",
                     ),
-                ),  # NOQA
+                ),
                 (
                     "code",
                     models.CharField(
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                             ("Once per customer", "Can only be used once per customer"),
                         ],
                     ),
-                ),  # NOQA
+                ),
                 ("start_datetime", models.DateTimeField(verbose_name="Start datetime")),
                 ("end_datetime", models.DateTimeField(verbose_name="End datetime")),
                 (
