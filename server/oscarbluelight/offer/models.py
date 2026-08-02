@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Collection, Iterable, Sequence
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, TypedDict
 import copy
 import logging
 import math
@@ -63,10 +63,8 @@ ExpandDownwardsCategoryQueryset = get_class(
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=models.Model)
 
-
-def _init_proxy_class(obj: T, Klass: type) -> T:
+def _init_proxy_class[T: models.Model](obj: T, Klass: type) -> T:
     # Check if we're already the correct class
     if obj.__class__ == Klass:
         return obj  # type:ignore[return-value]
@@ -136,14 +134,14 @@ class ConditionalOffer(AbstractConditionalOffer):
         _("Ad Image (Desktop)"),
         null=True,
         blank=True,
-        upload_to=getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER"),
+        upload_to=settings.BLUELIGHT_OFFER_IMAGE_FOLDER,
         help_text=_("Desktop image used for promo display."),
     )
     mobile_image = models.ImageField(
         _("Ad Image (Mobile)"),
         null=True,
         blank=True,
-        upload_to=getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER"),
+        upload_to=settings.BLUELIGHT_OFFER_IMAGE_FOLDER,
         help_text=_("Mobile image used for promo display."),
     )
     # When offer_type == "User", we use groups to determine which users get the offer
@@ -227,8 +225,8 @@ class ConditionalOffer(AbstractConditionalOffer):
         self.reset_condition_satisfying_lines()
         try:
             return super().apply_benefit(basket)
-        except Exception as e:
-            logger.exception(e)
+        except Exception:
+            logger.exception("Failed to apply benefit for offer %s", self.pk)
             return ZERO_DISCOUNT
 
     def record_usage(self, discount: _OscarOfferApplication | dict[str, Any]) -> None:
@@ -303,10 +301,9 @@ class Benefit(AbstractBenefit):
 
     @property
     def vouchers(self) -> list[_Voucher]:
-        vouchers = []
+        vouchers: list[_Voucher] = []
         for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
-            for voucher in offer.vouchers.filter(parent=None).all():
-                vouchers.append(voucher)
+            vouchers.extend(offer.vouchers.filter(parent=None).all())
         return vouchers
 
     def clean(self) -> None:
@@ -723,25 +720,25 @@ Condition._meta.get_field("proxy_class")._unique = False  # type:ignore[attr-def
 
 
 __all__: list[str] = [
-    "BasketDiscount",
-    "ShippingDiscount",
-    "PostOrderAction",
     "SHIPPING_DISCOUNT",
     "ZERO_DISCOUNT",
-    "ConditionalOffer",
+    "BasketDiscount",
     "Benefit",
     "Condition",
+    "ConditionalOffer",
+    "OfferGroup",
+    "PostOrderAction",
     "Range",
     "RangeProduct",
     "RangeProductFileUpload",
-    "OfferGroup",
+    "ShippingDiscount",
 ]
 
 
-from .benefits import *  # NOQA
-from .benefits import __all__ as benefit_classes  # NOQA
-from .conditions import *  # NOQA
-from .conditions import __all__ as condition_classes  # NOQA
+from .benefits import *
+from .benefits import __all__ as benefit_classes
+from .conditions import *
+from .conditions import __all__ as condition_classes
 
 __all__.extend(benefit_classes)
 __all__.extend(condition_classes)

@@ -4,6 +4,6 @@ from oscarbluelight.basket_utils import (
 from oscarbluelight.basket_utils import BluelightLineOfferConsumer as LineOfferConsumer
 
 __all__ = [
-    "LineOfferConsumer",
     "LineDiscountRegistry",
+    "LineOfferConsumer",
 ]

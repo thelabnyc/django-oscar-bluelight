@@ -294,7 +294,7 @@ class TestCompoundBluelightPercentageBenefitDiscount(TransactionTestCase):
 
     def test_consumes_items_correctly_when_all_child_benefits_satisfied(self):
         # Add products
-        line_1, _ = self.basket.add_product(self.mattress, 1)
+        _line_1, _ = self.basket.add_product(self.mattress, 1)
         line_2, _ = self.basket.add_product(self.mattress_protector, 1)
         line_3, _ = self.basket.add_product(self.slipper, 1)
         line_4, _ = self.basket.add_product(self.pillow, 2)
@@ -324,7 +324,7 @@ class TestCompoundBluelightPercentageBenefitDiscount(TransactionTestCase):
 
     def test_consumes_items_correctly_when_not_all_child_benefits_satisfied(self):
         # Add products, but not a pillow (leaving part of the compound benefit unused)
-        line_1, _ = self.basket.add_product(self.mattress, 1)
+        _line_1, _ = self.basket.add_product(self.mattress, 1)
         line_2, _ = self.basket.add_product(self.mattress_protector, 1)
         line_3, _ = self.basket.add_product(self.slipper, 1)
         # Mock the condition.consume_items so we can check it's input

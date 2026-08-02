@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
                             ),
                         ],
                     ),
-                ),  # NOQA
+                ),
                 (
                     "value",
                     oscar.models.fields.PositiveDecimalField(
@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
                         help_text="Set this to prevent the discount consuming all items within the range that are in the basket.",
                         null=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "proxy_class",
                     oscar.models.fields.NullCharField(
@@ -128,7 +128,7 @@ class Migration(migrations.Migration):
                             ),
                         ],
                     ),
-                ),  # NOQA
+                ),
                 (
                     "value",
                     oscar.models.fields.PositiveDecimalField(
@@ -186,7 +186,7 @@ class Migration(migrations.Migration):
                         editable=False,
                         blank=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "description",
                     models.TextField(
@@ -214,7 +214,7 @@ class Migration(migrations.Migration):
                             ),
                         ],
                     ),
-                ),  # NOQA
+                ),
                 (
                     "status",
                     models.CharField(
@@ -243,7 +243,7 @@ class Migration(migrations.Migration):
                         help_text="Offers are active until the end of the 'end date'",
                         null=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "max_global_applications",
                     models.PositiveIntegerField(
@@ -252,7 +252,7 @@ class Migration(migrations.Migration):
                         help_text="The number of times this offer can be used before it is unavailable",
                         null=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "max_user_applications",
                     models.PositiveIntegerField(
@@ -261,7 +261,7 @@ class Migration(migrations.Migration):
                         help_text="The number of times a single user can use this offer",
                         null=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "max_basket_applications",
                     models.PositiveIntegerField(
@@ -270,7 +270,7 @@ class Migration(migrations.Migration):
                         help_text="The number of times this offer can be applied to a basket (and order)",
                         null=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "max_discount",
                     models.DecimalField(
@@ -281,7 +281,7 @@ class Migration(migrations.Migration):
                         help_text="When an offer has given more discount to orders than this threshold, then the offer becomes unavailable",
                         blank=True,
                     ),
-                ),  # NOQA
+                ),
                 (
                     "total_discount",
                     models.DecimalField(
@@ -365,7 +365,7 @@ class Migration(migrations.Migration):
                         editable=False,
                         blank=True,
                     ),
-                ),  # NOQA
+                ),
                 ("description", models.TextField(blank=True)),
                 (
                     "is_public",
@@ -422,7 +422,7 @@ class Migration(migrations.Migration):
                         to="catalogue.Category",
                         blank=True,
                     ),
-                ),  # NOQA
+                ),
             ],
             options={
                 "verbose_name_plural": "Ranges",
@@ -490,7 +490,7 @@ class Migration(migrations.Migration):
                             ("Processed", "Processed"),
                         ],
                     ),
-                ),  # NOQA
+                ),
                 (
                     "error_message",
                     models.CharField(
@@ -557,7 +557,7 @@ class Migration(migrations.Migration):
                 to="catalogue.Product",
                 through="offer.RangeProduct",
                 blank=True,
-            ),  # NOQA
+            ),
             preserve_default=True,
         ),
         migrations.AddField(

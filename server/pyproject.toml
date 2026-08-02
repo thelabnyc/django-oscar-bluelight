@@ -100,6 +100,13 @@ ignore_errors = true
 profile = "black"
 from_first = true
 
+[tool.ruff.lint]
+# Django/DRF declare class-level lists and dicts (Meta.fields, permission_classes,
+# migration operations, …) as framework API, not accidental shared mutable state.
+# I001: import sorting is owned by the isort hook, whose ordering differs from
+# ruff's (notably where a wildcard import lands, which changes what it shadows).
+ignore = ["RUF012", "I001"]
+
 [tool.ruff.lint.isort]
 from-first = true
 

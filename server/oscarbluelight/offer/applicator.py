@@ -250,7 +250,7 @@ class Applicator(BaseApplicator):
                         # Capture the total_excl_tax before altering the basket line
                         total_excl_tax_before = basket.total_excl_tax
                         # Add the product to the basket and re-apply offers and coupons.
-                        line, _ = basket.add_product(product, quantity=quantity)
+                        basket.add_product(product, quantity=quantity)
                         self.apply(basket)
                         # Get the price difference
                         total_excl_tax_after = basket.total_excl_tax

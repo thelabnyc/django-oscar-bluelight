@@ -142,8 +142,8 @@ class VoucherSingleUsePerCustomerRule(VoucherRule):
 
 __all__ = [
     "VoucherHasChildrenRule",
-    "VoucherSuspendedRule",
     "VoucherLimitUsageByGroupRule",
-    "VoucherSingleUseRule",
     "VoucherSingleUsePerCustomerRule",
+    "VoucherSingleUseRule",
+    "VoucherSuspendedRule",
 ]

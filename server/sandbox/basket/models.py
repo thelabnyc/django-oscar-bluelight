@@ -34,4 +34,4 @@ def calculate_basket_taxes(sender: Any, basket: Basket, **kwargs: Any) -> None:
         line.purchase_info.price.tax = Decimal("1.00") * line.quantity
 
 
-from oscar.apps.basket.models import *  # type:ignore[assignment] # NOQA
+from oscar.apps.basket.models import *  # type:ignore[assignment]

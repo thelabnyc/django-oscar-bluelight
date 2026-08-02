@@ -6,7 +6,7 @@ from django.db.models import QuerySet
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 from oscar.apps.dashboard.offers import reports
-from oscar.apps.dashboard.offers.reports import *  # NOQA
+from oscar.apps.dashboard.offers.reports import *
 
 if TYPE_CHECKING:
     from oscar.apps.order.models import OrderDiscount
@@ -55,9 +55,9 @@ class OrderDiscountCSVFormatter(  # type:ignore[no-redef]  # Oscar view customiz
                 self.format_datetime(order.date_placed),
                 order.total_incl_tax,
                 order_discount.amount,
-                "\n".join(sorted(list(product_names))),
-                "\n".join(sorted(list(upcs))),
-                "\n".join(sorted(list(skus))),
-                "\n".join(sorted(list(payment_methods))),
+                "\n".join(sorted(product_names)),
+                "\n".join(sorted(upcs)),
+                "\n".join(sorted(skus)),
+                "\n".join(sorted(payment_methods)),
             ]
             writer.writerow(row)

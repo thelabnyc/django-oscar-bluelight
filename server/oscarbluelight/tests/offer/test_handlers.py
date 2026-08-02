@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import ANY, MagicMock, patch
 
 from django.test import TestCase, override_settings
@@ -56,9 +56,9 @@ class TestQueueRecalculateOfferApplicationTotals(TestCase):
         mock_using = MagicMock()
         mock_tasks.recalculate_offer_application_totals.using.return_value = mock_using
 
-        before = datetime.now(timezone.utc)
+        before = datetime.now(UTC)
         self._call_handler()
-        after = datetime.now(timezone.utc)
+        after = datetime.now(UTC)
 
         call_kwargs = (
             mock_tasks.recalculate_offer_application_totals.using.call_args.kwargs

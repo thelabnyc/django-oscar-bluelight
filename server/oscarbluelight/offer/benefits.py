@@ -837,10 +837,7 @@ class CompoundBenefit(Benefit):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.proxy_class = "{}.{}".format(
-            CompoundBenefit.__module__,
-            CompoundBenefit.__name__,
-        )
+        self.proxy_class = f"{CompoundBenefit.__module__}.{CompoundBenefit.__name__}"
 
     @property
     def children(self) -> list[Benefit]:

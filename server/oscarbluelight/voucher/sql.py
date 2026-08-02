@@ -106,7 +106,7 @@ def _get_prune_m2m_sql(
 def get_insupd_children_offers_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_insupd_m2m_sql(
         Voucher,
-        "%s_offers" % Voucher._meta.db_table,
+        f"{Voucher._meta.db_table}_offers",
         "conditionaloffer_id",
     )
     return query
@@ -115,7 +115,7 @@ def get_insupd_children_offers_sql(Voucher: type[Voucher]) -> Composed:
 def get_prune_children_offers_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_prune_m2m_sql(
         Voucher,
-        "%s_offers" % Voucher._meta.db_table,
+        f"{Voucher._meta.db_table}_offers",
         "conditionaloffer_id",
     )
     return query
@@ -124,7 +124,7 @@ def get_prune_children_offers_sql(Voucher: type[Voucher]) -> Composed:
 def get_insupd_children_groups_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_insupd_m2m_sql(
         Voucher,
-        "%s_groups" % Voucher._meta.db_table,
+        f"{Voucher._meta.db_table}_groups",
         "group_id",
     )
     return query
@@ -133,7 +133,7 @@ def get_insupd_children_groups_sql(Voucher: type[Voucher]) -> Composed:
 def get_prune_children_groups_sql(Voucher: type[Voucher]) -> Composed:
     query = _get_prune_m2m_sql(
         Voucher,
-        "%s_groups" % Voucher._meta.db_table,
+        f"{Voucher._meta.db_table}_groups",
         "group_id",
     )
     return query

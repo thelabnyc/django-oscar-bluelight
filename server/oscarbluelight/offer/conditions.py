@@ -50,6 +50,7 @@ def _add_condition_satisfying_lines(
 
 class BluelightCountCondition(CountCondition):
     _description = _("Basket includes %(count)d item(s) from %(range)s")
+    _num_matches: int
 
     class Meta:
         app_label = "offer"
@@ -93,7 +94,7 @@ class BluelightCountCondition(CountCondition):
 
     def _get_num_matches(self, basket: Basket, offer: ConditionalOffer) -> int:
         if hasattr(self, "_num_matches"):
-            return getattr(self, "_num_matches")
+            return self._num_matches
         num_matches = 0
         for line in basket.all_lines():
             if self.can_apply_condition(line):
@@ -277,6 +278,7 @@ class BluelightCoverageCondition(CoverageCondition):
 class BluelightValueCondition(ValueCondition):
     _description = _("Basket includes %(amount)s (%(tax)s) from %(range)s")
     _tax_inclusive = False
+    _value_of_matches: Decimal
 
     class Meta:
         app_label = "offer"
@@ -342,7 +344,7 @@ class BluelightValueCondition(ValueCondition):
 
     def _get_value_of_matches(self, offer: ConditionalOffer, basket: Basket) -> Decimal:
         if hasattr(self, "_value_of_matches"):
-            return getattr(self, "_value_of_matches")
+            return self._value_of_matches
         value_of_matches = Decimal("0.00")
         for line in basket.all_lines():
             if self.can_apply_condition(line):
@@ -444,9 +446,8 @@ class CompoundCondition(Condition):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.proxy_class = "{}.{}".format(
-            CompoundCondition.__module__,
-            CompoundCondition.__name__,
+        self.proxy_class = (
+            f"{CompoundCondition.__module__}.{CompoundCondition.__name__}"
         )
 
     @property
@@ -569,7 +570,7 @@ class CompoundCondition(Condition):
         memo = affected_lines
         for c in self.children:
             result = c.proxy().consume_items(offer, basket, memo)
-            if result and getattr(result, "__iter__"):
+            if result and hasattr(result, "__iter__"):
                 affected_lines = result
                 memo = affected_lines
         return affected_lines

@@ -210,7 +210,7 @@ class Voucher(AbstractVoucher):
         )
         success_count += len(custom_code_successes)
         custom_code_failures = set(custom_codes) - custom_code_successes
-        for code in sorted(list(custom_code_failures)):
+        for code in sorted(custom_code_failures):
             errors.append(
                 _("Could not create code “%s” because it already exists.") % code
             )
@@ -444,10 +444,7 @@ class Voucher(AbstractVoucher):
         try_count = 0
         while try_count < max_tries:
             try_count += 1
-            code = "{}-{}".format(
-                self.code,
-                self._get_code_uniquifier(code_index, max_index),
-            )
+            code = f"{self.code}-{self._get_code_uniquifier(code_index, max_index)}"
             if check_code_is_unique(code=code):
                 return code
         raise RuntimeError(
@@ -464,4 +461,4 @@ class Voucher(AbstractVoucher):
         return f"{index}{suffix}"
 
 
-from oscar.apps.voucher.models import *  # type:ignore[assignment]  # NOQA  # Oscar model customization pattern
+from oscar.apps.voucher.models import *  # type:ignore[assignment]  # Oscar model customization pattern

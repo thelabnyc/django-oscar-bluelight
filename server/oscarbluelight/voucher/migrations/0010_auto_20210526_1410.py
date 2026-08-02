@@ -24,10 +24,8 @@ def make_voucher_names_unique(apps, schema_editor):
     # Change names for vouchers with non-unique names
     for voucher in vouchers:
         if len(vouchers_for_name[voucher.name]) > 1:
-            voucher.name = "%s - %d" % (
-                voucher.name,
-                vouchers_for_name[voucher.name].index(voucher.id) + 1,
-            )
+            index = vouchers_for_name[voucher.name].index(voucher.id) + 1
+            voucher.name = f"{voucher.name} - {index}"
             voucher.save()
 
 

@@ -420,20 +420,22 @@ class ParentChildVoucherTest(TestCase):
                 return MockQS()
             return qs
 
-        with patch.object(p.__class__.objects, "filter", side_effect=mock_filter):
-            with patch.object(
+        with (
+            patch.object(p.__class__.objects, "filter", side_effect=mock_filter),
+            patch.object(
                 p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
-            ):
-                # For 110 codes with chunk_size=10,000, base_rounds=1, max_rounds=max(5, 1*3)=5
-                # Codes for indices 100-109 will succeed, but codes for indices 0-99
-                # will always collide (start_index = 0 from mocked count), forcing retries.
-                # This continues until max_rounds is exceeded.
-                with self.assertRaises(RuntimeError) as cm:
-                    p._get_child_code_batch(110)
-                self.assertEqual(
-                    "Couldn't find enough unique child codes after 5 rounds.",
-                    str(cm.exception),
-                )
+            ),
+        ):
+            # For 110 codes with chunk_size=10,000, base_rounds=1, max_rounds=max(5, 1*3)=5
+            # Codes for indices 100-109 will succeed, but codes for indices 0-99
+            # will always collide (start_index = 0 from mocked count), forcing retries.
+            # This continues until max_rounds is exceeded.
+            with self.assertRaises(RuntimeError) as cm:
+                p._get_child_code_batch(110)
+            self.assertEqual(
+                "Couldn't find enough unique child codes after 5 rounds.",
+                str(cm.exception),
+            )
 
     def test_update_parent(self):
         customer = Group.objects.create(name="Customers")
@@ -602,9 +604,11 @@ class ParentChildVoucherTest(TestCase):
                 limit_usage_by_group=False,
             )
 
-        with self.assertNumQueries(11):
-            with self.captureOnCommitCallbacks(execute=True):
-                c1.record_discount({"discount": 5})
+        with (
+            self.assertNumQueries(11),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            c1.record_discount({"discount": 5})
 
     def test_record_discount(self):
         p = Voucher.objects.create(
@@ -684,7 +688,7 @@ class VoucherNotUsedForIgnoredStatus(TestCase):
         ignore_order.status = "Authorized"
         ignore_order.save()
         c1.record_usage(order, user)
-        is_available, message = c1.is_available_to_user(user)
+        is_available, _message = c1.is_available_to_user(user)
         self.assertFalse(is_available)
 
 

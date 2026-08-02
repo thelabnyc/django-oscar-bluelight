@@ -3,11 +3,9 @@ from __future__ import annotations
 from typing import (
     TYPE_CHECKING,
     Any,
-    Generic,
     Literal,
     NewType,
     TypedDict,
-    TypeVar,
     get_args,
 )
 import json
@@ -24,7 +22,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from oscar.apps.dashboard.offers import views
-from oscar.apps.dashboard.offers.views import *  # noqa
+from oscar.apps.dashboard.offers.views import *
 from oscar.apps.dashboard.offers.views import (
     sort_queryset,
 )
@@ -61,13 +59,6 @@ if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
     from oscar.apps.order.models import OrderDiscount
 
-T = TypeVar(
-    "T",
-    MetaDataForm,
-    BenefitSelectionForm,
-    ConditionSelectionForm,
-    RestrictionsForm,
-)
 ConditionItemType = Literal["non_voucher_offers", "vouchers"]
 ConditionItemPk = NewType("ConditionItemPk", int)
 ConditionItemName = NewType("ConditionItemName", str)
@@ -78,9 +69,10 @@ class ConditionItem(TypedDict):
     name: ConditionItemName
 
 
-class OfferWizardStepView(
+class OfferWizardStepView[
+    T: (MetaDataForm, BenefitSelectionForm, ConditionSelectionForm, RestrictionsForm)
+](
     views.OfferWizardStepView,  # type: ignore[name-defined]  # Oscar wildcard import; class exists at runtime
-    Generic[T],
 ):
     form_class: type[T]
 
@@ -126,11 +118,7 @@ class OfferWizardStepView(
 
         # Since offer_type is moved from the metadata form to restrictions from,
         # check it is in the form or not in case of only Step 1 metadata form saving.
-        offer.offer_type = (
-            form.cleaned_data["offer_type"]
-            if "offer_type" in form.cleaned_data
-            else session_offer.offer_type
-        )
+        offer.offer_type = form.cleaned_data.get("offer_type", session_offer.offer_type)
 
         # Apply the configured default status for newly-created offers.
         # The wizard does not expose status as a form field, so without this
@@ -473,7 +461,7 @@ class BenefitUpdateView(UpdateView):
         obj = super().get_object(queryset)
         return obj.proxy()
 
-    def get_form_class(self) -> type[CompoundBenefitForm] | type[BenefitForm]:
+    def get_form_class(self) -> type[CompoundBenefitForm | BenefitForm]:
         if hasattr(self.object, "subbenefits"):
             return CompoundBenefitForm
         return BenefitForm
@@ -597,7 +585,7 @@ class ConditionUpdateView(UpdateView):
         obj = super().get_object(queryset)
         return obj.proxy()
 
-    def get_form_class(self) -> type[CompoundConditionForm] | type[ConditionForm]:
+    def get_form_class(self) -> type[CompoundConditionForm | ConditionForm]:
         if hasattr(self.object, "subconditions"):
             return CompoundConditionForm
         return ConditionForm

@@ -40,7 +40,7 @@ from oscar.apps.dashboard.vouchers.views import (
 from oscar.apps.dashboard.vouchers.views import (
     VoucherUpdateView as DefaultVoucherUpdateView,
 )
-from oscar.apps.dashboard.vouchers.views import *  # noqa
+from oscar.apps.dashboard.vouchers.views import *
 from oscar.core.loading import get_class, get_model
 from oscar.views import sort_queryset
 from oscar.views.generic import BulkEditMixin
@@ -54,7 +54,7 @@ from .forms import AddChildCodesForm, CodeExportForm, VoucherForm
 OrderDiscount = get_model("order", "OrderDiscount")
 Order = get_model("order", "Order")
 
-BLUELIGHT_OFFER_IMAGE_FOLDER = getattr(settings, "BLUELIGHT_OFFER_IMAGE_FOLDER")
+BLUELIGHT_OFFER_IMAGE_FOLDER = settings.BLUELIGHT_OFFER_IMAGE_FOLDER
 CHILD_CODE_BG_TASK_THRESHOLD = 1000
 
 
@@ -281,7 +281,7 @@ class ExportChildCodesView(generic.DetailView):
         codes: Sequence[tuple[str, datetime]],
     ) -> HttpResponse:
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
+        response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
         writer = csv.writer(response)
         writer.writerow([_("Codes"), _("Date Created")])
         for code, date_created in codes:
@@ -295,7 +295,7 @@ class ExportChildCodesView(generic.DetailView):
         codes: Sequence[tuple[str, datetime]],
     ) -> HttpResponse:
         response = HttpResponse(content_type="application/json")
-        response["Content-Disposition"] = 'attachment; filename="%s.json"' % filename
+        response["Content-Disposition"] = f'attachment; filename="{filename}.json"'
         data = json.dumps({"codes": [code[0] for code in codes]})
         response.write(data)
         return response

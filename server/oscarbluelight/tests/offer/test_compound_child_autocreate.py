@@ -78,7 +78,7 @@ class ConditionCompoundChildAutoCreateTest(TransactionTestCase):
     def test_flip_existing_condition_to_compound_creates_child_and_keeps_values(self):
         condition = Condition.objects.create(
             proxy_class=COUNT_CONDITION_CPATH,
-            value=D("5"),
+            value=D(5),
             range=self.range,
         )
         condition = Condition.objects.get(pk=condition.pk)
@@ -87,5 +87,5 @@ class ConditionCompoundChildAutoCreateTest(TransactionTestCase):
 
         self.assertTrue(CompoundCondition.objects.filter(pk=condition.pk).exists())
         condition.refresh_from_db()
-        self.assertEqual(condition.value, D("5"))
+        self.assertEqual(condition.value, D(5))
         self.assertEqual(condition.range_id, self.range.pk)

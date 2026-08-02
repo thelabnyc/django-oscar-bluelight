@@ -39,13 +39,7 @@ OrderDiscount = get_model("order", "OrderDiscount")
 @receiver(post_save, sender=Condition)
 @receiver(post_save, sender=StockRecord)
 def invalidate_pricing_cache_ns(
-    sender: (
-        type[OfferGroup]
-        | type[ConditionalOffer]
-        | type[Benefit]
-        | type[Condition]
-        | type[StockRecord]
-    ),
+    sender: (type[OfferGroup | ConditionalOffer | Benefit | Condition | StockRecord]),
     instance: OfferGroup | ConditionalOffer | Benefit | Condition | StockRecord,
     **kwargs: Any,
 ) -> None:
@@ -90,7 +84,7 @@ def post_migrate_ensure_all_system_groups_exist(
 @receiver(post_save, sender=Order)
 @receiver(post_save, sender=OrderDiscount)
 def queue_recalculate_offer_application_totals(
-    sender: type[Order] | type[OrderDiscount],
+    sender: type[Order | OrderDiscount],
     **kwargs: Any,
 ) -> None:
     now = timezone.now()
