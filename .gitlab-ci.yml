@@ -38,7 +38,7 @@ include:
 
 lint_typescript:
   stage: test
-  image: node:24@sha256:da4221677e02b54ef6335adfa447578d512ad14f251024fb92ea433c2c102760
+  image: node:24@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f6687167ca405e6584
   script:
     - cd client/
     - NODE_ENV=dev npm i
