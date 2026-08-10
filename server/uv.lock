@@ -372,7 +372,7 @@ requires-dist = [
     { name = "django", specifier = ">=5.2" },
     { name = "django-oscar", specifier = ">=4.0,<4.2" },
     { name = "django-tasks", specifier = ">=0.7.0" },
-    { name = "djangorestframework", specifier = ">=3.17.2,<4" },
+    { name = "djangorestframework", specifier = ">=3.18.0,<4" },
     { name = "thelabdb", specifier = ">=0.8.1" },
 ]
 

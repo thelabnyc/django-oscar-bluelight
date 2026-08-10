@@ -13,7 +13,7 @@ dependencies = [
     "django-oscar (>=4.0,<4.2)",
     "django-tasks (>=0.7.0)",
     "thelabdb (>=0.8.1)",
-    "djangorestframework (>=3.17.2,<4)",
+    "djangorestframework (>=3.18.0,<4)",
 ]
 requires-python = ">=3.13"
 
