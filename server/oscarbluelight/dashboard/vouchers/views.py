@@ -412,12 +412,11 @@ class ChildCodesListView(BulkEditMixin, generic.ListView):
 
     def delete_selected_codes(
         self, request: HttpRequest, vouchers: QuerySet[Voucher]
-    ) -> HttpResponse:
+    ) -> None:
         for voucher in vouchers:
             voucher.delete()
         msg = _("Deleted %s child voucher codes") % len(vouchers)
         messages.info(request, msg)
-        return redirect("dashboard:voucher-list-children", parent_pk=self.parent.pk)
 
 
 class VoucherSuspensionView(generic.View):
