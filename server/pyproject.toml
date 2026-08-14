@@ -10,7 +10,7 @@ readme = "README.md"
 license = { text = "ISC" }
 dependencies = [
     "Django (>=5.2)",
-    "django-oscar (>=4.0,<4.2)",
+    "django-oscar (>=4.0,<4.3)",
     "django-tasks (>=0.7.0)",
     "thelabdb (>=0.8.1)",
     "djangorestframework (>=3.18.0,<4)",
@@ -38,11 +38,11 @@ dev = [
     "tox (==4.59.0)",
     "unittest-xml-reporting (==4.0.0)",
     "django-haystack @ git+https://github.com/django-haystack/django-haystack.git@master",
-    "django-stubs (==6.0.7)",
+    "django-stubs (==6.1.0)",
     "mypy (==1.20.0)",
     "types-psycopg2 (>=2.9.21.20260724,<3)",
     "djangorestframework-stubs (==3.17.1)",
-    "django-oscar-stubs (>=4.1.0b6)",
+    "django-oscar-stubs (>=4.2.0b0)",
     "tox-uv>=1.36.0",
 ]
 
@@ -81,6 +81,10 @@ strict_equality = true
 
 [[tool.mypy.overrides]]
 module = "debug_toolbar.*"
+follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+module = "sorl.*"
 follow_untyped_imports = true
 
 [[tool.mypy.overrides]]
