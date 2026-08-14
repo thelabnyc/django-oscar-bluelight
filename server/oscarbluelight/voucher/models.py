@@ -91,8 +91,9 @@ class Voucher(AbstractVoucher):
         db: str | None,
         field_names: Collection[str],
         values: Collection[Any],
+        **kwargs: Any,
     ) -> Voucher:
-        instance = super().from_db(db, field_names, values)
+        instance = super().from_db(db, field_names, values, **kwargs)
 
         # Child codes always get the parent's name
         def _get_parent_name() -> StrOrPromise | None:
