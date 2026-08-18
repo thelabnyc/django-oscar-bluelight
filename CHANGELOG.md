@@ -1,3 +1,18 @@
+## v6.3.2 (2026-08-18)
+
+### Fix
+
+- **deps**: update dependency django-oscar to >=4.2,<4.3
+- **deps**: widen django-oscar range to >=4.0,<4.3
+- **deps**: update django-oscar-stubs and django-stubs for oscar 4.2
+- **deps**: update dependency django-oscar to >=4.2,<4.3
+- **deps**: update dependency djangorestframework to >=3.18.0,<4
+- **deps**: update dependency djangorestframework to >=3.17.2,<4
+
+### Refactor
+
+- drop dead redirect from ChildCodesListView.delete_selected_codes
+
 ## v6.3.1 (2026-07-10)
 
 ### Fix
