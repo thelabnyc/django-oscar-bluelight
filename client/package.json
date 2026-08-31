@@ -29,7 +29,7 @@
         "@types/superagent": "8.1.11",
         "autoprefixer": "10.5.4",
         "babel-loader": "10.1.1",
-        "css-loader": "7.1.4",
+        "css-loader": "7.1.5",
         "cssnano": "7.1.9",
         "mini-css-extract-plugin": "2.10.2",
         "postcss": "8.5.26",
