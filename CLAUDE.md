@@ -164,6 +164,7 @@ Bluelight extends Oscar's single-condition offers with compound logic:
 from oscar.apps.basket.abstract_models import AbstractLine
 from oscarbluelight.mixins import BluelightBasketLineMixin
 
+
 class Line(BluelightBasketLineMixin, AbstractLine):
     pass
 ```
@@ -179,17 +180,15 @@ from oscarbluelight.defaults import *  # Required for dashboard view registratio
 
 INSTALLED_APPS = [
     # Bluelight must come before 'oscar' for template inheritance
-    'oscarbluelight',
-    'thelabdb.pgviews',  # Required for PostgreSQL views
-
-    'oscar',
+    "oscarbluelight",
+    "thelabdb.pgviews",  # Required for PostgreSQL views
+    "oscar",
     # ... other Oscar apps ...
-
     # Replace these Oscar apps with Bluelight versions:
-    'oscarbluelight.offer',              # instead of 'oscar.apps.offer'
-    'oscarbluelight.voucher',            # instead of 'oscar.apps.voucher'
-    'oscarbluelight.dashboard.offers',   # instead of 'oscar.apps.dashboard.offers'
-    'oscarbluelight.dashboard.vouchers', # instead of 'oscar.apps.dashboard.vouchers'
+    "oscarbluelight.offer",  # instead of 'oscar.apps.offer'
+    "oscarbluelight.voucher",  # instead of 'oscar.apps.voucher'
+    "oscarbluelight.dashboard.offers",  # instead of 'oscar.apps.dashboard.offers'
+    "oscarbluelight.dashboard.vouchers",  # instead of 'oscar.apps.dashboard.vouchers'
 ]
 ```
 
