@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 def _init_proxy_class[T: models.Model](obj: T, Klass: type) -> T:
     # Check if we're already the correct class
     if obj.__class__ == Klass:
-        return obj  # type:ignore[return-value]
+        return obj
 
     # Check if we're using multi-table inheritance
     model_name = Klass._meta.model_name  # type: ignore[attr-defined]  # Django _meta API not fully typed
