@@ -29,7 +29,7 @@ Repository = "https://gitlab.com/thelabnyc/django-oscar/django-oscar-bluelight"
 dev = [
     "coverage (==7.16.0)",
     "django-debug-toolbar (==6.3.0)",
-    "django-redis (==6.0.0)",
+    "django-redis (==7.0.0)",
     "ruff (>=0.16.5)",
     "hiredis (==3.4.1)",
     "psycopg2-binary (==2.9.12)",
