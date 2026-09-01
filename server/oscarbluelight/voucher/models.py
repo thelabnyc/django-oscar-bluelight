@@ -462,6 +462,4 @@ class Voucher(AbstractVoucher):
         return f"{index}{suffix}"
 
 
-# Oscar model customization pattern: re-export the upstream models this module
-# does not override.
 from oscar.apps.voucher.models import *  # type:ignore[assignment]
