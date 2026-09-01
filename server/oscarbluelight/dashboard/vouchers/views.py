@@ -28,6 +28,7 @@ from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from oscar.apps.dashboard.vouchers.forms import VoucherSearchForm
+from oscar.apps.dashboard.vouchers.views import *
 from oscar.apps.dashboard.vouchers.views import (
     VoucherCreateView as DefaultVoucherCreateView,
 )
@@ -40,7 +41,6 @@ from oscar.apps.dashboard.vouchers.views import (
 from oscar.apps.dashboard.vouchers.views import (
     VoucherUpdateView as DefaultVoucherUpdateView,
 )
-from oscar.apps.dashboard.vouchers.views import *
 from oscar.core.loading import get_class, get_model
 from oscar.views import sort_queryset
 from oscar.views.generic import BulkEditMixin
