@@ -462,4 +462,4 @@ class Voucher(AbstractVoucher):
         return f"{index}{suffix}"
 
 
-from oscar.apps.voucher.models import *  # type:ignore[assignment]  # Oscar model customization pattern
+from oscar.apps.voucher.models import *  # type:ignore[assignment]
