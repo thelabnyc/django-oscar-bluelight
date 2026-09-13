@@ -32,7 +32,7 @@ dev = [
     "django-redis (==7.0.0)",
     "ruff (>=0.16.6)",
     "hiredis (==3.4.1)",
-    "psycopg2-binary (==2.9.12)",
+    "psycopg2-binary (==2.9.13)",
     "redis (==7.4.1)",
     "sorl-thumbnail (==13.1.0)",
     "tox (==4.61.4)",
