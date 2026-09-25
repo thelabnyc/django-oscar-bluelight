@@ -31,7 +31,7 @@ dev = [
     "django-debug-toolbar (==7.1.1)",
     "django-redis (==7.0.0)",
     "ruff (>=0.16.8)",
-    "hiredis (==3.4.1)",
+    "hiredis (==3.4.2)",
     "psycopg2-binary (==2.9.13)",
     "redis (==7.4.1)",
     "sorl-thumbnail (==13.1.0)",
