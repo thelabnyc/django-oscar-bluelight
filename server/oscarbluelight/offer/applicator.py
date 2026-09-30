@@ -73,6 +73,7 @@ class Applicator(BaseApplicator):
         "benefit__range",
         "condition",
         "condition__range",
+        "condition__compoundcondition",
     ]
 
     def get_site_offers(self) -> QuerySet[ConditionalOffer]:

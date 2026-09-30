@@ -6,6 +6,7 @@ import operator
 
 from django.core import exceptions
 from django.db import models
+from django.db.models import Prefetch, prefetch_related_objects
 from django.utils.translation import gettext_lazy as _
 from oscar.apps.offer import utils
 from oscar.apps.offer.abstract_models import AbstractCondition
@@ -454,8 +455,18 @@ class CompoundCondition(Condition):
     def children(self) -> list[Condition]:
         if self.pk is None:
             return []
-        chil = [c for c in self.subconditions.order_by("id").all() if c.pk != self.pk]
-        return chil
+        # A prefetch rather than a cached_property: Django drops it when
+        # subconditions change through this instance or on refresh_from_db().
+        prefetch_related_objects(
+            [self],
+            Prefetch(
+                "subconditions",
+                queryset=Condition.objects.select_related(
+                    "range", "compoundcondition"
+                ).order_by("id"),
+            ),
+        )
+        return [c for c in self.subconditions.all() if c.pk != self.pk]
 
     @property
     def name(self) -> StrOrPromise:

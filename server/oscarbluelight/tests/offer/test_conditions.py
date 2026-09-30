@@ -660,6 +660,28 @@ class CompoundConditionTest(BaseTest):
             "oscarbluelight.offer.conditions.BluelightCountCondition",
         )
 
+    def test_children_cached_until_subconditions_change(self):
+        offer = self._build_offer()
+        c = offer.condition.proxy()
+        first = c.children
+        with self.assertNumQueries(0):
+            self.assertEqual([child.pk for child in c.children], [x.pk for x in first])
+            self.assertTrue(all(child.range for child in c.children))
+
+        extra = Condition.objects.create(
+            proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+            value=1,
+            range=first[0].range,
+        )
+        c.subconditions.add(extra)
+        self.assertEqual(len(c.children), 3)
+        c.subconditions.remove(extra)
+        self.assertEqual(len(c.children), 2)
+
+        extra.parent_conditions.add(c)
+        c.refresh_from_db()
+        self.assertEqual(len(c.children), 3)
+
     def test_name_and(self):
         offer = self._build_offer(Conjunction.AND)
         c = offer.condition.proxy()
