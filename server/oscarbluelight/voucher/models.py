@@ -342,6 +342,7 @@ class Voucher(AbstractVoucher):
             "start_datetime",
             "end_datetime",
             "limit_usage_by_group",
+            "status",
         )
         # Pre-read parent fields once
         parent_field_values = {field: getattr(self, field) for field in copy_fields}
@@ -359,9 +360,22 @@ class Voucher(AbstractVoucher):
             ignore_conflicts=True,
             batch_size=batch_size,
         )
-        # Bulk copy over the rest of the parent data
+        # Copy m2m relations to the new codes only, never to existing siblings.
         if update_children:
-            self.update_children()
+            with connection.cursor() as cursor:
+                for i in range(0, len(codes), batch_size):
+                    params = {
+                        "parent_id": self.pk,
+                        "codes": list(codes[i : i + batch_size]),
+                    }
+                    cursor.execute(
+                        sql.get_insupd_children_offers_sql(Voucher, only_codes=True),
+                        params,
+                    )
+                    cursor.execute(
+                        sql.get_insupd_children_groups_sql(Voucher, only_codes=True),
+                        params,
+                    )
         # Return the newly created codes as a set
         return {obj.code for obj in objs}
 

@@ -1,11 +1,22 @@
+from datetime import timedelta
 from decimal import Decimal as D
 from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser, Group, User
 from django.test import TestCase, override_settings
 from django.utils import timezone
-from oscar.test.factories import create_order
+from django_redis import get_redis_connection
+from oscar.test.basket import add_product
+from oscar.test.factories import create_basket, create_order
 
+from oscarbluelight.offer.applicator import Applicator
+from oscarbluelight.offer.models import (
+    BluelightAbsoluteDiscountBenefit,
+    BluelightCountCondition,
+    ConditionalOffer,
+    OfferGroup,
+    Range,
+)
 from oscarbluelight.voucher.models import Voucher
 
 
@@ -653,6 +664,93 @@ class ParentChildVoucherTest(TestCase):
         self.assertEqual(p.total_discount, D("10.00"))
         self.assertEqual(c1.total_discount, D("7.00"))
         self.assertEqual(c2.total_discount, D("3.00"))
+
+
+class ChildVoucherCreationTest(TestCase):
+    def setUp(self):
+        get_redis_connection("redis").flushall()
+        rng = Range.objects.create(name="All products", includes_all_products=True)
+        self.offer = ConditionalOffer.objects.create(
+            name="Child voucher offer",
+            offer_type=ConditionalOffer.VOUCHER,
+            offer_group=OfferGroup.objects.create(name="Vouchers", priority=5),
+            condition=BluelightCountCondition.objects.create(
+                range=rng,
+                proxy_class="oscarbluelight.offer.conditions.BluelightCountCondition",
+                value=1,
+            ),
+            benefit=BluelightAbsoluteDiscountBenefit.objects.create(
+                range=rng,
+                proxy_class="oscarbluelight.offer.benefits.BluelightAbsoluteDiscountBenefit",
+                value=D("3.00"),
+            ),
+        )
+        self.group = Group.objects.create(name="Members")
+        self.user = User.objects.create_user(username="bob", password="foo")
+        self.user.groups.add(self.group)
+
+    def _create_parent(self, code, status=Voucher.OPEN):
+        parent = Voucher.objects.create(
+            name=f"Parent {code}",
+            code=code,
+            usage=Voucher.SINGLE_USE,
+            start_datetime=timezone.now() - timedelta(days=1),
+            end_datetime=timezone.now() + timedelta(days=1),
+            limit_usage_by_group=True,
+            status=status,
+        )
+        parent.offers.add(self.offer)
+        parent.groups.add(self.group)
+        return parent
+
+    def test_create_child_batch_only_touches_new_codes(self):
+        for num_existing in (0, 50):
+            with self.subTest(num_existing=num_existing):
+                parent = self._create_parent(f"P{num_existing}")
+                # Existing children left unsynced, so any write to them shows up.
+                parent._create_child_batch(
+                    [f"P{num_existing}-OLD-{i}" for i in range(num_existing)],
+                    update_children=False,
+                )
+                with self.assertNumQueries(3):
+                    created = parent._create_child_batch(
+                        [f"P{num_existing}-NEW-1", f"P{num_existing}-NEW-2"]
+                    )
+                self.assertEqual(
+                    created, {f"P{num_existing}-NEW-1", f"P{num_existing}-NEW-2"}
+                )
+                for child in parent.children.filter(code__in=created):
+                    self.assertEqual(list(child.offers.all()), [self.offer])
+                    self.assertEqual(list(child.groups.all()), [self.group])
+                old = parent.children.filter(code__contains="-OLD-")
+                self.assertEqual(old.count(), num_existing)
+                self.assertFalse(old.filter(offers__isnull=False).exists())
+                self.assertFalse(old.filter(groups__isnull=False).exists())
+
+    def test_new_child_copies_parent(self):
+        parent = self._create_parent("WELCOME", status=Voucher.SUSPENDED)
+        child = parent._create_child("WELCOME-1")
+        self.assertEqual(child.name, parent.name)
+        self.assertEqual(child.usage, parent.usage)
+        self.assertEqual(child.start_datetime, parent.start_datetime)
+        self.assertEqual(child.end_datetime, parent.end_datetime)
+        self.assertTrue(child.limit_usage_by_group)
+        self.assertEqual(child.status, Voucher.SUSPENDED)
+        self.assertEqual(list(child.offers.all()), [self.offer])
+        self.assertEqual(child.offer_group, self.offer.offer_group)
+        self.assertEqual(list(child.groups.all()), [self.group])
+
+    def test_new_child_is_redeemable(self):
+        parent = self._create_parent("WELCOME")
+        child = parent._create_child("WELCOME-1")
+        basket = create_basket(empty=True)
+        add_product(basket, price=D("12.00"), quantity=1)
+        basket.vouchers.add(child)
+        Applicator().apply(basket, self.user)
+        self.assertEqual(len(basket.voucher_discounts), 1)
+        self.assertEqual(basket.voucher_discounts[0]["voucher"], child)
+        self.assertEqual(basket.voucher_discounts[0]["discount"], D("3.00"))
+        self.assertEqual(basket.total_excl_tax, D("9.00"))
 
 
 class VoucherNotUsedForIgnoredStatus(TestCase):
