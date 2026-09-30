@@ -294,17 +294,14 @@ class Voucher(AbstractVoucher):
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        if self.parent:
+        # No super(): a redemption must never queue a full child resync.
+        for voucher in filter(None, (self.parent, self)):
             if user is not None and user.is_authenticated:
-                self.parent.applications.create(
-                    voucher=self.parent, order=order, user=user
-                )
+                voucher.applications.create(voucher=voucher, order=order, user=user)
             else:
-                self.parent.applications.create(voucher=self.parent, order=order)
-            self.parent.num_orders += 1
-            self.parent.save(update_children=False)
-
-        return super().record_usage(order, user, *args, **kwargs)
+                voucher.applications.create(voucher=voucher, order=order)
+            voucher.num_orders += 1
+            voucher.save(update_children=False)
 
     record_usage.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
@@ -314,13 +311,11 @@ class Voucher(AbstractVoucher):
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        """Extends parent class to record discount on the parent Voucher
-        Ensures that parent save does not save it's children which would cause
-        excessive writes."""
-        if self.parent:
-            self.parent.total_discount += discount["discount"]
-            self.parent.save(update_children=False)
-        return super().record_discount(discount, *args, **kwargs)
+        """Also records the discount on the parent. Never resyncs children, so a
+        redemption can't rewrite every sibling code."""
+        for voucher in filter(None, (self.parent, self)):
+            voucher.total_discount += discount["discount"]
+            voucher.save(update_children=False)
 
     record_discount.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 

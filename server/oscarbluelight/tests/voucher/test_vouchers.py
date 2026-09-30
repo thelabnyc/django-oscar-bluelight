@@ -616,7 +616,7 @@ class ParentChildVoucherTest(TestCase):
             )
 
         with (
-            self.assertNumQueries(11),
+            self.assertNumQueries(2),
             self.captureOnCommitCallbacks(execute=True),
         ):
             c1.record_discount({"discount": 5})
@@ -739,6 +739,26 @@ class ChildVoucherCreationTest(TestCase):
         self.assertEqual(list(child.offers.all()), [self.offer])
         self.assertEqual(child.offer_group, self.offer.offer_group)
         self.assertEqual(list(child.groups.all()), [self.group])
+
+    def test_redeeming_child_does_not_sync_children(self):
+        parent = self._create_parent("WELCOME")
+        parent._create_child_batch([f"WELCOME-{i}" for i in range(5)])
+        child = parent.children.get(code="WELCOME-0")
+        order = create_order()
+        with (
+            patch.object(Voucher, "update_children") as update_children,
+            self.assertNumQueries(6),
+            self.captureOnCommitCallbacks(execute=True) as callbacks,
+        ):
+            child.record_usage(order, self.user)
+            child.record_discount({"discount": D("3.00")})
+        update_children.assert_not_called()
+        self.assertEqual(callbacks, [])
+        parent.refresh_from_db()
+        child.refresh_from_db()
+        self.assertEqual((parent.num_orders, child.num_orders), (1, 1))
+        self.assertEqual(parent.total_discount, D("3.00"))
+        self.assertEqual(child.total_discount, D("3.00"))
 
     def test_new_child_is_redeemable(self):
         parent = self._create_parent("WELCOME")
