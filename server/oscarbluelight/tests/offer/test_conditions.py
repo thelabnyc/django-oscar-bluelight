@@ -19,6 +19,7 @@ from oscarbluelight.offer.models import (
     Condition,
     ConditionalOffer,
     Range,
+    memoize_offer_application,
 )
 from oscarbluelight.voucher.models import Voucher
 
@@ -659,6 +660,17 @@ class CompoundConditionTest(BaseTest):
             c.children[1].proxy_class,
             "oscarbluelight.offer.conditions.BluelightCountCondition",
         )
+
+    def test_children_memoized_for_one_application_only(self):
+        offer = self._build_offer()
+        c = offer.condition.proxy()
+        with memoize_offer_application():
+            first = c.children
+            with self.assertNumQueries(0):
+                self.assertEqual(c.children, first)
+                self.assertTrue(all(child.range for child in c.children))
+        CompoundCondition.objects.get(pk=c.pk).subconditions.remove(first[0])
+        self.assertEqual(c.children, first[1:])
 
     def test_name_and(self):
         offer = self._build_offer(Conjunction.AND)

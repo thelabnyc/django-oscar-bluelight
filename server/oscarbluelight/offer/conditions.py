@@ -16,7 +16,7 @@ from oscar.apps.offer.conditions import (
 )
 from oscar.templatetags.currency_filters import currency
 
-from oscarbluelight.offer.models import Condition
+from oscarbluelight.offer.models import Condition, current_offer_application_memo
 
 from . import upsells
 from .constants import Conjunction
@@ -454,8 +454,19 @@ class CompoundCondition(Condition):
     def children(self) -> list[Condition]:
         if self.pk is None:
             return []
-        chil = [c for c in self.subconditions.order_by("id").all() if c.pk != self.pk]
-        return chil
+        memo = current_offer_application_memo()
+        if memo is not None and self.pk in memo.compound_children:
+            return memo.compound_children[self.pk]
+        children = [
+            c
+            for c in self.subconditions.select_related(
+                "range", "compoundcondition"
+            ).order_by("id")
+            if c.pk != self.pk
+        ]
+        if memo is not None:
+            memo.compound_children[self.pk] = children
+        return children
 
     @property
     def name(self) -> StrOrPromise:

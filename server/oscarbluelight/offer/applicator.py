@@ -18,7 +18,7 @@ from oscar.core.loading import get_model
 
 from ..caching import CacheNamespace, FluentCache
 from ..mixins import BluelightBasketLineMixin
-from .models import ConditionalOffer
+from .models import ConditionalOffer, memoize_offer_application
 from .signals import (
     post_offer_group_apply,
     post_offers_apply,
@@ -73,6 +73,7 @@ class Applicator(BaseApplicator):
         "benefit__range",
         "condition",
         "condition__range",
+        "condition__compoundcondition",
     ]
 
     def get_site_offers(self) -> QuerySet[ConditionalOffer]:
@@ -132,6 +133,7 @@ class Applicator(BaseApplicator):
     ) -> list[ConditionalOffer]:
         return []
 
+    @memoize_offer_application()
     def apply_offers(
         self,
         basket: Basket,
