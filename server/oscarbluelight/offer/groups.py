@@ -121,24 +121,16 @@ def _offer_group_receiver(
     """
 
     def _decorator(func: T) -> T:
-        from .models import OfferGroup
-
         # Build an interim lambda function to filter signal events down to just the group instance we're looking for
         def _receiver(sender: type[Any], **kwargs: Any) -> Any:
-            ensure_all_system_groups_exist()
-            offer_group = OfferGroup.objects.filter(slug=offer_group_slug).first()
-            if not offer_group:
-                logger.error(
-                    f"Listener is attached to offer group {offer_group_slug}, but no such offer group exists!"
-                )
-                return
-            if not offer_group.is_system_group:
+            group: OfferGroup | None = kwargs.get("group")
+            if group is None or group.slug != offer_group_slug:
+                return None
+            if not group.is_system_group:
                 logger.warning(
                     f"You should not attach listens to non-system offer group {offer_group_slug}."
                 )
-            if kwargs.get("group") and kwargs["group"].pk == offer_group.pk:
-                return func(sender, **kwargs)
-            return None
+            return func(sender, **kwargs)
 
         # Store a reference to this function in the module scope so that it doesn't get immediately GC'd
         _receivers.append(_receiver)

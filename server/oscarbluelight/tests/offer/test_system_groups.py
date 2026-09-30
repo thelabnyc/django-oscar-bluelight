@@ -197,3 +197,27 @@ class OfferGroupModelTest(TestCase):
             offers=[],
             signal=post_offer_group_apply,
         )
+
+    def test_receivers_do_not_query(self):
+        group = OfferGroup.objects.create(
+            name="Group 3", priority=3, is_system_group=True
+        )
+        other = OfferGroup.objects.create(
+            name="Group 4", priority=4, is_system_group=True
+        )
+        handler = mock.MagicMock()
+        pre_offer_group_apply_receiver("group-3")(handler)
+
+        with self.assertNumQueries(0):
+            for g in (group, other, None):
+                pre_offer_group_apply.send(
+                    sender=Applicator, basket=None, group=g, offers=[]
+                )
+
+        handler.assert_called_once_with(
+            Applicator,
+            basket=None,
+            group=group,
+            offers=[],
+            signal=pre_offer_group_apply,
+        )
