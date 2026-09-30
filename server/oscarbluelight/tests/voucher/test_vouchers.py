@@ -3,6 +3,7 @@ from decimal import Decimal as D
 from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser, Group, User
+from django.db import connection
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from django_redis import get_redis_connection
@@ -18,6 +19,11 @@ from oscarbluelight.offer.models import (
     Range,
 )
 from oscarbluelight.voucher.models import Voucher
+from oscarbluelight.voucher.sql import (
+    get_insupd_children_groups_sql,
+    get_insupd_children_offers_sql,
+)
+from oscarbluelight.voucher.tasks import add_child_codes
 
 
 class UserGroupWhitelistTest(TestCase):
@@ -224,9 +230,11 @@ class ParentChildVoucherTest(TestCase):
         # Create initial child with custom code
         p.create_children(custom_codes=["CUSTOM-1"])
         self.assertEqual(set(p.children.values_list("code", flat=True)), {"CUSTOM-1"})
-        p.create_children(custom_codes=["CUSTOM-1", "CUSTOM-2"])
-        # Verify there are 2 unique codes and duplicate was silently ignored because
-        # bulk_create with ignore_conflicts=True only inserts the non-conflicting ones into the database
+        errors, success_count = p.create_children(custom_codes=["CUSTOM-1", "CUSTOM-2"])
+        self.assertEqual(success_count, 1)
+        self.assertEqual(
+            errors, ["Could not create code “CUSTOM-1” because it already exists."]
+        )
         self.assertEqual(
             set(p.children.values_list("code", flat=True)), {"CUSTOM-1", "CUSTOM-2"}
         )
@@ -249,7 +257,8 @@ class ParentChildVoucherTest(TestCase):
         # - bulk_create batches (auto_generate_count / insert_batch_size), so for 100 thousand codes = 100 queries
         # - check for existing codes in _get_child_code_batch: 1 query per round,
         #   rounds = ceil(auto_generate_count / chunk_size), so for 100 thousand codes = 10 rounds
-        # Total: 3 + 100 + 10 = 113 queries
+        # - a taken-code check and two relation copies per bulk_create batch = 300 queries
+        # Total: 3 + 100 + 10 + 300 = 413 queries
         baseline_num_queries = 3
         round_chunk_size = 10_000
         insert_batch_size = 1_000
@@ -271,7 +280,7 @@ class ParentChildVoucherTest(TestCase):
             # Calculate expected queries with deterministic generation (no random conflicts)
             rounds = (auto_generate_count + round_chunk_size - 1) // round_chunk_size
             bulk_creates = auto_generate_count // insert_batch_size
-            expected_queries = baseline_num_queries + rounds + bulk_creates
+            expected_queries = baseline_num_queries + rounds + 4 * bulk_creates
             with self.assertNumQueries(expected_queries):
                 p.create_children(auto_generate_count=auto_generate_count)
             self.assertEqual(p.children.all().count(), 100_000)
@@ -283,14 +292,15 @@ class ParentChildVoucherTest(TestCase):
         # - bulk_create batches (auto_generate_count / insert_batch_size), so for 200 thousand codes = 200 queries
         # - check for existing codes in _get_child_code_batch: 1 query per round,
         #   rounds = ceil(auto_generate_count / chunk_size), so for 200 thousand codes = 20 rounds
-        # Total: 3 + 200 + 20 = 223 queries
+        # - a taken-code check and two relation copies per bulk_create batch = 600 queries
+        # Total: 3 + 200 + 20 + 600 = 823 queries
         auto_generate_count = 200_000
         with patch.object(
             p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
         ):
             rounds = (auto_generate_count + round_chunk_size - 1) // round_chunk_size
             bulk_creates = auto_generate_count // insert_batch_size
-            expected_queries = baseline_num_queries + rounds + bulk_creates
+            expected_queries = baseline_num_queries + rounds + 4 * bulk_creates
             with self.assertNumQueries(expected_queries):
                 p.create_children(auto_generate_count=auto_generate_count)
         self.assertEqual(p.children.all().count(), 300_000)
@@ -325,7 +335,7 @@ class ParentChildVoucherTest(TestCase):
         # Create codes at indices 500-999 with suffix "999" to conflict with
         # the first 500 generated codes (which start at index 500).
         conflicted_codes = [f"TEST-VOUCHER-{i:05d}999" for i in range(500, 1000)]
-        p._create_child_batch(conflicted_codes, update_children=False)
+        p._create_child_batch(conflicted_codes)
         self.assertEqual(p.children.all().count(), 500)
         with patch.object(
             p, "_get_code_uniquifier", side_effect=mock_get_code_uniquifier
@@ -346,12 +356,13 @@ class ParentChildVoucherTest(TestCase):
             #   1 conflict check query
             # - Three rounds' codes (9500 + 10,000 + 500 = 20,000)
             #   20 bulk_create query for all 20,000 codes
-            # Total: 3 (baseline) + 3 (conflict checks = round number) + 20 (bulk_create) = 26 queries
+            #   60 more: a taken-code check and two relation copies per bulk_create batch
+            # Total: 3 (baseline) + 3 (conflict checks = round number) + 20 (bulk_create) + 60 = 86 queries
             rounds = (
                 (auto_generate_count + round_chunk_size - 1) // round_chunk_size
             ) + 1  # ideal case round count plus 1 extra
             bulk_creates = auto_generate_count // insert_batch_size
-            expected_queries = baseline_num_queries + rounds + bulk_creates
+            expected_queries = baseline_num_queries + rounds + 4 * bulk_creates
             with self.assertNumQueries(expected_queries):
                 p.create_children(auto_generate_count=auto_generate_count)
         self.assertEqual(
@@ -367,7 +378,7 @@ class ParentChildVoucherTest(TestCase):
             end_datetime=timezone.now(),
             limit_usage_by_group=False,
         )
-        created_codes = p._create_child_batch([], update_children=False)
+        created_codes = p._create_child_batch([])
         self.assertEqual(len(created_codes), 0)
         self.assertEqual(p.children.all().count(), 0)
 
@@ -414,7 +425,7 @@ class ParentChildVoucherTest(TestCase):
         for i in range(100):
             for suffix in range(600):
                 conflicted_codes.append(f"TEST-VOUCHER-{i:03d}{suffix:03d}")
-        p._create_child_batch(conflicted_codes, update_children=False)
+        p._create_child_batch(conflicted_codes)
 
         # Mock the count to return 0 (simulating that we queried before the concurrent job inserted)
         original_filter = p.__class__.objects.filter
@@ -703,16 +714,26 @@ class ChildVoucherCreationTest(TestCase):
         parent.groups.add(self.group)
         return parent
 
+    def _create_unsynced_children(self, parent, codes):
+        Voucher.objects.bulk_create(
+            Voucher(
+                parent=parent,
+                code=code,
+                start_datetime=parent.start_datetime,
+                end_datetime=parent.end_datetime,
+            )
+            for code in codes
+        )
+
     def test_create_child_batch_only_touches_new_codes(self):
         for num_existing in (0, 50):
             with self.subTest(num_existing=num_existing):
                 parent = self._create_parent(f"P{num_existing}")
                 # Existing children left unsynced, so any write to them shows up.
-                parent._create_child_batch(
-                    [f"P{num_existing}-OLD-{i}" for i in range(num_existing)],
-                    update_children=False,
+                self._create_unsynced_children(
+                    parent, [f"P{num_existing}-OLD-{i}" for i in range(num_existing)]
                 )
-                with self.assertNumQueries(3):
+                with self.assertNumQueries(4):
                     created = parent._create_child_batch(
                         [f"P{num_existing}-NEW-1", f"P{num_existing}-NEW-2"]
                     )
@@ -729,7 +750,7 @@ class ChildVoucherCreationTest(TestCase):
 
     def test_new_child_copies_parent(self):
         parent = self._create_parent("WELCOME", status=Voucher.SUSPENDED)
-        child = parent._create_child("WELCOME-1")
+        child = parent._create_child("WELCOME-1", update_children=False)
         self.assertEqual(child.name, parent.name)
         self.assertEqual(child.usage, parent.usage)
         self.assertEqual(child.start_datetime, parent.start_datetime)
@@ -737,8 +758,66 @@ class ChildVoucherCreationTest(TestCase):
         self.assertTrue(child.limit_usage_by_group)
         self.assertEqual(child.status, Voucher.SUSPENDED)
         self.assertEqual(list(child.offers.all()), [self.offer])
-        self.assertEqual(child.offer_group, self.offer.offer_group)
         self.assertEqual(list(child.groups.all()), [self.group])
+
+    def test_create_child_batch_skips_taken_codes(self):
+        parent = self._create_parent("P")
+        self._create_unsynced_children(parent, ["P-OLD"])
+        self._create_parent("OTHER")
+        created = parent._create_child_batch(
+            ["P-OLD", "OTHER", "P-NEW", "P-NEW"], batch_size=1
+        )
+        self.assertEqual(created, {"P-NEW"})
+        self.assertEqual(
+            set(parent.children.values_list("code", flat=True)), {"P-OLD", "P-NEW"}
+        )
+        old = parent.children.get(code="P-OLD")
+        self.assertFalse(old.offers.exists())
+        self.assertFalse(old.groups.exists())
+        new = parent.children.get(code="P-NEW")
+        self.assertEqual(list(new.offers.all()), [self.offer])
+        self.assertEqual(list(new.groups.all()), [self.group])
+
+    def test_repeated_codes_are_created_once(self):
+        parent = self._create_parent("P")
+        for batch_size in (1_000, 1):
+            with self.subTest(batch_size=batch_size):
+                code = f"P-{batch_size}"
+                created = parent._create_child_batch(
+                    [code, f"{code}-OTHER", code], batch_size=batch_size
+                )
+                self.assertEqual(created, {code, f"{code}-OTHER"})
+                self.assertEqual(
+                    list(parent.children.get(code=code).offers.all()), [self.offer]
+                )
+        errors, success_count = parent.create_children(
+            custom_codes=["P-A", "P-B", "P-A"]
+        )
+        self.assertEqual(success_count, 2)
+        self.assertEqual(
+            errors, ["Could not create code “P-A” because it already exists."]
+        )
+
+    def test_add_child_codes_only_touches_new_codes(self):
+        parent = self._create_parent("P")
+        self._create_unsynced_children(parent, ["P-OLD"])
+        with self.captureOnCommitCallbacks(execute=True) as callbacks:
+            errors, success_count = add_child_codes.call(
+                parent.pk, auto_generate_count=2, custom_codes=["P-NEW", "P-OLD"]
+            )
+        self.assertEqual(callbacks, [])
+        self.assertEqual(success_count, 3)
+        self.assertEqual(
+            errors, ["Could not create code “P-OLD” because it already exists."]
+        )
+        old = parent.children.get(code="P-OLD")
+        self.assertFalse(old.offers.exists())
+        self.assertFalse(old.groups.exists())
+        new = parent.children.exclude(code="P-OLD")
+        self.assertEqual(new.count(), 3)
+        for child in new:
+            self.assertEqual(list(child.offers.all()), [self.offer])
+            self.assertEqual(list(child.groups.all()), [self.group])
 
     def test_redeeming_child_does_not_sync_children(self):
         parent = self._create_parent("WELCOME")
@@ -746,13 +825,11 @@ class ChildVoucherCreationTest(TestCase):
         child = parent.children.get(code="WELCOME-0")
         order = create_order()
         with (
-            patch.object(Voucher, "update_children") as update_children,
             self.assertNumQueries(6),
             self.captureOnCommitCallbacks(execute=True) as callbacks,
         ):
             child.record_usage(order, self.user)
             child.record_discount({"discount": D("3.00")})
-        update_children.assert_not_called()
         self.assertEqual(callbacks, [])
         parent.refresh_from_db()
         child.refresh_from_db()
@@ -761,16 +838,42 @@ class ChildVoucherCreationTest(TestCase):
         self.assertEqual(child.total_discount, D("3.00"))
 
     def test_new_child_is_redeemable(self):
-        parent = self._create_parent("WELCOME")
-        child = parent._create_child("WELCOME-1")
-        basket = create_basket(empty=True)
-        add_product(basket, price=D("12.00"), quantity=1)
-        basket.vouchers.add(child)
-        Applicator().apply(basket, self.user)
-        self.assertEqual(len(basket.voucher_discounts), 1)
-        self.assertEqual(basket.voucher_discounts[0]["voucher"], child)
-        self.assertEqual(basket.voucher_discounts[0]["discount"], D("3.00"))
-        self.assertEqual(basket.total_excl_tax, D("9.00"))
+        for path in ("_create_child", "create_children"):
+            with self.subTest(path=path):
+                parent = self._create_parent(path.upper())
+                code = f"{parent.code}-1"
+                if path == "_create_child":
+                    child = parent._create_child(code, update_children=False)
+                else:
+                    parent.create_children(custom_codes=[code])
+                    child = parent.children.get(code=code)
+                self.assertTrue(child.is_available_to_user(self.user)[0])
+                basket = create_basket(empty=True)
+                add_product(basket, price=D("12.00"), quantity=1)
+                basket.vouchers.add(child)
+                Applicator().apply(basket, self.user)
+                self.assertEqual(len(basket.voucher_discounts), 1)
+                self.assertEqual(basket.voucher_discounts[0]["voucher"], child)
+                self.assertEqual(basket.voucher_discounts[0]["discount"], D("3.00"))
+                self.assertEqual(basket.total_excl_tax, D("9.00"))
+                child.record_usage(create_order(), self.user)
+                self.assertEqual(child.applications.count(), 1)
+
+    def test_relation_copy_is_scoped_to_parent(self):
+        parent = self._create_parent("P")
+        other = self._create_parent("OTHER")
+        self._create_unsynced_children(other, ["OTHER-1"])
+        params = {"parent_id": parent.pk, "codes": ["OTHER-1"]}
+        with connection.cursor() as cursor:
+            cursor.execute(
+                get_insupd_children_offers_sql(Voucher, only_codes=True), params
+            )
+            cursor.execute(
+                get_insupd_children_groups_sql(Voucher, only_codes=True), params
+            )
+        child = other.children.get(code="OTHER-1")
+        self.assertFalse(child.offers.exists())
+        self.assertFalse(child.groups.exists())
 
 
 class VoucherNotUsedForIgnoredStatus(TestCase):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Callable, Collection, Iterable, Sequence
 from datetime import datetime
 from functools import partial
@@ -201,17 +202,13 @@ class Voucher(AbstractVoucher):
         success_count = 0
         # Generate auto codes
         auto_gen_codes = self._get_child_code_batch(auto_generate_count)
-        # Update newly created child vouchers only when calling `_create_child_batch` for the last time.
-        success_count += len(
-            self._create_child_batch(auto_gen_codes, update_children=False)
-        )
+        success_count += len(self._create_child_batch(auto_gen_codes))
         # Save manual/custom codes
-        custom_code_successes = self._create_child_batch(
-            custom_codes, update_children=False
-        )
+        custom_code_successes = self._create_child_batch(custom_codes)
         success_count += len(custom_code_successes)
-        custom_code_failures = set(custom_codes) - custom_code_successes
-        for code in sorted(custom_code_failures):
+        # A repeated code fails on every occurrence after the first.
+        custom_code_failures = Counter(custom_codes) - Counter(custom_code_successes)
+        for code in sorted(custom_code_failures.elements()):
             errors.append(
                 _("Could not create code “%s” because it already exists.") % code
             )
@@ -294,7 +291,7 @@ class Voucher(AbstractVoucher):
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        # No super(): a redemption must never queue a full child resync.
+        # No super(): its plain save() would queue a child sync task.
         for voucher in filter(None, (self.parent, self)):
             if user is not None and user.is_authenticated:
                 voucher.applications.create(voucher=voucher, order=order, user=user)
@@ -311,8 +308,7 @@ class Voucher(AbstractVoucher):
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        """Also records the discount on the parent. Never resyncs children, so a
-        redemption can't rewrite every sibling code."""
+        """Also records the discount on the parent, without queuing a child sync."""
         for voucher in filter(None, (self.parent, self)):
             voucher.total_discount += discount["discount"]
             voucher.save(update_children=False)
@@ -320,7 +316,8 @@ class Voucher(AbstractVoucher):
     record_discount.alters_data = True  # type:ignore[attr-defined]  # Django alters_data convention
 
     def _create_child(self, code: str, update_children: bool = True) -> Voucher | None:
-        self._create_child_batch([code], update_children=update_children)
+        """`update_children` is kept for compatibility and has no effect."""
+        self._create_child_batch([code])
         obj = self.children.filter(code=code).first()
         return obj
 
@@ -330,8 +327,11 @@ class Voucher(AbstractVoucher):
         batch_size: int = 1_000,
         update_children: bool = True,
     ) -> set[str]:
-        if len(codes) <= 0:
-            return set()
+        """
+        New codes always get the parent's fields, offers and groups; existing
+        children are never touched. `update_children` is kept for compatibility
+        and has no effect.
+        """
         copy_fields = (
             "usage",
             "start_datetime",
@@ -341,28 +341,31 @@ class Voucher(AbstractVoucher):
         )
         # Pre-read parent fields once
         parent_field_values = {field: getattr(self, field) for field in copy_fields}
-        children = [
-            self.__class__(
-                parent=self,
-                code=code,
-                **parent_field_values,
+        codes = list(dict.fromkeys(codes))
+        created: set[str] = set()
+        for i in range(0, len(codes), batch_size):
+            batch = codes[i : i + batch_size]
+            # `bulk_create(ignore_conflicts=True)` can't tell which rows it skipped.
+            taken = set(
+                self.__class__.objects.filter(code__in=batch)
+                .order_by()
+                .values_list("code", flat=True)
             )
-            for code in codes
-        ]
-        # Bulk insert all the new codes
-        objs = self.__class__.objects.bulk_create(
-            children,
-            ignore_conflicts=True,
-            batch_size=batch_size,
-        )
-        # Copy m2m relations to the new codes only, never to existing siblings.
-        if update_children:
-            with connection.cursor() as cursor:
-                for i in range(0, len(codes), batch_size):
-                    params = {
-                        "parent_id": self.pk,
-                        "codes": list(codes[i : i + batch_size]),
-                    }
+            new_codes = [code for code in batch if code not in taken]
+            self.__class__.objects.bulk_create(
+                [
+                    self.__class__(parent=self, code=code, **parent_field_values)
+                    for code in new_codes
+                ],
+                ignore_conflicts=True,
+            )
+            # Copy m2m relations to the new codes only, never to existing siblings.
+            if new_codes:
+                params: dict[str, int | list[str]] = {
+                    "parent_id": self.pk,
+                    "codes": new_codes,
+                }
+                with connection.cursor() as cursor:
                     cursor.execute(
                         sql.get_insupd_children_offers_sql(Voucher, only_codes=True),
                         params,
@@ -371,8 +374,8 @@ class Voucher(AbstractVoucher):
                         sql.get_insupd_children_groups_sql(Voucher, only_codes=True),
                         params,
                     )
-        # Return the newly created codes as a set
-        return {obj.code for obj in objs}
+            created.update(new_codes)
+        return created
 
     def _get_child_code_batch(self, num_codes: int) -> list[str]:
         if num_codes <= 0:
