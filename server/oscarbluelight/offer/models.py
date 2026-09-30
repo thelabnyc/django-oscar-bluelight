@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable, Sequence
+from collections.abc import Collection, Iterable, Iterator, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, TypedDict
@@ -62,6 +64,26 @@ ExpandDownwardsCategoryQueryset = get_class(
 )
 
 logger = logging.getLogger(__name__)
+
+_range_membership_memo: ContextVar[dict[tuple[int, int], bool] | None] = ContextVar(
+    "oscarbluelight_range_membership_memo", default=None
+)
+
+
+@contextmanager
+def memoize_range_membership() -> Iterator[None]:
+    """
+    Remember ``Range.contains_product`` answers until the block exits.
+
+    Offer application asks the same range/product question many times, and
+    each answer costs a query. Keep the scope to one offer application, so
+    range edits made in the dashboard show up on the next one.
+    """
+    token = _range_membership_memo.set({})
+    try:
+        yield
+    finally:
+        _range_membership_memo.reset(token)
 
 
 def _init_proxy_class[T: models.Model](obj: T, Klass: type) -> T:
@@ -499,6 +521,15 @@ class Condition(AbstractCondition):
 
 
 class Range(AbstractRange):
+    def contains_product(self, product: Product) -> bool:
+        memo = _range_membership_memo.get()
+        if memo is None or self.pk is None or product.pk is None:
+            return super().contains_product(product)
+        key = (self.pk, product.pk)
+        if key not in memo:
+            memo[key] = super().contains_product(product)
+        return memo[key]
+
     @cached_property
     def product_queryset(self) -> QuerySet[Product]:
         Product = self.included_products.model

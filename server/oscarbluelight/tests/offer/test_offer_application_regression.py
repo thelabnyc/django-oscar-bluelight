@@ -595,7 +595,7 @@ class OfferApplicationRegressionTest(TransactionTestCase):
         self.assertNotIn("Two from A", offer_names(after))
 
     def test_query_counts(self) -> None:
-        bounds = {1: 189, 2: 279, 3: 340}
+        bounds = {1: 101, 2: 117, 3: 125}
         baskets = {
             1: [("a1", 3)],
             2: [("a2", 1), ("b1", 2)],

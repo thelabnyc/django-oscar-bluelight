@@ -448,6 +448,19 @@ class TestContainsProductBulk(TransactionTestCase):
         self.assertEqual(len(result), 10)
 
 
+class TestRangeMembershipMemo(TransactionTestCase):
+    def test_memo_lasts_for_the_block_only(self):
+        rng = models.Range.objects.create(name="Memo", includes_all_products=True)
+        product = create_product()
+        with models.memoize_range_membership():
+            self.assertTrue(rng.contains_product(product))
+            with self.assertNumQueries(0):
+                self.assertTrue(rng.contains_product(product))
+            rng.excluded_products.add(product)
+            self.assertTrue(rng.contains_product(product))
+        self.assertFalse(rng.contains_product(product))
+
+
 class TestRangeProductListView(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
