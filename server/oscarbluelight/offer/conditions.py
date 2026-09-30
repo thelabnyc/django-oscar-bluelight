@@ -6,7 +6,6 @@ import operator
 
 from django.core import exceptions
 from django.db import models
-from django.db.models import Prefetch, prefetch_related_objects
 from django.utils.translation import gettext_lazy as _
 from oscar.apps.offer import utils
 from oscar.apps.offer.abstract_models import AbstractCondition
@@ -17,7 +16,7 @@ from oscar.apps.offer.conditions import (
 )
 from oscar.templatetags.currency_filters import currency
 
-from oscarbluelight.offer.models import Condition
+from oscarbluelight.offer.models import Condition, current_offer_application_memo
 
 from . import upsells
 from .constants import Conjunction
@@ -455,18 +454,19 @@ class CompoundCondition(Condition):
     def children(self) -> list[Condition]:
         if self.pk is None:
             return []
-        # A prefetch rather than a cached_property: Django drops it when
-        # subconditions change through this instance or on refresh_from_db().
-        prefetch_related_objects(
-            [self],
-            Prefetch(
-                "subconditions",
-                queryset=Condition.objects.select_related(
-                    "range", "compoundcondition"
-                ).order_by("id"),
-            ),
-        )
-        return [c for c in self.subconditions.all() if c.pk != self.pk]
+        memo = current_offer_application_memo()
+        if memo is not None and self.pk in memo.compound_children:
+            return memo.compound_children[self.pk]
+        children = [
+            c
+            for c in self.subconditions.select_related(
+                "range", "compoundcondition"
+            ).order_by("id")
+            if c.pk != self.pk
+        ]
+        if memo is not None:
+            memo.compound_children[self.pk] = children
+        return children
 
     @property
     def name(self) -> StrOrPromise:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Collection, Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, TypedDict
@@ -65,25 +66,42 @@ ExpandDownwardsCategoryQueryset = get_class(
 
 logger = logging.getLogger(__name__)
 
-_range_membership_memo: ContextVar[dict[tuple[int, int], bool] | None] = ContextVar(
-    "oscarbluelight_range_membership_memo", default=None
+
+@dataclass
+class OfferApplicationMemo:
+    active: bool = True
+    range_membership: dict[tuple[int, int], bool] = field(default_factory=dict)
+    compound_children: dict[int, list[Condition]] = field(default_factory=dict)
+
+
+_offer_application_memo: ContextVar[OfferApplicationMemo | None] = ContextVar(
+    "oscarbluelight_offer_application_memo", default=None
 )
 
 
-@contextmanager
-def memoize_range_membership() -> Iterator[None]:
-    """
-    Remember ``Range.contains_product`` answers until the block exits.
+def current_offer_application_memo() -> OfferApplicationMemo | None:
+    memo = _offer_application_memo.get()
+    return memo if memo is not None and memo.active else None
 
-    Offer application asks the same range/product question many times, and
-    each answer costs a query. Keep the scope to one offer application, so
-    range edits made in the dashboard show up on the next one.
+
+@contextmanager
+def memoize_offer_application() -> Iterator[None]:
     """
-    token = _range_membership_memo.set({})
+    Remember range membership and compound condition children until the block exits.
+
+    Offer application asks the same questions many times, and each answer
+    costs a query. Keep the scope to one offer application, so edits made in
+    the dashboard show up on the next one. Contexts copied inside the block
+    (e.g. by asyncio tasks) keep a reference to the memo, so it is switched
+    off on exit rather than only unset.
+    """
+    memo = OfferApplicationMemo()
+    token = _offer_application_memo.set(memo)
     try:
         yield
     finally:
-        _range_membership_memo.reset(token)
+        memo.active = False
+        _offer_application_memo.reset(token)
 
 
 def _init_proxy_class[T: models.Model](obj: T, Klass: type) -> T:
@@ -522,13 +540,13 @@ class Condition(AbstractCondition):
 
 class Range(AbstractRange):
     def contains_product(self, product: Product) -> bool:
-        memo = _range_membership_memo.get()
+        memo = current_offer_application_memo()
         if memo is None or self.pk is None or product.pk is None:
             return super().contains_product(product)
         key = (self.pk, product.pk)
-        if key not in memo:
-            memo[key] = super().contains_product(product)
-        return memo[key]
+        if key not in memo.range_membership:
+            memo.range_membership[key] = super().contains_product(product)
+        return memo.range_membership[key]
 
     @cached_property
     def product_queryset(self) -> QuerySet[Product]:

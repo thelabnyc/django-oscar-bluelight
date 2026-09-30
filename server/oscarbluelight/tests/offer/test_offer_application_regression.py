@@ -514,30 +514,29 @@ class OfferApplicationRegressionTest(TransactionTestCase):
         return basket
 
     def _snapshot(self, basket: Any) -> dict[str, Any]:
-        lines = []
-        for line in basket.all_lines():
-            lines.append(
-                {
-                    "product": line.product.title,
-                    "quantity": line.quantity,
-                    "discount": str(line.discount_value),
-                    "price_excl_tax_incl_discounts": str(
-                        line.line_price_excl_tax_incl_discounts
-                    ),
-                    "discounts": [
-                        (str(d.amount), d.offer_name, d.voucher_code)
-                        for d in line.get_discount_descriptions()
-                    ],
-                    "breakdown": (
-                        [
-                            (str(p.unit_price_excl_tax), p.quantity)
-                            for p in line.get_price_breakdown()
-                        ]
-                        if line.is_tax_known
-                        else None
-                    ),
-                }
-            )
+        lines = [
+            {
+                "product": line.product.title,
+                "quantity": line.quantity,
+                "discount": str(line.discount_value),
+                "price_excl_tax_incl_discounts": str(
+                    line.line_price_excl_tax_incl_discounts
+                ),
+                "discounts": [
+                    (str(d.amount), d.offer_name, d.voucher_code)
+                    for d in line.get_discount_descriptions()
+                ],
+                "breakdown": (
+                    [
+                        (str(p.unit_price_excl_tax), p.quantity)
+                        for p in line.get_price_breakdown()
+                    ]
+                    if line.is_tax_known
+                    else None
+                ),
+            }
+            for line in basket.all_lines()
+        ]
         applications = [
             (
                 a["name"],
@@ -594,16 +593,33 @@ class OfferApplicationRegressionTest(TransactionTestCase):
         self.assertIn("Two from A", offer_names(before))
         self.assertNotIn("Two from A", offer_names(after))
 
+    def test_condition_edits_visible_to_reused_offers(self) -> None:
+        def applied(basket: Any) -> set[str]:
+            return {a["name"] for a in basket.offer_applications.applications.values()}
+
+        applicator = Applicator()
+        basket = self._fresh_basket([("a1", 3)], False)
+        offers = applicator.get_offers(basket, self.user)
+        applicator.apply_offers(basket, offers)
+        self.assertNotIn("A and B", applied(basket))
+
+        compound = CompoundCondition.objects.get(offers__name="A and B")
+        compound.subconditions.remove(
+            *compound.subconditions.filter(range__name="Range B")
+        )
+
+        basket = self._fresh_basket([("a1", 3)], False)
+        applicator.apply_offers(basket, offers)
+        self.assertIn("A and B", applied(basket))
+
     def test_query_counts(self) -> None:
-        bounds = {1: 23, 2: 29, 3: 35}
-        baskets = {
-            1: [("a1", 3)],
-            2: [("a2", 1), ("b1", 2)],
-            3: [("a1", 2), ("b1", 1), ("x", 1)],
-        }
-        for num_lines, items in baskets.items():
+        for items, bound in [
+            ([("a1", 3)], 23),
+            ([("a2", 1), ("b1", 2)], 29),
+            ([("a1", 2), ("b1", 1), ("x", 1)], 35),
+        ]:
             basket = self._fresh_basket(items, True)
             with CaptureQueriesContext(connection) as ctx:
                 Applicator().apply(basket, self.user)
-            with self.subTest(num_lines=num_lines):
-                self.assertLessEqual(len(ctx.captured_queries), bounds[num_lines])
+            with self.subTest(num_lines=len(items)):
+                self.assertLessEqual(len(ctx.captured_queries), bound)

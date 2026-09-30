@@ -18,7 +18,7 @@ from oscar.core.loading import get_model
 
 from ..caching import CacheNamespace, FluentCache
 from ..mixins import BluelightBasketLineMixin
-from .models import ConditionalOffer, memoize_range_membership
+from .models import ConditionalOffer, memoize_offer_application
 from .signals import (
     post_offer_group_apply,
     post_offers_apply,
@@ -133,6 +133,7 @@ class Applicator(BaseApplicator):
     ) -> list[ConditionalOffer]:
         return []
 
+    @memoize_offer_application()
     def apply_offers(
         self,
         basket: Basket,
@@ -146,14 +147,6 @@ class Applicator(BaseApplicator):
         an item in a line is limited to being consumed by a single offer, but this limitation is
         reset for each group. This makes it possible to apply multiple offers to a single line item.
         """
-        with memoize_range_membership():
-            self._apply_offers(basket, offers)
-
-    def _apply_offers(
-        self,
-        basket: Basket,
-        offers: list[ConditionalOffer],
-    ) -> None:
         pre_offers_apply.send(sender=self.__class__, basket=basket, offers=offers)
         applications = results.OfferApplications()
 
