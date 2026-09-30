@@ -91,7 +91,9 @@ def memoize_offer_application() -> Iterator[None]:
 
     Offer application asks the same questions many times, and each answer
     costs a query. Keep the scope to one offer application, so edits made in
-    the dashboard show up on the next one. Contexts copied inside the block
+    the dashboard show up on the next one. Proxy ranges are left out because
+    their answer may depend on more than the range and the product. Contexts
+    copied inside the block
     (e.g. by asyncio tasks) keep a reference to the memo, so it is switched
     off on exit rather than only unset.
     """
@@ -541,7 +543,7 @@ class Condition(AbstractCondition):
 class Range(AbstractRange):
     def contains_product(self, product: Product) -> bool:
         memo = current_offer_application_memo()
-        if memo is None or self.pk is None or product.pk is None:
+        if memo is None or self.proxy_class or self.pk is None or product.pk is None:
             return super().contains_product(product)
         key = (self.pk, product.pk)
         if key not in memo.range_membership:

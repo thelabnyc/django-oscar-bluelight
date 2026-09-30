@@ -449,6 +449,13 @@ class TestContainsProductBulk(TransactionTestCase):
         self.assertEqual(len(result), 10)
 
 
+class TogglingProxyRange:
+    answer = True
+
+    def contains_product(self, product):
+        return self.answer
+
+
 class TestRangeMembershipMemo(TransactionTestCase):
     def test_memo_lasts_for_the_block_only(self):
         rng = models.Range.objects.create(name="Memo", includes_all_products=True)
@@ -474,6 +481,20 @@ class TestRangeMembershipMemo(TransactionTestCase):
             raise RuntimeError()
         rng.excluded_products.add(product)
         self.assertFalse(child_context.run(rng.contains_product, product))
+
+    def test_proxy_ranges_are_not_memoized(self):
+        rng = models.Range.objects.create(
+            name="Proxy",
+            proxy_class=f"{TogglingProxyRange.__module__}.{TogglingProxyRange.__name__}",
+        )
+        product = create_product()
+        with models.memoize_offer_application():
+            self.assertTrue(rng.contains_product(product))
+            TogglingProxyRange.answer = False
+            try:
+                self.assertFalse(rng.contains_product(product))
+            finally:
+                TogglingProxyRange.answer = True
 
 
 class TestRangeProductListView(TestCase):
