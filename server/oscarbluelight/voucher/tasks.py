@@ -32,7 +32,6 @@ def add_child_codes(
     errors, success_count = parent.create_children(
         auto_generate_count=auto_generate_count, custom_codes=custom_codes
     )
-    parent.save()
     for error in errors:
         logger.warning(error)
     return errors, success_count

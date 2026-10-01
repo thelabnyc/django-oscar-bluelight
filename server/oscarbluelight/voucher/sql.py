@@ -48,7 +48,10 @@ def get_update_children_meta_sql(Voucher: type[Voucher]) -> Composed:
 
 
 def _get_insupd_m2m_sql(
-    Voucher: type[Voucher], m2m_table_name: str, rel_column_name: str
+    Voucher: type[Voucher],
+    m2m_table_name: str,
+    rel_column_name: str,
+    only_codes: bool = False,
 ) -> Composed:
     query = sql.SQL(
         """
@@ -66,13 +69,19 @@ def _get_insupd_m2m_sql(
                   FROM {m2m_table_name} cvmm
                  WHERE cvmm.voucher_id = cv.id
                    AND cvmm.{rel_column_name} = pvmm.{rel_column_name}
-               );
+               )
+               {code_filter};
         """
     ).format(
         voucher_table=sql.Identifier(Voucher._meta.db_table),
         m2m_table_name=sql.Identifier(m2m_table_name),
         rel_column_name=sql.Identifier(rel_column_name),
         parent_id=sql.Placeholder("parent_id"),
+        code_filter=(
+            sql.SQL("AND cv.code = ANY({codes})").format(codes=sql.Placeholder("codes"))
+            if only_codes
+            else sql.SQL("")
+        ),
     )
     return query
 
@@ -103,11 +112,14 @@ def _get_prune_m2m_sql(
     return query
 
 
-def get_insupd_children_offers_sql(Voucher: type[Voucher]) -> Composed:
+def get_insupd_children_offers_sql(
+    Voucher: type[Voucher], only_codes: bool = False
+) -> Composed:
     query = _get_insupd_m2m_sql(
         Voucher,
         f"{Voucher._meta.db_table}_offers",
         "conditionaloffer_id",
+        only_codes=only_codes,
     )
     return query
 
@@ -121,11 +133,14 @@ def get_prune_children_offers_sql(Voucher: type[Voucher]) -> Composed:
     return query
 
 
-def get_insupd_children_groups_sql(Voucher: type[Voucher]) -> Composed:
+def get_insupd_children_groups_sql(
+    Voucher: type[Voucher], only_codes: bool = False
+) -> Composed:
     query = _get_insupd_m2m_sql(
         Voucher,
         f"{Voucher._meta.db_table}_groups",
         "group_id",
+        only_codes=only_codes,
     )
     return query
 
