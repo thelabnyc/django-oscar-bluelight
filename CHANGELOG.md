@@ -1,3 +1,21 @@
+## v6.3.3 (2026-10-01)
+
+### Fix
+
+- address review (#36566)
+- address review (#36557)
+- **deps**: update dependency djangorestframework to >=3.18.1,<4
+- **deps**: update dependency thelabdb to >=0.8.3
+
+### Perf
+
+- skip child voucher re-sync when recording a redemption (#36566)
+- copy parent relations only to newly created child vouchers (#36566)
+- leave proxy ranges out of the offer application memo (#36557)
+- cache compound condition children with their ranges (#36557)
+- remember range membership for one offer application (#36557)
+- match offer group receivers by slug without querying (#36557)
+
 ## v6.3.2 (2026-08-18)
 
 ### Fix
