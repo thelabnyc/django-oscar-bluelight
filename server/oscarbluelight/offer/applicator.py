@@ -117,7 +117,7 @@ class Applicator(BaseApplicator):
             Q(end_datetime__gte=cutoff) | Q(end_datetime=None),
         )
         nondate_based = Q(start_datetime=None, end_datetime=None)
-        groups = [g for g in user.groups.all()]
+        groups = [*user.groups.all()]
 
         qs = ConditionalOffer.objects.filter(
             date_based | nondate_based,
