@@ -34,7 +34,7 @@ dev = [
     "hiredis (==3.4.2)",
     "psycopg2-binary (==2.9.13)",
     "redis (==7.4.1)",
-    "sorl-thumbnail (==13.1.0)",
+    "sorl-thumbnail (==13.2.0)",
     "tox (==4.65.4)",
     "unittest-xml-reporting (==4.0.0)",
     "django-haystack @ git+https://github.com/django-haystack/django-haystack.git@master",
