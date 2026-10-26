@@ -4,7 +4,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 import logging
 
-from django.db import connection, transaction
+from django.db import OperationalError, connection, transaction
 from django_tasks import task
 
 from .applicator import pricing_cache_ns
@@ -12,6 +12,16 @@ from .models import RangeProductSet, ViewRefreshLog
 from .signals import range_product_set_view_updated
 
 logger = logging.getLogger(__name__)
+
+# SQLSTATE raised when ``lock_timeout`` expires
+LOCK_NOT_AVAILABLE = "55P03"
+
+
+def _is_lock_timeout(exc: OperationalError) -> bool:
+    # psycopg exposes the SQLSTATE as ``sqlstate``, psycopg2 as ``pgcode``
+    cause = exc.__cause__
+    sqlstate = getattr(cause, "sqlstate", None) or getattr(cause, "pgcode", None)
+    return sqlstate == LOCK_NOT_AVAILABLE
 
 
 def _do_view_refresh(
@@ -32,8 +42,24 @@ def _do_view_refresh(
     if not ViewRefreshLog.is_refresh_needed(view_type, requested_on_dt):
         logger.info("Skipping redundant %s refresh", view_type)
         return
-    # Refresh the view
-    func()
+    # Refresh the view. If the lock timeout fires, whoever holds the lock is
+    # usually either another refresh, which the check above would treat as
+    # covering this request once it's logged, or a write (e.g. an order
+    # recording its offer usage) whose commit queues a refresh of its own. So
+    # skip this one, without logging it as a refresh. wrap_database_errors
+    # turns errors from code that runs on the raw driver cursor (as
+    # MaterializedView.refresh does) into OperationalError.
+    try:
+        with transaction.atomic(), connection.wrap_database_errors:
+            func()
+    except OperationalError as e:
+        if not _is_lock_timeout(e):
+            raise
+        logger.info(
+            "Skipping %s refresh: another transaction holds a lock it needs",
+            view_type,
+        )
+        return
     ViewRefreshLog.log_view_refresh(view_type)
     logger.info("Finished refreshing %s view", view_type)
 
