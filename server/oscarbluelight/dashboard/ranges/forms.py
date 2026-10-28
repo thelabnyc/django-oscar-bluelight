@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Any
 
 from django import forms
 from django.contrib.postgres.search import SearchVector
@@ -84,14 +83,6 @@ class BatchPriceUpdateForm(forms.Form):
         label="Type of Change to Apply", initial=PERCENTAGE_RETAIL, choices=TYPES
     )
     amount = forms.DecimalField(initial=0, decimal_places=2, max_digits=12)
-
-    def __init__(
-        self,
-        instance: Range | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
 
     def apply_discount(
         self,
