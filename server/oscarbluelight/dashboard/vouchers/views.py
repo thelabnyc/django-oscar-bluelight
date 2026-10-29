@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, QuerySet
+from django.forms import ModelForm
 from django.http import (
     Http404,
     HttpRequest,
@@ -117,7 +118,7 @@ class VoucherListView(DefaultVoucherListView):  # type:ignore[no-redef]  # Oscar
 class VoucherCreateView(DefaultVoucherCreateView):  # type:ignore[no-redef]  # Oscar view customization requires redefinition
     form_class = VoucherForm
 
-    def form_valid(self, form: VoucherForm) -> HttpResponse:
+    def form_valid(self, form: ModelForm[Voucher]) -> HttpResponse:
         with transaction.atomic():
             response = super().form_valid(form)
             self.object.groups.add(  # type:ignore[union-attr]  # self.object is set after super().form_valid()
@@ -206,7 +207,7 @@ class VoucherUpdateView(DefaultVoucherUpdateView):  # type:ignore[no-redef]  # O
         return initial
 
     @transaction.atomic
-    def form_valid(self, form: VoucherForm) -> HttpResponse:
+    def form_valid(self, form: ModelForm[Voucher]) -> HttpResponse:
         response = super().form_valid(form)
         self.object.groups.set(form.cleaned_data["groups"])
         return response

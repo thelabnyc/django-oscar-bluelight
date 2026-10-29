@@ -69,7 +69,7 @@ class OfferSerializer(serializers.ModelSerializer):
     def get_vouchers(self, obj: ConditionalOffer) -> list[dict[str, Any]]:
         ser = VoucherSerializer(many=True, context=self.context)
         return ser.to_representation(  # type:ignore[return-value]  # DRF ListSerializer.to_representation returns ReturnList, not list
-            obj.vouchers.exclude_children().all()  # type: ignore[attr-defined]  # bluelight's VoucherQuerySet.exclude_children not in Oscar stubs
+            Voucher.objects.exclude_children().filter(offers=obj)
         )
 
     def get_desktop_image(self, obj: ConditionalOffer) -> str:

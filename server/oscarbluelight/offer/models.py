@@ -343,9 +343,11 @@ class Benefit(AbstractBenefit):
 
     @property
     def vouchers(self) -> list[_Voucher]:
+        from ..voucher.models import Voucher
+
         vouchers: list[_Voucher] = []
         for offer in self.offers.filter(offer_type=ConditionalOffer.VOUCHER).all():
-            vouchers.extend(offer.vouchers.filter(parent=None).all())
+            vouchers.extend(Voucher.objects.filter(offers=offer, parent=None).all())
         return vouchers
 
     def clean(self) -> None:

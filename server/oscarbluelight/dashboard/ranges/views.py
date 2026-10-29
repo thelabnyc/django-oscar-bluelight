@@ -11,7 +11,8 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
-from django.views.generic import UpdateView
+from django.views.generic import FormView, UpdateView
+from django.views.generic.detail import SingleObjectMixin
 from oscar.apps.dashboard.ranges.views import RangeListView as BaseRangeListView
 from oscar.apps.dashboard.ranges.views import (
     RangeProductListView as BaseRangeProductListView,
@@ -62,21 +63,29 @@ class BatchChangePreview(TypedDict):
     direction: Literal["more", "less"]
 
 
-class RangePriceListView(UpdateView):
+class RangePriceListView(SingleObjectMixin[Range], FormView[BatchPriceUpdateForm]):
     model = Range
     context_object_name = "range"
     form_class = BatchPriceUpdateForm
     template_name = "oscar/dashboard/ranges/range_price_list.html"
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         return context
 
     def get_success_url(self) -> str:
-        return reverse("dashboard:range-prices", args=(self.get_object().pk,))
+        return reverse("dashboard:range-prices", args=(self.object.pk,))
 
     def form_valid(self, form: BatchPriceUpdateForm) -> HttpResponse:
-        rng = self.get_object()
+        rng = self.object
 
         if "apply" in self.request.POST:
             self._apply_changes(rng, form)
