@@ -1,3 +1,22 @@
+## v6.4.0 (2026-10-30)
+
+### Feat
+
+- test Django 6.0 and 6.1 with DRF 3.18, drop Django 4.2
+- support Python 3.15 and drop Python 3.13
+
+### Fix
+
+- **types**: adapt to django-stubs 6.1.2 manager and form view typing
+- skip view refreshes that hit their lock timeout, not fail them
+- **deps**: update dependency djangorestframework to >=3.18.3,<4
+- **deps**: update dependency djangorestframework to >=3.18.2,<4
+- **deps**: update dependency django-oscar to >=4.2.1,<4.3
+
+### Refactor
+
+- adopt Python 3.14 syntax
+
 ## v6.3.3 (2026-10-01)
 
 ### Fix
