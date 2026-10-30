@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from django.urls import path
 from django.urls.resolvers import URLPattern, URLResolver
 from oscar.apps.dashboard.ranges import apps

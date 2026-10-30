@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Collection, Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar

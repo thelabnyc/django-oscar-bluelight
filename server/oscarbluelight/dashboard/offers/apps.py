@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from django.urls import include, path
 from django.urls.resolvers import URLPattern, URLResolver
 from django.views.i18n import JavaScriptCatalog
