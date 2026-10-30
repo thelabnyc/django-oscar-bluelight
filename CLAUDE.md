@@ -66,7 +66,7 @@ docker compose run --rm test mypy oscarbluelight sandbox
 # or via tox:
 docker compose run --rm test bash -c "cd /oscarbluelight/server && tox -e py313-types"
 
-# Run full tox test matrix (tests against Django 4.2/5.2, DRF 3.16, Oscar 4.0/4.1)
+# Run full tox test matrix (tests against Django 5.2/6.0/6.1, DRF 3.18, Oscar 4.2)
 docker compose run --rm test bash -c "cd /oscarbluelight/server && tox"
 ```
 
@@ -211,7 +211,7 @@ INSTALLED_APPS = [
   - Django settings module: `sandbox.settings`
 - **coverage**: Test coverage tracking with branch coverage enabled
   - Run via: `docker compose run --rm test bash -c "coverage run manage.py test oscarbluelight && coverage report"`
-- **tox**: Multi-environment testing (Django 4.2/5.2, Oscar 4.0/4.1)
+- **tox**: Multi-environment testing (Django 5.2/6.0/6.1, Oscar 4.2)
   - Run via: `docker compose run --rm test bash -c "cd /oscarbluelight/server && tox"`
 
 ### TypeScript/Frontend
