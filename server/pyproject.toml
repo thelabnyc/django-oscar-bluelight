@@ -15,7 +15,7 @@ dependencies = [
     "thelabdb (>=0.8.3)",
     "djangorestframework (>=3.18.3,<4)",
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 
 [[project.authors]]
 name = "thelab"
@@ -58,7 +58,7 @@ url = "https://gitlab.com/api/v4/groups/269576/-/packages/pypi/simple"
 explicit = true
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main", "mypy_oscar_plugin"]
 
 # Strict mode, see mypy --help

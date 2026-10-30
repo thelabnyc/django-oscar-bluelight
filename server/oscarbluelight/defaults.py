@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from django_stubs_ext import StrOrPromise
 
 
-def insert_nav_item(after_name: str, label: "StrOrPromise", url_name: str) -> None:
+def insert_nav_item(after_name: str, label: StrOrPromise, url_name: str) -> None:
     new_entry = {
         "label": label,
         "url_name": url_name,
