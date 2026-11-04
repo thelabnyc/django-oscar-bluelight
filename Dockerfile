@@ -6,6 +6,9 @@ FROM node:26@sha256:6d2c7d5d074bf72f81ddc252b4fbb5d625bc028eeda49cb4b8c2ff8eda1e
 RUN mkdir -p /oscarbluelight/server /oscarbluelight/client
 WORKDIR /oscarbluelight/client
 
+# So a swapped package needs a TLS break, not just an apt signature-check bug
+RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources
+
 RUN apt-get update && \
     apt-get install -y gettext && \
     rm -rf /var/lib/apt/lists/*
