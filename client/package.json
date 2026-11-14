@@ -20,7 +20,7 @@
     },
     "devDependencies": {
         "@babel/core": "7.29.13",
-        "@babel/preset-env": "7.29.7",
+        "@babel/preset-env": "7.29.14",
         "@babel/preset-react": "7.29.7",
         "@thelabnyc/standards": "0.5.1",
         "@types/eslint-config-prettier": "^6.11.3",
