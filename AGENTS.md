@@ -64,7 +64,7 @@ docker compose run --rm test bash -c "coverage run manage.py test oscarbluelight
 # Type checking with mypy
 docker compose run --rm test mypy oscarbluelight sandbox
 # or via tox:
-docker compose run --rm test bash -c "cd /oscarbluelight/server && tox -e py313-types"
+docker compose run --rm test bash -c "cd /oscarbluelight/server && tox -e py315-types"
 
 # Run full tox test matrix (tests against Django 5.2/6.0/6.1, DRF 3.18, Oscar 4.2)
 docker compose run --rm test bash -c "cd /oscarbluelight/server && tox"
